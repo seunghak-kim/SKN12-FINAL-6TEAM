@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import { UserProfile, ChatHistory, TestResult } from '../types';
+import { UserProfile, ChatHistory, TestResult, DrawingTest } from '../types';
 
 export interface UserProfileResponse {
   user_id: number;
@@ -105,20 +105,20 @@ class UserService {
 
   // 테스트 결과 조회
   async getTestResults(userId: number, skip: number = 0, limit: number = 10): Promise<TestResult[]> {
-    const response = await apiClient.get<TestResultResponse>(`/users/users/${userId}/test-results`, {
+    const response = await apiClient.get<DrawingTest[]>(`/api/v1/test/drawing-test-results/my-results`, {
       skip,
       limit
     });
     
     // 백엔드 응답을 프론트엔드 타입으로 변환
-    return response.test_results.map(test => ({
-      id: test.id,
-      testType: 'Drawing' as const, // 현재는 그림 검사만 지원
-      result: test.character_match,
-      characterMatch: test.character_match,
-      date: test.date,
-      description: test.interpretation,
-      images: test.images
+    return response.map(test => ({
+      id: test.test_id.toString(),
+      testType: 'Drawing' as const,
+      result: test.result?.summary_text || '결과 분석 중입니다.',
+      characterMatch: test.result?.friend_info?.friends_name || '분석 중',
+      date: test.submitted_at,
+      description: test.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
+      images: [test.image_url]
     }));
   }
 

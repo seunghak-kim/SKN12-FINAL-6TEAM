@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import Modal from '../common/Modal';
 import StarRating from '../common/StarRating';
 import { FrontendChatMessage, SearchResult } from '../../types';
 import { useChatSession } from '../../hooks/useChatSession';
+import { authService } from '../../services/authService';
 
 interface ChatPageProps {
   selectedCharacter: SearchResult | null;
@@ -25,8 +26,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
   onCloseRatingModal,
   onNavigate,
   onInitializeChat,
-  userId = 1, // 기본값 설정 (실제로는 로그인 사용자 ID 사용)
-  friendsId = 1 // 기본값 설정 (실제로는 selectedCharacter에서 가져옴)
+  userId, // 외부에서 전달받거나 내부에서 계산
+  friendsId // 외부에서 전달받거나 selectedCharacter에서 가져옴
 }) => {
   const [inputMessage, setInputMessage] = useState('');
   const [currentRating, setCurrentRating] = useState(3);
@@ -36,21 +37,198 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sidebarMessagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // FastAPI 연동을 위한 훅 사용
+  // FastAPI 연동을 위한 훅 사용 (Hook들은 early return 이전에 호출되어야 함)
   const {
     session,
     messages: chatMessages,
     isLoading,
     isSending,
     error,
-    stats,
     createSession,
     sendMessage,
     loadSession,
     clearError,
     clearMessages
   } = useChatSession();
+
+  // 실제 사용자 ID 가져오기
+  const [realUserId, setRealUserId] = useState<number | null>(null);
+  const currentUserId = userId || realUserId;
+  const currentFriendsId = friendsId || (selectedCharacter ? parseInt(selectedCharacter.id) : 1);
+  
+  // 컴포넌트 마운트 시 실제 사용자 정보 로드
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const user = await authService.getCurrentUser();
+        if (user) {
+          setRealUserId(user.id);
+          console.log('현재 로그인된 사용자:', user);
+        } else {
+          console.log('로그인된 사용자 없음');
+        }
+      } catch (error) {
+        console.error('사용자 정보 로드 실패:', error);
+      }
+    };
+    
+    loadCurrentUser();
+  }, []);
+  
+  console.log('ChatPage 사용자 ID 정보:', {
+    userId: userId,
+    realUserId: realUserId,
+    authServiceId: authService.getCurrentUserId(),
+    currentUserId: currentUserId,
+    isAuthenticated: authService.isAuthenticated()
+  });
+
+  // 초기 메시지를 한 번만 생성하고 저장
+  const [initialMessage] = useState(() => {
+    const characterMessages: { [key: string]: string[] } = {
+      '추진형': [
+        "안녕하세요! 오늘 달성하고 싶은 목표가 있나요?",
+        "무엇을 이루고 싶으신지 말해보세요. 함께 효율적인 방법을 찾아보죠!",
+        "성공을 향한 첫 걸음을 내딛어보세요. 어떤 도전이 기다리고 있나요?",
+        "목표가 명확하면 길이 보입니다. 무엇부터 시작할까요?"
+      ],
+      '공감형': [
+        "안녕하세요. 오늘 하루는 어떠셨나요?",
+        "마음이 편안한 곳에서 이야기해보세요. 무엇이든 들어드릴게요.",
+        "혼자서 힘드셨을 텐데, 이제는 함께 이야기 나눠요.",
+        "당신의 감정을 이해하고 공감해드리고 싶어요."
+      ],
+      '분석형': [
+        "안녕하세요. 어떤 문제를 해결하고 싶으신가요?",
+        "상황을 차근차근 분석해보겠습니다. 자세히 말씀해주세요.",
+        "논리적으로 접근해보죠. 핵심 문제가 무엇인지 파악해보세요.",
+        "체계적으로 정리하면 해답이 보일 거예요."
+      ],
+      '창의형': [
+        "안녕하세요! 새로운 아이디어가 떠오르는 시간이에요!",
+        "상상력을 발휘해서 색다른 관점으로 접근해볼까요?",
+        "창의적인 해결책을 함께 찾아보겠습니다!",
+        "틀에 박힌 생각에서 벗어나 자유롭게 이야기해보세요."
+      ]
+    };
+
+    const characterName = selectedCharacter?.name || '공감형';
+    const messages = characterMessages[characterName] || characterMessages['공감형'];
+    return messages[Math.floor(Math.random() * messages.length)];
+  });
+
+  // 모든 useEffect들을 early return 이전에 위치시킴
+  useEffect(() => {
+    // 컴포넌트가 마운트되면 입력창에 포커스
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  // URL 파라미터에서 세션 ID를 확인하고 세션을 로드하거나 새로 생성
+  useEffect(() => {
+    if (!session && !isLoading) {
+      // 중복 호출 방지를 위한 플래그
+      let isCancelled = false;
+      
+      const initializeSession = async () => {
+        if (isCancelled) return;
+        
+        try {
+          // URL 파라미터에서 세션 ID 확인
+          const urlParams = new URLSearchParams(location.search);
+          const sessionId = urlParams.get('sessionId');
+          
+          if (sessionId) {
+            // 기존 세션 로드
+            console.log('기존 세션 로드 시도:', sessionId);
+            await loadSession(sessionId);
+          } else if (selectedCharacter && currentUserId !== null) {
+            // 새 세션 생성
+            console.log('새 세션 생성 시도:', { userId: currentUserId, friendsId: currentFriendsId, characterName: selectedCharacter.name });
+            
+            // 사용자 인증 상태 재확인
+            if (!authService.isAuthenticated()) {
+              console.error('사용자가 로그인되어 있지 않습니다.');
+              alert('로그인이 필요합니다. 다시 로그인해주세요.');
+              navigate('/');
+              return;
+            }
+            
+            await createSession({
+              user_id: currentUserId,
+              friends_id: currentFriendsId,
+              session_name: `${selectedCharacter.name}와의 대화`
+            });
+          }
+        } catch (error) {
+          console.error('세션 초기화 실패:', error);
+        }
+      };
+      
+      initializeSession();
+      
+      // cleanup function
+      return () => {
+        isCancelled = true;
+      };
+    }
+  }, [selectedCharacter?.name, session, isLoading, currentUserId, currentFriendsId, createSession, loadSession, location.search]);
+
+  // 레거시 초기화 함수 호출 (기존 코드와의 호환성 유지)
+  useEffect(() => {
+    if (onInitializeChat) {
+      onInitializeChat();
+    }
+  }, [onInitializeChat]);
+
+  useEffect(() => {
+    // 메시지가 업데이트될 때마다 스크롤을 맨 아래로
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+    // 사이드바 채팅도 맨 아래로 스크롤
+    if (sidebarMessagesEndRef.current) {
+      sidebarMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
+
+  useEffect(() => {
+    // 전송 완료 후 입력창에 포커스
+    if (!isSending && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isSending]);
+
+  // 에러 표시 처리
+  useEffect(() => {
+    if (error) {
+      console.error('채팅 오류:', error);
+      // 필요한 경우 사용자에게 에러 메시지 표시
+    }
+  }, [error]);
+
+  // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
+  useEffect(() => {
+    if (realUserId === null && !authService.isAuthenticated()) {
+      console.log('사용자가 로그인되어 있지 않습니다. 메인 페이지로 리다이렉트합니다.');
+      navigate('/');
+    }
+  }, [realUserId, navigate]);
+
+  // 로딩 중이거나 사용자 ID가 없는 경우 로딩 표시
+  if (!currentUserId) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">사용자 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSendMessage = async () => {
     if (inputMessage.trim() === '' || isSending || isChatEnded) return;
@@ -111,121 +289,10 @@ const ChatPage: React.FC<ChatPageProps> = ({
     }
   };
 
-  useEffect(() => {
-    // 컴포넌트가 마운트되면 입력창에 포커스
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
-
-  // 캐릭터가 선택되고 세션이 없는 경우 세션 생성
-  useEffect(() => {
-    if (selectedCharacter && !session && !isLoading) {
-      // 중복 호출 방지를 위한 플래그
-      let isCancelled = false;
-      
-      const initializeSession = async () => {
-        if (isCancelled) return;
-        
-        try {
-          console.log('세션 생성 시도:', { userId, friendsId, characterName: selectedCharacter.name });
-          await createSession({
-            user_id: userId,
-            friends_id: friendsId,
-            session_name: `${selectedCharacter.name}와의 대화`
-          });
-        } catch (error) {
-          console.error('세션 생성 실패:', error);
-          console.error('에러 상세:', error);
-        }
-      };
-      
-      initializeSession();
-      
-      // cleanup function
-      return () => {
-        isCancelled = true;
-      };
-    }
-  }, [selectedCharacter?.name, session, isLoading, userId, friendsId, createSession]);
-
-  // 레거시 초기화 함수 호출 (기존 코드와의 호환성 유지)
-  useEffect(() => {
-    if (onInitializeChat) {
-      onInitializeChat();
-    }
-  }, [onInitializeChat]);
-
-  useEffect(() => {
-    // 메시지가 업데이트될 때마다 스크롤을 맨 아래로
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-    // 사이드바 채팅도 맨 아래로 스크롤
-    if (sidebarMessagesEndRef.current) {
-      sidebarMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatMessages]);
-
-  useEffect(() => {
-    // 전송 완료 후 입력창에 포커스
-    if (!isSending && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isSending]);
-
   const getLastBotMessage = () => {
     const botMessages = chatMessages.filter(msg => msg.type !== 'user');
     return botMessages.length > 0 ? botMessages[botMessages.length - 1] : null;
   };
-
-  // 에러 표시 처리
-  useEffect(() => {
-    if (error) {
-      console.error('채팅 오류:', error);
-      // 필요한 경우 사용자에게 에러 메시지 표시
-    }
-  }, [error]);
-
-  // 초기 메시지를 한 번만 생성하고 저장
-  const [initialMessage] = useState(() => {
-    const characterMessages: { [key: string]: string[] } = {
-      '추진형': [
-        "안녕하세요! 오늘 달성하고 싶은 목표가 있나요?",
-        "무엇을 이루고 싶으신지 말해보세요. 함께 효율적인 방법을 찾아보죠!",
-        "성공을 향한 첫 걸음을 내딛어보세요. 어떤 도전이 기다리고 있나요?",
-        "목표가 명확하면 길이 보입니다. 무엇부터 시작할까요?"
-      ],
-      '내면형': [
-        "안녕하세요. 지금 마음 상태는 어떠신가요?",
-        "내면 깊숙한 이야기를 나누고 싶으시다면 언제든 말씀해주세요.",
-        "진정한 자신의 모습을 찾아가는 여정, 함께 시작해볼까요?",
-        "오늘 하루 자신에게 어떤 질문을 던지고 싶으신가요?"
-      ],
-      '관계형': [
-        "안녕하세요! 소중한 사람들과의 관계는 어떠신가요?",
-        "함께 나누고 싶은 이야기가 있으시면 편하게 말씀해주세요.",
-        "때로는 타인을 이해하는 것부터 시작해보면 어떨까요?",
-        "좋은 관계를 만들어가는 방법, 함께 찾아보시죠."
-      ],
-      '쾌락형': [
-        "안녕하세요! 오늘은 어떤 재미있는 일이 기다리고 있을까요?",
-        "새로운 경험이나 흥미로운 아이디어가 있으시면 들려주세요!",
-        "삶을 더 즐겁게 만드는 방법을 함께 찾아보시죠!",
-        "어떤 것이 당신을 가장 행복하게 만드나요?"
-      ],
-      '안정형': [
-        "안녕하세요. 마음이 편안한 하루 보내고 계신가요?",
-        "혹시 마음에 걸리는 일이 있으시다면 천천히 이야기해주세요.",
-        "평화로운 마음을 찾는 방법을 함께 생각해보시죠.",
-        "오늘 하루 어떤 작은 행복을 느끼셨나요?"
-      ]
-    };
-
-    const characterName = selectedCharacter?.name || '안정형';
-    const messages = characterMessages[characterName] || characterMessages['안정형'];
-    return messages[Math.floor(Math.random() * messages.length)];
-  });
 
 
 

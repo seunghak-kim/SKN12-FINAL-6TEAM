@@ -1,14 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { chatService, ChatService } from '../services/chatService';
 import {
   ChatSession,
-  ChatSessionDetail,
-  ChatMessage,
   FrontendChatMessage,
   SendMessageRequest,
-  CreateSessionRequest,
-  ChatSessionStats,
-  ApiError
+  CreateSessionRequest
 } from '../types';
 
 interface UseChatSessionReturn {
@@ -18,13 +14,11 @@ interface UseChatSessionReturn {
   isLoading: boolean;
   isSending: boolean;
   error: string | null;
-  stats: ChatSessionStats | null;
 
   // 액션
   createSession: (data: CreateSessionRequest) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   loadSession: (sessionId: string) => Promise<void>;
-  loadStats: (sessionId: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
   clearError: () => void;
   clearMessages: () => void;
@@ -36,7 +30,6 @@ export const useChatSession = (): UseChatSessionReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<ChatSessionStats | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   // 에러 처리 헬퍼
@@ -147,15 +140,6 @@ export const useChatSession = (): UseChatSessionReturn => {
     }
   }, [session, isSending, handleError, loadSession]);
 
-  // 세션 통계 로드
-  const loadStats = useCallback(async (sessionId: string) => {
-    try {
-      const sessionStats = await chatService.getSessionStats(sessionId);
-      setStats(sessionStats);
-    } catch (error) {
-      handleError(error);
-    }
-  }, [handleError]);
 
   // 세션 삭제
   const deleteSession = useCallback(async (sessionId: string) => {
@@ -166,7 +150,6 @@ export const useChatSession = (): UseChatSessionReturn => {
       await chatService.deleteSession(sessionId);
       setSession(null);
       setMessages([]);
-      setStats(null);
     } catch (error) {
       handleError(error);
     } finally {
@@ -191,13 +174,11 @@ export const useChatSession = (): UseChatSessionReturn => {
     isLoading,
     isSending,
     error,
-    stats,
 
     // 액션
     createSession,
     sendMessage,
     loadSession,
-    loadStats,
     deleteSession,
     clearError,
     clearMessages

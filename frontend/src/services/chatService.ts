@@ -6,7 +6,6 @@ import {
   SendMessageRequest,
   SendMessageResponse,
   CreateSessionRequest,
-  ChatSessionStats,
   ApiError
 } from '../types';
 
@@ -23,7 +22,7 @@ export class ChatService {
   // 사용자의 모든 채팅 세션 조회
   async getUserSessions(userId: number): Promise<ChatSession[]> {
     try {
-      return await apiClient.get<ChatSession[]>('/chat/sessions', { user_id: userId });
+      return await apiClient.get<ChatSession[]>(`/chat/sessions?user_id=${userId}`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -47,14 +46,6 @@ export class ChatService {
     }
   }
 
-  // 세션 통계 조회
-  async getSessionStats(sessionId: string): Promise<ChatSessionStats> {
-    try {
-      return await apiClient.get<ChatSessionStats>(`/chat/sessions/${sessionId}/stats`);
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
 
   // 세션 삭제
   async deleteSession(sessionId: string): Promise<{ message: string }> {

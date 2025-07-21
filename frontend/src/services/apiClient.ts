@@ -18,11 +18,11 @@ class ApiClient {
     // 요청 인터셉터
     this.client.interceptors.request.use(
       (config) => {
-        // 필요한 경우 인증 토큰 추가
-        // const token = localStorage.getItem('accessToken');
-        // if (token) {
-        //   config.headers.Authorization = `Bearer ${token}`;
-        // }
+        // 인증 토큰 추가
+        const token = localStorage.getItem('access_token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
       },
       (error) => Promise.reject(error)

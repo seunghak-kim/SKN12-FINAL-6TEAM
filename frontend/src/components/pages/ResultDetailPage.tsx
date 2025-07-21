@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navigation from '../common/Navigation';
-import { ArrowLeft, MessageSquare, Users } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Users, Loader } from 'lucide-react';
 import { TestResult } from '../../types';
+import { testService } from '../../services/testService';
 
 interface ResultDetailPageProps {
   testResults: TestResult[];
@@ -11,23 +12,74 @@ interface ResultDetailPageProps {
 }
 
 const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
-  testResults,
   onNavigate,
   onStartChat
 }) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  
-  // Find the specific test result by ID
-  const testResult = testResults.find(result => result.id === id);
-  
-  if (!testResult) {
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadTestResult = async () => {
+      if (!id) {
+        setError('테스트 ID가 없습니다.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // 모든 테스트 결과를 가져와서 해당 ID 찾기
+        const allResults = await testService.getMyTestResults();
+        const foundResult = allResults.find(result => result.test_id.toString() === id);
+        
+        if (foundResult) {
+          const formattedResult: TestResult = {
+            id: foundResult.test_id.toString(),
+            testType: 'Drawing' as const,
+            result: foundResult.result?.summary_text || '결과 분석 중입니다.',
+            characterMatch: foundResult.result?.friend_info?.friends_name || '분석 중',
+            date: foundResult.submitted_at,
+            description: foundResult.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
+            images: [foundResult.image_url]
+          };
+          setTestResult(formattedResult);
+        } else {
+          setError('결과를 찾을 수 없습니다.');
+        }
+      } catch (error) {
+        console.error('테스트 결과 로드 실패:', error);
+        setError('결과를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTestResult();
+  }, [id]);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <Navigation onNavigate={onNavigate} />
         <div className="container mx-auto px-4 py-12">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800">결과를 찾을 수 없습니다</h1>
+            <Loader className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-800">결과를 불러오는 중...</h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !testResult) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <Navigation onNavigate={onNavigate} />
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800">{error || '결과를 찾을 수 없습니다'}</h1>
             <button
               onClick={() => navigate('/mypage')}
               className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -122,11 +174,23 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
                 </div>
                 {testResult.images && testResult.images.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">첨부된 이미지</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {testResult.images.map((image, index) => (
-                        <div key={index} className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <span className="text-xs text-gray-500">이미지 {index + 1}</span>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">분석한 그림</h4>
+                    <div className="flex flex-wrap gap-4">
+                      {testResult.images.map((imageUrl, index) => (
+                        <div key={index} className="w-48 h-48 bg-gray-100 rounded-lg overflow-hidden">
+                          <img 
+                            src={testService.getImageUrl(imageUrl)} 
+                            alt={`분석된 그림 ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-500 text-sm">이미지를 불러올 수 없습니다</div>`;
+                              }
+                            }}
+                          />
                         </div>
                       ))}
                     </div>

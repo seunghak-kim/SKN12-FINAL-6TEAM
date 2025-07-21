@@ -22,9 +22,6 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const {
     selectedCharacter,
-    chatHistory,
-    testResults,
-    userProfile,
     showRatingModal,
     currentTestResult,
     getAvailableCharacters,
@@ -60,6 +57,37 @@ const AppContent: React.FC = () => {
       window.location.reload();
     }
   }, [location.search]);
+
+  // 로그인 상태 확인 및 리다이렉션
+  useEffect(() => {
+    const checkAuthAndRedirect = () => {
+      const isAuthenticated = authService.isAuthenticated();
+      const protectedRoutes = [
+        '/main',
+        '/test',
+        '/test-instruction',
+        '/results',
+        '/chat',
+        '/mypage',
+        '/result-detail',
+        '/characters',
+        '/nickname',
+      ];
+
+      // Check if the current path starts with any of the protected routes
+      const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
+
+      if (isProtectedRoute && !isAuthenticated) {
+        navigate('/');
+      }
+    };
+
+    checkAuthAndRedirect();
+
+    // location.pathname이 변경될 때마다 다시 확인
+    const unlisten = () => {}; // Placeholder for cleanup if needed
+    return () => unlisten();
+  }, [location.pathname, navigate]);
 
   const handleNavigate = (screen: string) => {
     switch (screen) {
@@ -157,7 +185,7 @@ const AppContent: React.FC = () => {
               onCloseRatingModal={handleCloseRatingModal}
               onNavigate={handleNavigate}
               onInitializeChat={handleInitializeChat}
-              userId={1} // 실제로는 로그인한 사용자 ID
+              // userId prop 제거 - ChatPage에서 내부적으로 로그인된 사용자 ID를 가져옴
               friendsId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
             />
           } 
@@ -166,9 +194,6 @@ const AppContent: React.FC = () => {
           path="/mypage" 
           element={
             <MyPage
-              chatHistory={chatHistory}
-              testResults={testResults}
-              userProfile={userProfile}
               onNewChat={handleNewChat}
               onDeleteAccount={handleDeleteAccount}
               onNavigate={handleNavigate}
@@ -181,7 +206,7 @@ const AppContent: React.FC = () => {
           path="/result-detail/:id" 
           element={
             <ResultDetailPage
-              testResults={testResults}
+              testResults={[]}
               onNavigate={handleNavigate}
               onStartChat={handleStartChat}
             />

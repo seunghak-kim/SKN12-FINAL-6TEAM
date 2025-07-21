@@ -1,14 +1,13 @@
 import { useState, useCallback } from 'react';
 import { ScreenType, SearchResult, FrontendChatMessage, ChatHistory, TestResult, UserProfile } from '../types';
-import { mockChatHistory, mockTestResults, mockUserProfile } from '../data/mockData';
 
 export const useAppState = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('landing');
   const [selectedCharacter, setSelectedCharacter] = useState<SearchResult | null>(null);
   const [chatMessages, setChatMessages] = useState<FrontendChatMessage[]>([]);
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>(mockChatHistory);
-  const [testResults, setTestResults] = useState<TestResult[]>(mockTestResults);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(mockUserProfile);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [currentTestResult, setCurrentTestResult] = useState<string>('슬픔이'); // 현재 검사 결과

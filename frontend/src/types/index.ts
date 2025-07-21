@@ -60,21 +60,6 @@ export interface CreateSessionRequest {
   session_name?: string;
 }
 
-// 세션 통계
-export interface ChatSessionStats {
-  total_messages: number;
-  user_messages: number;
-  assistant_messages: number;
-  current_stage: string;
-  stage_name: string;
-  session_info: {
-    user_type?: string;
-    emotional_state: string;
-    started_at: string;
-    updated_at: string;
-  };
-  memory_capacity: string;
-}
 
 // 평가 정보
 export interface Rating {
@@ -95,7 +80,7 @@ export interface ChatHistory {
   lastMessage: string;
 }
 
-// 테스트 결과
+// 테스트 결과 (기존)
 export interface TestResult {
   id: string;
   testType: 'HTP' | 'Drawing';
@@ -104,6 +89,33 @@ export interface TestResult {
   date: string;
   description: string;
   images?: string[];
+}
+
+// 백엔드 API - 친구 정보
+export interface FriendInfo {
+  friends_id: number;
+  friends_name: string;
+  friends_description: string;
+  tts_audio_url?: string;
+  tts_voice_type?: string;
+}
+
+// 백엔드 API - 그림 테스트 결과
+export interface DrawingTestResult {
+  result_id: number;
+  friends_type?: number;
+  summary_text?: string;
+  created_at: string;
+  friend_info?: FriendInfo;
+}
+
+// 백엔드 API - 그림 테스트
+export interface DrawingTest {
+  test_id: number;
+  user_id: number;
+  image_url: string;
+  submitted_at: string;
+  result?: DrawingTestResult;
 }
 
 // 사용자 프로필
