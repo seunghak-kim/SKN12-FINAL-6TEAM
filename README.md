@@ -4,7 +4,8 @@
 
 | **김승학** | **남의헌** | **이정민** | **이지복** | **조성지** |
 |:----------:|:----------:|:----------:|:----------:|:----------:|
-| <img src="./assets/img/team/seunghak.jpeg"> | <img src="./assets/img/team/uiheon.jpg"> | <img src="./assets/img/team/jeongmin.png"> | <img src="./assets/img/team/jibok.jpg"> | <img src="./assets/img/team/sungji.jpg"> |
+| <img src="./assets/img/team/seunghak.jpeg" width="100"> | <img src="./assets/img/team/uiheon.jpg" width="100"> | <img src="./assets/img/team/jeongmin.png" width="100"> | <img src="./assets/img/team/jibok.jpg" width="100"> | <img src="./assets/img/team/seongji.jpg" width="100"> |
+
 
 ---
 
