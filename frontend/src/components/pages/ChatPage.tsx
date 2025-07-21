@@ -226,6 +226,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
     return () => clearTimeout(timeoutId);
   }, [realUserId, navigate]);
 
+  const [showLoading, setShowLoading] = useState(true);
+
   // 로딩 타임아웃 관리
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -57,7 +57,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         },
         body: JSON.stringify({
           test_id: testId,
-          friends_type: 2, // 내면이 
+          friends_type: 2, // 내면이
           summary_text: testResultText
         })
       });
