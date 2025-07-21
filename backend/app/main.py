@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
 from dotenv import load_dotenv
@@ -33,12 +34,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 정적 파일 서빙 설정
+# result/images 디렉토리가 없으면 생성
+import os
+if not os.path.exists("result/images"):
+    os.makedirs("result/images")
+    
+app.mount("/images", StaticFiles(directory="result/images"), name="images")
+
 # 라우터 등록
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(user_router, prefix="/users", tags=["users"])
 app.include_router(friend_router, prefix="/friends", tags=["friends"])
 app.include_router(chat_router, prefix="/chat", tags=["chat"])
-app.include_router(test_router, prefix="/tests", tags=["tests"])
+app.include_router(test_router, prefix="/api/v1/test", tags=["tests"])
 app.include_router(rating_router, prefix="/ratings", tags=["ratings"])
 app.include_router(agreement_router, prefix="/agreements", tags=["agreements"])
 
