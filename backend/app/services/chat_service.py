@@ -106,7 +106,7 @@ class ChatService:
     def _load_prompts(self) -> Dict[str, str]:
         """프롬프트 로드"""
         try:
-            prompts_path = os.path.join(os.path.dirname(__file__), '../..', 'prompts', 'type_1.md')
+            prompts_path = os.path.join(os.path.dirname(__file__), '../..', 'prompts', 'nemyeon.md')
             with open(prompts_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             

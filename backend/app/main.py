@@ -13,6 +13,7 @@ from .api.friend import router as friend_router
 from .api.test import router as test_router
 from .api.rating import router as rating_router
 from .api.agreement import router as agreement_router
+from .api.admin import router as admin_router
 from .database import create_tables
 
 # 환경 변수 로드
@@ -50,6 +51,7 @@ app.include_router(chat_router, prefix="/chat", tags=["chat"])
 app.include_router(test_router, prefix="/api/v1/test", tags=["tests"])
 app.include_router(rating_router, prefix="/ratings", tags=["ratings"])
 app.include_router(agreement_router, prefix="/agreements", tags=["agreements"])
+app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
 
 # 시작 이벤트
 @app.on_event("startup")

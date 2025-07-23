@@ -28,3 +28,9 @@ yarn-error.log*
 
 # 대용량 파일
 /backend/llm/model/kobert_model/
+
+# 데이터 파일 안됨 
+/backend/data
+
+# pycache
+__pycache__*

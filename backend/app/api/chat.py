@@ -4,6 +4,7 @@ from typing import List
 from uuid import UUID
 
 from ..database import get_db
+from ..services.ai_service import AIService
 from ..schemas.chat import (
     ChatSessionCreate,
     ChatSessionResponse,
@@ -180,29 +181,18 @@ async def send_message(
                 detail="비활성화된 세션입니다."
             )
         
-        # 사용자 메시지 저장
-        user_message = ChatMessage(
-            session_id=session_id,
-            sender_type="user",
-            content=message_request.content
-        )
-        db.add(user_message)
-        db.flush()
+        # AI 서비스를 통한 메시지 처리
+        ai_service = AIService(db)
+        ai_response_content = ai_service.process_message(session_id, message_request.content)
         
-        # 간단한 AI 응답 생성 (실제로는 AI 서비스 연동 필요)
-        ai_response_content = f"안녕하세요! '{message_request.content}'에 대한 답변입니다."
+        # AI 서비스에서 이미 메시지를 저장했으므로 최근 메시지들을 다시 가져옴
+        recent_messages = db.query(ChatMessage).filter(
+            ChatMessage.session_id == session_id
+        ).order_by(ChatMessage.created_at.desc()).limit(2).all()
         
-        # AI 응답 메시지 저장
-        assistant_message = ChatMessage(
-            session_id=session_id,
-            sender_type="assistant",
-            content=ai_response_content
-        )
-        db.add(assistant_message)
-        db.commit()
-        
-        db.refresh(user_message)
-        db.refresh(assistant_message)
+        # 가장 최근의 사용자 메시지와 AI 응답 메시지
+        assistant_message = recent_messages[0]  # 가장 최근 (AI 응답)
+        user_message = recent_messages[1]  # 그 다음 최근 (사용자 메시지)
         
         return SendMessageResponse(
             user_message=ChatMessageResponse(
