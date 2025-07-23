@@ -39,8 +39,8 @@ def generate_sentence(label, keyword):
     return response.choices[0].message.content.strip()
 
 def generate_personality_texts(
-    input_json_path: str = "../data/personality_keywords_labeled.json",
-    output_json_path: str = "../data/personality_keywords_dataset_v2.json",
+    input_json_path: str = "./data/personality_keywords_labeled.json",
+    output_json_path: str = "./data/personality_keywords_dataset_v2.json",
     label_counts: dict = None,
     debug: bool = True
 ):
@@ -90,3 +90,6 @@ def generate_personality_texts(
 
     if debug:
         print(f"모든 문장 생성 완료! → {output_json_path} 저장됨")
+
+if __name__ == "__main__":
+    generate_personality_texts()

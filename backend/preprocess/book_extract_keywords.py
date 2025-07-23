@@ -12,7 +12,7 @@ type_to_label = {
 
 def extract_keywords_from_pdf(
     pdf_path: str = os.path.join(os.path.dirname(__file__), "data/성격유형별_선호도서_추천을_위한_서평_키워드_유효성_연구.pdf"),
-    json_path: str = "../data/personality_keywords_labeled.json",
+    json_path: str = "./data/personality_keywords_labeled.json",
     delete_temp: bool = True,
     debug: bool = True
 ):
@@ -118,3 +118,6 @@ def extract_keywords_from_pdf(
             except FileNotFoundError:
                 if debug:
                     print(f"{file} 없음 (이미 삭제되었거나 생성되지 않음)")
+
+if __name__ == "__main__":
+    extract_keywords_from_pdf()
