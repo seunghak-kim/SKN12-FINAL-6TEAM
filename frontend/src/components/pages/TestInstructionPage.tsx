@@ -164,7 +164,7 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
                       <span>파일 선택하기</span>
                     </button>
                   </div>
-                  <p className="text-sm text-gray-500">JPG, PNG, GIF 파일만 업로드 가능합니다</p>
+                  <p className="text-sm text-gray-500">JPG, PNG 파일만 업로드 가능합니다</p>
                 </div>
               )}
               

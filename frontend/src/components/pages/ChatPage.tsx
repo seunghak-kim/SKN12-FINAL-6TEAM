@@ -33,6 +33,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const [currentRating, setCurrentRating] = useState(3);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [isChatEnded, setIsChatEnded] = useState(false);
+  const [showLoading, setShowLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sidebarMessagesEndRef = useRef<HTMLDivElement>(null);
@@ -88,7 +89,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   // 초기 메시지를 한 번만 생성하고 저장
   const [initialMessage] = useState(() => {
     const characterMessages: { [key: string]: string[] } = {
-      '추진형': [
+      '추진이': [
         "안녕하세요! 오늘 달성하고 싶은 목표가 있나요?",
         "무엇을 이루고 싶으신지 말해보세요. 함께 효율적인 방법을 찾아보죠!",
         "성공을 향한 첫 걸음을 내딛어보세요. 어떤 도전이 기다리고 있나요?",
@@ -149,8 +150,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
             // 새 세션 생성
             console.log('새 세션 생성 시도:', { userId: currentUserId, friendsId: currentFriendsId, characterName: selectedCharacter.name });
             
-            // 사용자 인증 상태 재확인
-            if (!authService.isAuthenticated()) {
+            // 사용자 인증 상태 재확인 (좀 더 관대하게)
+            if (!authService.isAuthenticated() && !localStorage.getItem('access_token')) {
               console.error('사용자가 로그인되어 있지 않습니다.');
               alert('로그인이 필요합니다. 다시 로그인해주세요.');
               navigate('/');
@@ -210,16 +211,33 @@ const ChatPage: React.FC<ChatPageProps> = ({
     }
   }, [error]);
 
-  // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
+  // 로그인되지 않은 경우 로그인 페이지로 리다이렉트 (지연 적용)
   useEffect(() => {
-    if (realUserId === null && !authService.isAuthenticated()) {
-      console.log('사용자가 로그인되어 있지 않습니다. 메인 페이지로 리다이렉트합니다.');
-      navigate('/');
-    }
+    // 약간의 지연을 두어 사용자 정보가 로드되기를 기다림
+    const timeoutId = setTimeout(() => {
+      if (realUserId === null && !authService.isAuthenticated()) {
+        console.log('사용자가 로그인되어 있지 않습니다. 메인 페이지로 리다이렉트합니다.');
+        navigate('/');
+      }
+    }, 2000); // 2초 지연
+    
+    return () => clearTimeout(timeoutId);
   }, [realUserId, navigate]);
 
-  // 로딩 중이거나 사용자 ID가 없는 경우 로딩 표시
-  if (!currentUserId) {
+  // 로딩 타임아웃 관리
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 3000); // 3초 후 로딩 화면 숨김
+    
+    if (currentUserId) {
+      setShowLoading(false);
+    }
+    
+    return () => clearTimeout(timer);
+  }, [currentUserId]);
+  
+  if (!currentUserId && showLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -340,7 +358,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
               <div className="w-64 h-64 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
                 <img 
                   src="/assets/character.png" 
-                  alt={selectedCharacter?.name || '안정형'}
+                  alt={selectedCharacter?.name || '안정이'}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -361,7 +379,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
                 ref={inputRef}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                placeholder={isChatEnded ? '대화가 종료되었습니다' : `${selectedCharacter?.name || '안정형'}에게 고민이나 질문을 물어보세요`}
+                placeholder={isChatEnded ? '대화가 종료되었습니다' : `${selectedCharacter?.name || '안정이'}에게 고민이나 질문을 물어보세요`}
                 className="flex-1 rounded-full border-gray-300 px-6 py-3 text-base border focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onKeyDown={handleKeyPress}
                 autoFocus
@@ -390,7 +408,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
                   </svg>
                   채팅 내역
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">{selectedCharacter?.name || '안정형'}와의 대화</p>
+                <p className="text-sm text-gray-500 mt-1">{selectedCharacter?.name || '안정이'}와의 대화</p>
               </div>
 
               {/* Messages */}
