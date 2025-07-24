@@ -1,17 +1,16 @@
 import { useState, useCallback } from 'react';
 import { ScreenType, SearchResult, FrontendChatMessage, ChatHistory, TestResult, UserProfile } from '../types';
-import { mockChatHistory, mockTestResults, mockUserProfile } from '../data/mockData';
 
 export const useAppState = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('landing');
   const [selectedCharacter, setSelectedCharacter] = useState<SearchResult | null>(null);
   const [chatMessages, setChatMessages] = useState<FrontendChatMessage[]>([]);
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>(mockChatHistory);
-  const [testResults, setTestResults] = useState<TestResult[]>(mockTestResults);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(mockUserProfile);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
-  const [currentTestResult, setCurrentTestResult] = useState<string>('슬픔이'); // 현재 검사 결과
+  const [currentTestResult, setCurrentTestResult] = useState<string>('내면이'); // 현재 검사 결과
   const [isSending, setIsSending] = useState(false); // 메시지 전송 상태
 
   const handleGoogleLogin = useCallback(() => {
@@ -66,7 +65,7 @@ export const useAppState = () => {
   const handleInitializeChat = useCallback(() => {
     // 캐릭터가 선택되지 않은 경우 기본 캐릭터 선택
     if (!selectedCharacter) {
-      const defaultCharacter = { id: '3', name: '슬픔이', description: '당신의 슬픔을 이해하고 함께 극복해나가는 방법을 찾아드립니다.', avatar: '😢' };
+      const defaultCharacter = { id: '2', name: '내면이', description: '당신의 슬픔을 이해하고 함께 극복해나가는 방법을 찾아드립니다.', avatar: '😢' };
       setSelectedCharacter(defaultCharacter);
       
       // 기본 캐릭터 선택 후 바로 초기 메시지 생성
@@ -268,15 +267,15 @@ export const useAppState = () => {
   // 현재 검사 결과에 따라 이용 가능한 캐릭터 필터링
   const getAvailableCharacters = useCallback(() => {
     // 슬픔이 결과가 나온 경우 슬픔이만 대화 가능
-    if (currentTestResult === '슬픔이') {
-      return [{ id: '3', name: '슬픔이', description: '당신의 슬픔을 이해하고 함께 극복해나가는 방법을 찾아드립니다.', avatar: '😢' }];
+    if (currentTestResult === '내면이') {
+      return [{ id: '2', name: '내면이', description: '말수가 적고 혼자만의 시간을 즐기는, 섬세하고 예민한 감수성의 소유자. 평범함을 거부하며 자신만의 독특한 세계를 구축하고, 그 안에서 깊은 사색과 성찰을 즐긴다. 복잡한 내면을 타인이 이해하지 못할 것이라는 생각에 쉽게 마음을 열지 않으며, 감정을 직접 드러내기보다는 예술이나 글과 같은 간접적인 방식으로 표현한다. 때로는 우울감에 쉽게 빠지지만, 누구보다 성숙한 내면을 지니고 있다.', avatar: '😖' }];
     }
     // 다른 결과의 경우 모든 캐릭터 이용 가능
     return [
-      { id: '1', name: '기쁨이', description: '긍정적 생각 전환, 스트레스 해소, 자존감 향상 등을 통해 당신의 마음속 행복을 찾아줄 거예요.', avatar: '😊' },
-      { id: '2', name: '버럭이', description: '분노 조절과 감정 관리에 대한 조언을 제공합니다.', avatar: '😤' },
-      { id: '3', name: '슬픔이', description: '당신의 슬픔을 이해하고 함께 극복해나가는 방법을 찾아드립니다.', avatar: '😢' },
-      { id: '4', name: '두려움이', description: '불안과 두려움을 다스리는 방법을 알려드립니다.', avatar: '😱' }
+      { id: '1', name: '추진이', description: "스스로 정한 목표는 반드시 이루어내고야 마는 집념의 소유자. 그룹의 리더 역할을 자연스럽게 맡으며, 명확한 목표 제시와 강력한 추진력으로 주변을 이끈다. 과정의 어려움보다는 결과로 자신의 가치를 증명하려 하며, 때로는 지나친 자신감과 독선적인 모습으로 비치기도 한다. 감정에 휘둘리기보다는 행동으로 상황을 돌파하는 것을 선호하며, '실패'란 그의 사전에 없는 단어다.", avatar: '😊' },
+      { id: '3', name: '관계이', description: '따뜻한 마음씨와 뛰어난 공감 능력으로 주변 사람들을 살뜰히 챙기는 인물. 타인에게 필요한 존재가 되는 것에서 삶의 의미를 찾으며, 누군가를 돕고 사랑을 표현하는 데서 큰 기쁨을 느낀다. 하지만 때로는 타인의 인정과 관심에 지나치게 의존하여 자신의 욕구를 돌보지 못하기도 한다. 관계가 흔들릴 때면 쉽게 불안해하며, 외로움을 견디기 힘들어한다.', avatar: '😘' },
+      { id: '4', name: '쾌락이', description: '언제나 유쾌하고 에너지 넘치는, 자유로운 영혼의 소유자. 고통스럽거나 지루한 상황을 견디지 못하고 늘 새롭고 즐거운 자극을 찾아 나선다. 호기심이 왕성하고 다재다능하여 어떤 일이든 금방 배우지만, 깊게 파고들기보다는 여러 분야를 얕게 즐기는 경향이 있다. 힘든 감정이나 책임져야 할 상황에 직면하면 특유의 낙천성으로 회피하거나 다른 재밋거리로 관심을 돌려버린다.', avatar: '🤪' },
+      { id: '5', name: '안정이', description: '모난 돌이 정 맞는다는 말을 신조처럼 여기며, 조직과 관계 속에서 조화와 평화를 추구하는 인물. 갈등 상황을 극도로 회피하며, 자신의 의견을 내세우기보다는 다수의 의견이나 시스템에 순응하는 편이다. 꼼꼼하고 책임감이 강해 맡은 일은 묵묵히 해내지만, 예상치 못한 변화나 결정을 내려야 하는 상황에서는 불안해하며 우유부단한 모습을 보이기도 한다.', avatar: '🤭' }
     ];
   }, [currentTestResult]);
 

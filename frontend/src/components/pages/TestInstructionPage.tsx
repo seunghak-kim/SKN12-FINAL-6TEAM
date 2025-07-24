@@ -67,9 +67,32 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
     setShowConsentModal(false);
   };
 
-  const handleAnalysis = () => {
+  const handleAnalysis = async () => {
+    if (!selectedImage) return;
+    
     setIsAnalyzing(true);
-    onStartAnalysis(selectedImage, description);
+    
+    try {
+      // 이미지 업로드 및 테스트 생성
+      const { testService } = await import('../../services/testService');
+      const uploadResult = await testService.uploadDrawingImage(selectedImage);
+      
+      // 업로드 성공 후 결과 페이지로 이동하면서 testId 전달
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        navigate('/results', { 
+          state: { 
+            testId: uploadResult.test_id,
+            imageUrl: uploadResult.image_url 
+          } 
+        });
+      }, 2000);
+      
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+      setIsAnalyzing(false);
+      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleAnalysisComplete = () => {
@@ -141,7 +164,7 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
                       <span>파일 선택하기</span>
                     </button>
                   </div>
-                  <p className="text-sm text-gray-500">JPG, PNG, GIF 파일만 업로드 가능합니다</p>
+                  <p className="text-sm text-gray-500">JPG, PNG 파일만 업로드 가능합니다</p>
                 </div>
               )}
               

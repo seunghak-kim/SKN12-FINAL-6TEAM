@@ -4,6 +4,7 @@ from typing import List
 from uuid import UUID
 
 from ..database import get_db
+from ..services.ai_service import AIService
 from ..schemas.chat import (
     ChatSessionCreate,
     ChatSessionResponse,
@@ -76,12 +77,13 @@ async def get_user_sessions(
     user_id: int,
     db: Session = Depends(get_db)
 ):
-    """사용자의 모든 채팅 세션 목록 조회"""
+    """사용자의 메시지가 있는 채팅 세션 목록 조회"""
     try:
+        # 메시지가 최소 1개 이상 있는 세션만 조회
         sessions = db.query(ChatSession).filter(
             ChatSession.user_id == user_id,
             ChatSession.is_active == True
-        ).order_by(ChatSession.created_at.desc()).all()
+        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).distinct().order_by(ChatSession.created_at.desc()).all()
         
         return [
             ChatSessionResponse(
@@ -179,29 +181,18 @@ async def send_message(
                 detail="비활성화된 세션입니다."
             )
         
-        # 사용자 메시지 저장
-        user_message = ChatMessage(
-            session_id=session_id,
-            sender_type="user",
-            content=message_request.content
-        )
-        db.add(user_message)
-        db.flush()
+        # AI 서비스를 통한 메시지 처리
+        ai_service = AIService(db)
+        ai_response_content = ai_service.process_message(session_id, message_request.content)
         
-        # 간단한 AI 응답 생성 (실제로는 AI 서비스 연동 필요)
-        ai_response_content = f"안녕하세요! '{message_request.content}'에 대한 답변입니다."
+        # AI 서비스에서 이미 메시지를 저장했으므로 최근 메시지들을 다시 가져옴
+        recent_messages = db.query(ChatMessage).filter(
+            ChatMessage.session_id == session_id
+        ).order_by(ChatMessage.created_at.desc()).limit(2).all()
         
-        # AI 응답 메시지 저장
-        assistant_message = ChatMessage(
-            session_id=session_id,
-            sender_type="assistant",
-            content=ai_response_content
-        )
-        db.add(assistant_message)
-        db.commit()
-        
-        db.refresh(user_message)
-        db.refresh(assistant_message)
+        # 가장 최근의 사용자 메시지와 AI 응답 메시지
+        assistant_message = recent_messages[0]  # 가장 최근 (AI 응답)
+        user_message = recent_messages[1]  # 그 다음 최근 (사용자 메시지)
         
         return SendMessageResponse(
             user_message=ChatMessageResponse(
@@ -229,61 +220,6 @@ async def send_message(
             detail=f"메시지 전송 중 오류가 발생했습니다: {str(e)}"
         )
 
-# @router.get("/sessions/{session_id}/stats", response_model=ChatSessionStats)
-# async def get_session_stats(
-#     session_id: UUID,
-#     db: Session = Depends(get_db)
-# ):
-#     """세션 통계 조회"""
-#     try:
-#         # 세션 존재 확인
-#         session = db.query(ChatSession).filter(
-#             ChatSession.chat_sessions_id == session_id
-#         ).first()
-        
-#         if not session:
-#             raise HTTPException(
-#                 status_code=status.HTTP_404_NOT_FOUND,
-#                 detail="세션을 찾을 수 없습니다."
-#             )
-        
-#         # 메시지 통계 계산
-#         from sqlalchemy import func
-        
-#         total_messages = db.query(func.count(ChatMessage.chat_messages_id)).filter(
-#             ChatMessage.session_id == session_id
-#         ).scalar() or 0
-        
-#         user_messages = db.query(func.count(ChatMessage.chat_messages_id)).filter(
-#             ChatMessage.session_id == session_id,
-#             ChatMessage.sender_type == "user"
-#         ).scalar() or 0
-        
-#         assistant_messages = db.query(func.count(ChatMessage.chat_messages_id)).filter(
-#             ChatMessage.session_id == session_id,
-#             ChatMessage.sender_type == "assistant"
-#         ).scalar() or 0
-        
-#         last_message = db.query(ChatMessage).filter(
-#             ChatMessage.session_id == session_id
-#         ).order_by(ChatMessage.created_at.desc()).first()
-        
-#         return ChatSessionStats(
-#             session_id=session_id,
-#             total_messages=total_messages,
-#             user_messages=user_messages,
-#             assistant_messages=assistant_messages,
-#             session_duration=None,  # 계산 로직 필요
-#             last_activity=last_message.created_at if last_message else session.created_at
-#         )
-        
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail=f"세션 통계 조회 중 오류가 발생했습니다: {str(e)}"
-#         )
 
 @router.delete("/sessions/{session_id}")
 async def delete_session(

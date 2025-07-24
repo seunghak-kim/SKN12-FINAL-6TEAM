@@ -53,14 +53,6 @@ class SendMessageResponse(BaseModel):
     assistant_message: ChatMessageResponse = Field(..., description="AI 응답 메시지")
     session_updated: bool = Field(..., description="세션 업데이트 여부")
 
-# # 채팅 세션 통계
-# class ChatSessionStats(BaseModel):
-#     session_id: UUID = Field(..., description="세션 ID")
-#     total_messages: int = Field(..., description="총 메시지 수")
-#     user_messages: int = Field(..., description="사용자 메시지 수")
-#     assistant_messages: int = Field(..., description="AI 메시지 수")
-#     session_duration: Optional[int] = Field(None, description="세션 지속 시간(분)")
-#     last_activity: datetime = Field(..., description="마지막 활동 시간")
 
 # # 에러 응답
 # class ErrorResponse(BaseModel):

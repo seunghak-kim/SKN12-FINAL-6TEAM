@@ -36,11 +36,11 @@ def generate_sentence(label, keyword):
         messages=[{"role": "user", "content": prompt}],
         temperature=0.75,
     )
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content
 
 def generate_personality_texts(
-    input_json_path: str = "../data/personality_keywords_labeled.json",
-    output_json_path: str = "../data/personality_keywords_dataset_v2.json",
+    input_json_path: str = "./data/personality_keywords_labeled.json",
+    output_json_path: str = "./data/personality_keywords_dataset_v2.json",
     label_counts: dict = None,
     debug: bool = True
 ):

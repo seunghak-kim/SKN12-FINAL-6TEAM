@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
-import { ChatHistory, TestResult, UserProfile } from '../../types';
+import { ChatHistory, TestResult, UserProfile, DrawingTest } from '../../types';
 import { MessageCircle, FileText, Trash2, User, Calendar, MessageSquare, Edit2, Camera, Check, X, Loader } from 'lucide-react';
 import { userService } from '../../services/userService';
 import { authService } from '../../services/authService';
+import { chatService } from '../../services/chatService';
+import { testService } from '../../services/testService';
 
 interface MyPageProps {
-  chatHistory: ChatHistory[];
-  testResults: TestResult[];
-  userProfile: UserProfile | null;
   onNewChat: () => void;
   onDeleteAccount: () => void;
   onNavigate?: (screen: string) => void;
@@ -18,9 +17,6 @@ interface MyPageProps {
 }
 
 const MyPage: React.FC<MyPageProps> = ({
-  chatHistory: propChatHistory,
-  testResults: propTestResults,
-  userProfile: propUserProfile,
   onNewChat,
   onDeleteAccount,
   onNavigate,
@@ -30,9 +26,9 @@ const MyPage: React.FC<MyPageProps> = ({
   const navigate = useNavigate();
   
   // API에서 가져온 실제 데이터 상태
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(propUserProfile);
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>(propChatHistory || []);
-  const [testResults, setTestResults] = useState<TestResult[]>(propTestResults || []);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -47,15 +43,37 @@ const MyPage: React.FC<MyPageProps> = ({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   
-  // 현재 로그인된 사용자 ID 메모이제이션
-  const currentUserId = useMemo(() => {
-    const userId = authService.getCurrentUserId();
-    if (!userId) {
-      console.error('사용자가 로그인되어 있지 않습니다.');
-      navigate('/');
-      return null;
-    }
-    return userId;
+  // 현재 로그인된 사용자 ID 상태
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  
+  // 실제 사용자 정보 로드
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        // authService에서 직접 userId 가져오기 (더 효율적)
+        const userId = authService.getCurrentUserId();
+        
+        if (userId) {
+          setCurrentUserId(userId);
+          console.log('마이페이지 - 현재 로그인된 사용자 ID:', userId);
+        } else {
+          // API를 통해 사용자 정보 확인
+          const user = await authService.getCurrentUser();
+          if (user) {
+            setCurrentUserId(user.id);
+            console.log('마이페이지 - API에서 사용자 ID 복구:', user.id);
+          } else {
+            console.error('사용자가 로그인되어 있지 않습니다.');
+            navigate('/');
+          }
+        }
+      } catch (error) {
+        console.error('사용자 정보 로드 실패:', error);
+        navigate('/');
+      }
+    };
+    
+    loadCurrentUser();
   }, [navigate]);
   
   // 디바운스 타이머 레퍼런스
@@ -74,6 +92,18 @@ const MyPage: React.FC<MyPageProps> = ({
   const testObserverRef = useRef<HTMLDivElement>(null);
   
   const ITEMS_PER_PAGE = 5;
+
+  // 캐릭터 ID에 따른 아바타 매핑
+  const getCharacterAvatar = (friendsId: number | null): string => {
+    switch (friendsId) {
+      case 1: return '😊'; // 기쁨이
+      case 2: return '😤'; // 버럭이  
+      case 3: return '😢'; // 슬픔이
+      case 4: return '😱'; // 무서미
+      case 5: return '😒'; // 까칠이
+      default: return '🤖'; // 기본 AI
+    }
+  };
 
   // 채팅 히스토리 초기 로드
   const loadInitialChats = useCallback(() => {
@@ -103,16 +133,65 @@ const MyPage: React.FC<MyPageProps> = ({
       setUserProfile(profile);
       setEditingName(profile.name);
       
-      // 채팅 히스토리 로드
-      const chats = await userService.getChatHistory(currentUserId, 0, ITEMS_PER_PAGE);
-      setChatHistory(chats);
+      // 채팅 히스토리 로드 (실제 채팅 API 사용)
+      console.log('마이페이지에서 사용자 ID:', currentUserId);
+      console.log('localStorage access_token:', localStorage.getItem('access_token'));
+      const sessions = await chatService.getUserSessions(currentUserId);
+      console.log('불러온 세션 개수:', sessions.length);
+      console.log('세션 데이터:', sessions);
+      const chatHistoryData: (ChatHistory | null)[] = await Promise.all(
+        sessions.map(async (session) => {
+          try {
+            // 각 세션의 상세 정보와 메시지를 가져옴
+            const sessionDetail = await chatService.getSessionDetail(session.chat_sessions_id);
+            const lastMessage = sessionDetail.messages && sessionDetail.messages.length > 0 
+              ? sessionDetail.messages[sessionDetail.messages.length - 1].content 
+              : '대화가 시작되지 않았습니다.';
+            
+            return {
+              id: session.chat_sessions_id,
+              characterId: session.friends_id?.toString() || '',
+              characterName: session.session_name || 'AI 상담사',
+              characterAvatar: getCharacterAvatar(session.friends_id),
+              date: session.created_at.split('T')[0],
+              lastMessage,
+              messages: sessionDetail.messages?.map(msg => ({
+                id: msg.chat_messages_id,
+                type: msg.sender_type as 'user' | 'assistant',
+                content: msg.content,
+                timestamp: msg.created_at
+              })) || []
+            };
+          } catch (error) {
+            console.error('세션 상세 정보 로드 실패:', error);
+            return null; // 에러 발생 시 null 반환
+          }
+        })
+      );
+      
+      // null이 아니고 메시지가 있는 세션만 필터링
+      const validChatHistory = chatHistoryData.filter(chat => 
+        chat !== null && chat.messages && chat.messages.length > 0
+      ) as ChatHistory[];
+      
+      setChatHistory(validChatHistory);
       
       // 테스트 결과 로드
-      const tests = await userService.getTestResults(currentUserId, 0, ITEMS_PER_PAGE);
-      setTestResults(tests);
+      const tests = await testService.getMyTestResults();
+      setTestResults(tests.map(test => ({
+        id: test.test_id.toString(),
+        testType: 'Drawing' as const,
+        result: test.result?.summary_text || '결과 분석 중입니다.',
+        characterMatch: test.result?.friend_info?.friends_name || '분석 중',
+        date: test.submitted_at,
+        description: test.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
+        images: [test.image_url]
+      })));
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('사용자 데이터 로드 실패:', error);
+      console.error('에러 상세:', error.response?.data || error.message);
+      console.error('전체 에러 객체:', error);
     } finally {
       setIsLoadingProfile(false);
     }
@@ -230,7 +309,8 @@ const MyPage: React.FC<MyPageProps> = ({
     if (onContinueChat) {
       onContinueChat(chat.id, chat.characterName);
     }
-    navigate('/chat');
+    // 채팅 세션 ID를 URL 파라미터로 전달하여 채팅 페이지로 이동
+    navigate(`/chat?sessionId=${chat.id}`);
   };
 
   const handleProfileEdit = () => {
@@ -715,12 +795,17 @@ const MyPage: React.FC<MyPageProps> = ({
                           <h4 className="text-sm font-medium text-gray-500">{formatDate(date)}</h4>
                           {tests.map((test: TestResult) => (
                             <div key={test.id} className="flex items-center justify-between p-3 hover:bg-gray-50/50 rounded-lg transition-colors">
-                              <div>
-                                <p className="font-medium text-gray-800">{formatDate(test.date)} 결과</p>
-                                <p className="text-sm text-indigo-600">페르소나: {test.characterMatch}</p>
-                                {test.images && (
-                                  <p className="text-xs text-gray-400">첨부된 이미지: {test.images.length}개</p>
+                              <div className="flex items-center space-x-4">
+                                {test.images && test.images[0] && (
+                                  <img src={testService.getImageUrl(test.images[0])} alt="Test Result" className="w-16 h-16 rounded-lg object-cover" />
                                 )}
+                                <div>
+                                  <p className="font-medium text-gray-800">{formatDate(test.date)} 결과</p>
+                                  <p className="text-sm text-indigo-600">페르소나: {test.characterMatch}</p>
+                                  {test.images && (
+                                    <p className="text-xs text-gray-400">첨부된 이미지: {test.images.length}개</p>
+                                  )}
+                                </div>
                               </div>
                               <button 
                                 className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { chatService } from '../../services/chatService';
+import { CreateSessionRequest, SendMessageRequest } from '../../types';
 
 interface ChatBotMessage {
   id: string;
@@ -13,16 +15,11 @@ interface GeneralChatBotProps {
 }
 
 const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ isOpen, onClose }) => {
-  const [messages, setMessages] = useState<ChatBotMessage[]>([
-    {
-      id: '1',
-      type: 'bot',
-      content: '안녕하세요! 무엇을 도와드릴까요? 궁금한 것이 있으시면 언제든 물어보세요.',
-      timestamp: new Date().toLocaleTimeString()
-    }
-  ]);
+  const [messages, setMessages] = useState<ChatBotMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -33,8 +30,68 @@ const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ isOpen, onClose }) => {
     scrollToBottom();
   }, [messages]);
 
+  // 채팅 세션 초기화
+  useEffect(() => {
+    if (isOpen && !isInitialized) {
+      initializeChat();
+    }
+  }, [isOpen, isInitialized]);
+
+  const initializeChat = async () => {
+    try {
+      const userId = getUserId();
+      if (!userId) {
+        console.error('사용자 ID를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 새 채팅 세션 생성 (일반 챗봇용)
+      const sessionRequest: CreateSessionRequest = {
+        user_id: userId,
+        friends_id: 1 // 내면이 캐릭터 ID
+      };
+
+      const session = await chatService.createSession(sessionRequest);
+      setSessionId(session.chat_sessions_id);
+
+      // 초기 인사 메시지 추가
+      const initialMessage: ChatBotMessage = {
+        id: '1',
+        type: 'bot',
+        content: '안녕. 나는 내면이야. 너의 깊은 내면 세계를 함께 탐험하며, 그 속에서 진정한 평온과 연결을 찾아가는 여정에 동행하고 싶어. 너와 함께 해도 될까..?',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setMessages([initialMessage]);
+      setIsInitialized(true);
+    } catch (error) {
+      console.error('채팅 초기화 실패:', error);
+      // 오류 시 기본 메시지 표시
+      const errorMessage: ChatBotMessage = {
+        id: '1',
+        type: 'bot',
+        content: '죄송합니다. 현재 연결에 문제가 있어요. 잠시 후 다시 시도해 주세요.',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setMessages([errorMessage]);
+    }
+  };
+
+  const getUserId = (): number | null => {
+    try {
+      const userDataStr = localStorage.getItem('userData');
+      if (userDataStr) {
+        const userData = JSON.parse(userDataStr);
+        return userData.user_id || userData.id;
+      }
+      return null;
+    } catch (error) {
+      console.error('사용자 데이터 파싱 오류:', error);
+      return null;
+    }
+  };
+
   const handleSendMessage = async () => {
-    if (inputMessage.trim() === '') return;
+    if (inputMessage.trim() === '' || !sessionId) return;
 
     const userMessage: ChatBotMessage = {
       id: Date.now().toString(),
@@ -44,62 +101,50 @@ const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ isOpen, onClose }) => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputMessage;
     setInputMessage('');
     setIsTyping(true);
 
-    // 봇 응답 시뮬레이션
-    setTimeout(() => {
-      const botResponse = generateBotResponse(inputMessage);
+    try {
+      // 백엔드 AI 서비스로 메시지 전송
+      const messageRequest: SendMessageRequest = {
+        content: currentInput
+      };
+
+      const response = await chatService.sendMessage(sessionId, messageRequest);
+      
       const botMessage: ChatBotMessage = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        content: botResponse,
+        content: response.assistant_message.content,
         timestamp: new Date().toLocaleTimeString()
       };
+      
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000);
+    } catch (error) {
+      console.error('메시지 전송 실패:', error);
+      
+      // 오류 시 기본 응답
+      const errorMessage: ChatBotMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: '미안해... 지금은 마음이 좀 복잡해서 제대로 답변을 드리기 어려워. 잠시 후에 다시 이야기해줄 수 있을까..?',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+      setIsTyping(false);
+    }
   };
 
-  const generateBotResponse = (userInput: string): string => {
-    const lowerInput = userInput.toLowerCase();
-    
-    if (lowerInput.includes('안녕') || lowerInput.includes('hello')) {
-      return '안녕하세요! 좋은 하루 보내고 계신가요?';
-    }
-    
-    if (lowerInput.includes('도움') || lowerInput.includes('help')) {
-      return '무엇을 도와드릴까요? 저는 다음과 같은 것들을 도와드릴 수 있어요:\n• 일반적인 질문 답변\n• 감정적 지원\n• 정보 제공\n• 대화 상대';
-    }
-    
-    if (lowerInput.includes('기분') || lowerInput.includes('감정')) {
-      return '지금 기분이 어떠신가요? 힘든 일이 있으시면 언제든 말씀해 주세요. 제가 들어드릴게요.';
-    }
-    
-    if (lowerInput.includes('고마워') || lowerInput.includes('감사')) {
-      return '천만에요! 도움이 되어서 기뻐요. 또 다른 궁금한 것이 있으시면 언제든 물어보세요.';
-    }
-    
-    if (lowerInput.includes('이름')) {
-      return '저는 일반 도우미 챗봇이에요. 여러분의 궁금증을 해결하고 대화 상대가 되어드리는 것이 제 역할입니다!';
-    }
-    
-    if (lowerInput.includes('시간') || lowerInput.includes('날짜')) {
-      const now = new Date();
-      return `현재 시간은 ${now.toLocaleString('ko-KR')}입니다.`;
-    }
-    
-    // 기본 응답들
-    const defaultResponses = [
-      '흥미로운 말씀이네요! 더 자세히 말씀해 주실 수 있나요?',
-      '그런 생각을 해보신 적이 있군요. 어떤 계기로 그렇게 생각하게 되셨나요?',
-      '좋은 질문이에요! 제가 이해한 것이 맞는지 확인해볼게요.',
-      '말씀해 주신 내용을 들어보니, 정말 중요한 문제인 것 같아요.',
-      '네, 잘 이해했어요. 이런 상황에서는 여러 가지 방법이 있을 수 있겠네요.',
-      '정말 좋은 관점이네요! 다른 방향에서도 생각해볼 수 있을까요?'
-    ];
-    
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+  // 채팅창 닫힐 때 세션 정리
+  const handleClose = () => {
+    setMessages([]);
+    setSessionId(null);
+    setIsInitialized(false);
+    setIsTyping(false);
+    onClose();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -112,19 +157,19 @@ const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-5" onClick={onClose}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-5" onClick={handleClose}>
       <div className="bg-white rounded-3xl w-full max-w-md h-[600px] max-h-[80vh] flex flex-col shadow-2xl chatbot-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-5 border-b border-gray-200 rounded-t-3xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-xl">🤖</div>
             <div>
-              <h3 className="font-semibold text-base">일반 도우미 챗봇</h3>
+              <h3 className="font-semibold text-base">내면이</h3>
               <p className="text-xs opacity-80">온라인</p>
             </div>
           </div>
           <button 
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white hover:bg-opacity-20 transition-colors duration-300 text-2xl"
-            onClick={onClose}
+            onClick={handleClose}
           >
             ×
           </button>
@@ -189,7 +234,7 @@ const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="p-4 bg-gray-50 text-center rounded-b-3xl border-t border-gray-200">
-          <p className="text-xs text-gray-600 italic">💡 팁: 도움말, 기분, 시간 등에 대해 물어보세요!</p>
+          <p className="text-xs text-gray-600 italic">💭 내면이와 함께 깊은 대화를 나눠보세요</p>
         </div>
       </div>
     </div>

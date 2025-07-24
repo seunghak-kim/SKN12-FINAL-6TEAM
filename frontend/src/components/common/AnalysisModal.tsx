@@ -43,7 +43,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onComplete }) => 
       ));
       setCurrentMessage('이미지를 처리하고 있습니다...');
       
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 4000));
       
       setSteps(prev => prev.map(step => 
         step.id === 1 ? { ...step, completed: true, active: false } : step
@@ -55,7 +55,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onComplete }) => 
       ));
       setCurrentMessage('패턴을 분석하고 있습니다...');
       
-      await new Promise(resolve => setTimeout(resolve, 4000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
       
       setSteps(prev => prev.map(step => 
         step.id === 2 ? { ...step, completed: true, active: false } : step
@@ -67,7 +67,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onComplete }) => 
       ));
       setCurrentMessage('결과를 생성하고 있습니다...');
       
-      await new Promise(resolve => setTimeout(resolve, 3500));
+      await new Promise(resolve => setTimeout(resolve, 4500));
       
       setSteps(prev => prev.map(step => 
         step.id === 3 ? { ...step, completed: true, active: false } : step
@@ -75,7 +75,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onComplete }) => 
       setCurrentMessage('분석이 완료되었습니다!');
       
       // 완료 메시지를 잠깐 보여준 후 콜백 호출
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // 분석 완료 시 콜백 호출
       if (onComplete) {

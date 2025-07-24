@@ -34,7 +34,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
   const displayCharacters = [
     {
       id: '1',
-      name: '기쁨이',
+      name: '추진이',
       description: '긍정적 생각 전환, 스트레스 해소, 자존감 향상 등을 통해 당신의 마음속 행복을 찾아줄 거예요. 안 되던 당신의 이야기를 듣고 함께 빛나는 해결책을 찾아 나갈 거예요.',
       avatar: '😊',
       color: 'from-yellow-400 to-orange-500',
@@ -42,34 +42,34 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
     },
     {
       id: '2',
-      name: '버럭이',
+      name: '내면이',
       description: '분노와 좌절감을 건전하게 표현하고 해소하는 방법을 알려드려요. 감정을 억누르지 말고 함께 이야기하며 마음의 평화를 찾아보세요.',
-      avatar: '😤',
+      avatar: '😖',
       color: 'from-red-400 to-pink-600',
       buttonColor: 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
     },
     {
       id: '3',
-      name: '슬픔이',
+      name: '관계이',
       description: '당신의 슬픔을 이해하고 함께 극복해나가는 방법을 찾아드립니다.',
-      avatar: '😢',
+      avatar: '😘',
       color: 'from-blue-400 to-indigo-600',
       buttonColor: 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700',
       isRecommended: true
     },
     {
       id: '4',
-      name: '무서미',
+      name: '쾌락이',
       description: '불안과 두려움을 극복하는 방법을 함께 찾아보아요. 작은 용기부터 시작해 정서적 자신감을 키워나가요.',
-      avatar: '😰',
+      avatar: '🤪',
       color: 'from-purple-400 to-violet-600',
       buttonColor: 'bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700'
     },
     {
       id: '5',
-      name: '까칠이',
+      name: '안정이',
       description: '솔직하고 직설적인 조언으로 현실적인 해결책을 제시해드려요. 때로는 쓴소리도 필요하니까요.',
-      avatar: '😑',
+      avatar: '🤭',
       color: 'from-gray-400 to-slate-600',
       buttonColor: 'bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700'
     }

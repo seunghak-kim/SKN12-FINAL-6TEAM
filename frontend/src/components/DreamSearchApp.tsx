@@ -13,9 +13,6 @@ const DreamSearchApp: React.FC = () => {
   const {
     currentScreen,
     selectedCharacter,
-    chatHistory,
-    testResults,
-    userProfile,
     showModal,
     showRatingModal,
     currentTestResult,
@@ -82,9 +79,6 @@ const DreamSearchApp: React.FC = () => {
       case 'mypage':
         return (
           <MyPage
-            chatHistory={chatHistory}
-            testResults={testResults}
-            userProfile={userProfile}
             onNewChat={handleNewChat}
             onDeleteAccount={handleDeleteAccount}
             onNavigate={handleNavigate}
