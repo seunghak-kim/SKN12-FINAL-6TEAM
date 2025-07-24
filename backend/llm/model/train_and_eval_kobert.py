@@ -9,6 +9,7 @@ import torch
 import json
 import numpy as np
 from tqdm import tqdm
+from datetime import datetime
 
 # 현재 파일 기준으로 상위 두 단계 위의 data 폴더 경로를 지정
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -290,6 +291,34 @@ def predict_persona(text, model_dir=None):
     id2label = {0: "추진형", 1: "내면형", 2: "안정형", 3: "관계형", 4: "쾌락형"}
     return id2label[pred]
 
+def predict_persona_probabilities(text, model_dir=None):
+    """성격 유형별 확률 예측 함수"""
+    if model_dir is None:
+        model_dir = os.path.join(BASE_DIR, "kobert_model")
+    
+    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    model = BertForSequenceClassification.from_pretrained(model_dir)
+    model.eval()
+    
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding="max_length", max_length=128)
+    # token_type_ids 제거
+    if "token_type_ids" in inputs:
+        del inputs["token_type_ids"]
+    
+    with torch.no_grad():
+        outputs = model(**inputs)
+        # softmax를 사용하여 확률 계산
+        probabilities = torch.softmax(outputs.logits, dim=1).squeeze()
+    
+    id2label = {0: "추진형", 1: "내면형", 2: "안정형", 3: "관계형", 4: "쾌락형"}
+    
+    # 각 유형별 확률을 딕셔너리로 반환 (백분율)
+    result = {}
+    for idx, prob in enumerate(probabilities):
+        result[id2label[idx]] = float(prob.item() * 100)
+    
+    return result
+
 def get_raw_text_from_result_json(result_json_path):
     with open(result_json_path, encoding="utf-8") as f:
         result = json.load(f)
@@ -320,8 +349,52 @@ def run_persona_prediction_from_result(image_base, quiet=True):
         if eval_metrics.get("macro_f1") is not None:
             print(f"Macro F1 Score: {eval_metrics['macro_f1']:.4f}")
     
-    persona = predict_persona(test_text)
-    print(f"\n[예측 결과] : 당신의 유형은 {persona}입니다.")
+    # 확률적 예측 수행
+    probabilities = predict_persona_probabilities(test_text, model_path)
+    
+    # 가장 높은 확률의 성격 유형 선택
+    top_persona = max(probabilities, key=probabilities.get)
+    confidence = probabilities[top_persona]
+    
+    # 결과 출력
+    print(f"\n[예측 결과 - 유형별 확률]")
+    for persona_type, prob in sorted(probabilities.items(), key=lambda x: -x[1]):
+        print(f"- {persona_type}: {prob:.2f}%")
+    
+    print(f"\n[최종 예측] 당신의 유형은 {top_persona}입니다. (신뢰도: {confidence:.2f}%)")
+    
+    # personas 파일은 생성하지 않고 result 파일에만 저장
+    
+    # 기존 result JSON 파일에 성격 유형 정보 추가
+    result_json_path = os.path.join(BASE_DIR, f"../detection_results/results/result_{image_base}.json")
+    if os.path.exists(result_json_path):
+        try:
+            with open(result_json_path, 'r', encoding='utf-8') as f:
+                result_data = json.load(f)
+            
+            # 성격 유형 정보 추가
+            result_data['personality_analysis'] = {
+                "predicted_personality": top_persona,
+                "confidence": confidence,
+                "probabilities": probabilities,
+                "analysis_timestamp": datetime.now().isoformat()
+            }
+            
+            # 업데이트된 내용을 다시 저장
+            with open(result_json_path, 'w', encoding='utf-8') as f:
+                json.dump(result_data, f, ensure_ascii=False, indent=2)
+            
+            print(f"기존 결과 파일에 성격 유형 정보가 추가되었습니다: {result_json_path}")
+            
+        except Exception as e:
+            print(f"기존 결과 파일 업데이트 실패: {e}")
+    
+    # 결과를 딕셔너리로 반환
+    return {
+        "personality_type": top_persona,
+        "confidence": confidence / 100.0,  # 0-1 범위로 정규화
+        "probabilities": probabilities
+    }
 
 if __name__ == "__main__":
     import argparse

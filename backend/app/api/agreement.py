@@ -8,6 +8,7 @@ from typing import List, Optional
 from app.schemas.agreement import AgreementCreate, AgreementUpdate, AgreementResponse
 from app.models.agreement import Agreement
 from app.database import get_db
+from .auth import get_current_user
 
 router = APIRouter()
 
@@ -216,3 +217,63 @@ async def create_bulk_agreements(user_id: int, agreements_data: List[AgreementCr
         )
         for agreement in created_agreements
     ]
+
+@router.post("/htp-consent")
+async def create_htp_consent(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """HTP 심리검사 개인정보 활용 동의"""
+    try:
+        # 이미 동의한 기록이 있는지 확인
+        existing_agreement = db.query(Agreement).filter(
+            Agreement.user_id == current_user["user_id"]
+        ).first()
+        
+        if existing_agreement:
+            # 이미 동의했으면 is_agree를 True로 업데이트
+            existing_agreement.is_agree = True
+            db.commit()
+            return {"message": "동의가 업데이트되었습니다.", "agreement_id": existing_agreement.agreement_id}
+        else:
+            # 새로운 동의 기록 생성
+            new_agreement = Agreement(
+                user_id=current_user["user_id"],
+                is_agree=True
+            )
+            db.add(new_agreement)
+            db.commit()
+            db.refresh(new_agreement)
+            
+            return {"message": "동의가 완료되었습니다.", "agreement_id": new_agreement.agreement_id}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"동의 처리 중 오류가 발생했습니다: {str(e)}"
+        )
+
+@router.get("/htp-consent/status")
+async def get_htp_consent_status(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """현재 사용자의 HTP 동의 상태 확인"""
+    try:
+        agreement = db.query(Agreement).filter(
+            Agreement.user_id == current_user["user_id"]
+        ).first()
+        
+        if agreement and agreement.is_agree:
+            return {
+                "has_agreed": True,
+                "agreed_at": agreement.agreed_at.isoformat() if agreement.agreed_at else None
+            }
+        else:
+            return {"has_agreed": False}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"동의 상태 확인 중 오류가 발생했습니다: {str(e)}"
+        )

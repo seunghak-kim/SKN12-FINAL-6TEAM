@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
-import AnalysisModal from '../common/AnalysisModal';
 import ConsentModal from '../common/ConsentModal';
+import { testService } from '../../services/testService';
+import { PipelineStatusResponse } from '../../types';
+import { agreementService } from '../../services/agreementService';
 
 interface TestPageProps {
   onStartAnalysis: (imageFile: File | null, description: string) => Promise<void>;
@@ -18,6 +20,24 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showDescription] = useState(true);
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [hasAgreed, setHasAgreed] = useState(false);
+  const [analysisStatus, setAnalysisStatus] = useState<PipelineStatusResponse | null>(null);
+  const [currentTestId, setCurrentTestId] = useState<string | null>(null);
+
+  // 컴포넌트 마운트 시 동의 상태 확인
+  useEffect(() => {
+    const checkConsentStatus = async () => {
+      try {
+        const status = await agreementService.getHtpConsentStatus();
+        setHasAgreed(status.has_agreed);
+      } catch (error) {
+        console.error('동의 상태 확인 실패:', error);
+        setHasAgreed(false);
+      }
+    };
+
+    checkConsentStatus();
+  }, []);
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file);
@@ -58,12 +78,24 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   };
 
   const handleStartTest = () => {
-    setShowConsentModal(true);
+    // 이미 동의했으면 바로 test-instruction으로 이동, 아니면 동의 모달 표시
+    if (hasAgreed) {
+      navigate('/test-instruction');
+    } else {
+      setShowConsentModal(true);
+    }
   };
 
-  const handleConsentAgree = () => {
-    setShowConsentModal(false);
-    navigate('/test-instruction');
+  const handleConsentAgree = async () => {
+    try {
+      await agreementService.createHtpConsent();
+      setHasAgreed(true);
+      setShowConsentModal(false);
+      navigate('/test-instruction');
+    } catch (error) {
+      console.error('동의 처리 실패:', error);
+      alert('동의 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleConsentClose = () => {
@@ -71,14 +103,38 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   };
 
   const handleAnalysis = async () => {
-    setIsAnalyzing(true);
+    if (!selectedImage) return;
+
     try {
-      await onStartAnalysis(selectedImage, description);
-      // 실제 분석 완료 후 모달 닫기 및 결과 페이지 이동
-      handleAnalysisComplete();
+      setIsAnalyzing(true);
+      setAnalysisStatus(null);
+
+      // 이미지 분석 시작
+      const analysisResponse = await testService.analyzeImage(selectedImage, description);
+      setCurrentTestId(analysisResponse.test_id);
+
+      // 분석 상태 폴링 시작
+      const finalStatus = await testService.pollAnalysisStatus(
+        analysisResponse.test_id,
+        (status) => {
+          setAnalysisStatus(status);
+        }
+      );
+
+      if (finalStatus.status === 'completed') {
+        // 분석 완료 시 결과 페이지로 이동
+        setIsAnalyzing(false);
+        navigate('/results');
+      } else if (finalStatus.status === 'failed') {
+        // 분석 실패 시 에러 처리
+        console.error('Analysis failed:', finalStatus.error);
+        setIsAnalyzing(false);
+        alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
     } catch (error) {
-      console.error('분석 실패:', error);
-      handleAnalysisComplete();
+      console.error('Failed to start analysis:', error);
+      setIsAnalyzing(false);
+      alert('분석을 시작하는 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -271,8 +327,6 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
         </div>
       </div>
 
-      {/* 분석 로딩 모달 */}
-      <AnalysisModal isOpen={isAnalyzing} onComplete={handleAnalysisComplete} />
     </div>
   );
 };

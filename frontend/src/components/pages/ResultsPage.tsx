@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import CharacterCard from '../common/CharacterCard';
+import ProbabilityChart from '../common/ProbabilityChart';
 import { SearchResult } from '../../types';
 import { testService } from '../../services/testService';
 
@@ -29,6 +30,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [analysisResult, setAnalysisResult] = useState<string>('');
   const [isCreatingResult, setIsCreatingResult] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
 
   // TestInstructionPage에서 전달받은 데이터 처리
   useEffect(() => {
@@ -38,8 +40,39 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       setTestData(stateData);
       // AI 분석 결과 생성 및 DB 저장
       createTestResult(stateData.testId);
+      // 분석 상태 조회하여 확률 데이터 가져오기
+      fetchAnalysisStatus(stateData.testId);
     }
   }, [location.state]);
+
+  const fetchAnalysisStatus = async (testId: number) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/pipeline/analysis-status/${testId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'completed' && data.result) {
+          // API에서 직접 확률 데이터 가져오기
+          const probabilities = data.result.probabilities;
+          if (probabilities && Object.keys(probabilities).length > 0) {
+            setProbabilities(probabilities);
+          }
+          
+          // result_text가 있으면 분석 결과 업데이트
+          if (data.result.result_text) {
+            setAnalysisResult(data.result.result_text);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('분석 상태 조회 실패:', error);
+    }
+  };
 
   const createTestResult = async (testId: number) => {
     setIsCreatingResult(true);
@@ -160,6 +193,11 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             </div>
           </div>
         </div>
+
+        {/* 확률 차트 컴포넌트 */}
+        {probabilities && Object.keys(probabilities).length > 0 && (
+          <ProbabilityChart probabilities={probabilities} />
+        )}
 
         <div className="bg-white rounded-xl shadow-md p-4">
           <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">
