@@ -149,3 +149,32 @@ export interface ApiError {
   detail?: string;
   code?: number;
 }
+
+// Pipeline API - 이미지 분석 응답
+export interface PipelineAnalysisResponse {
+  test_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  message: string;
+}
+
+// Pipeline API - 분석 단계 정보
+export interface AnalysisStep {
+  name: string;
+  description: string;
+  completed: boolean;
+  current: boolean;
+}
+
+// Pipeline API - 분석 상태 응답
+export interface PipelineStatusResponse {
+  test_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  message: string;
+  steps?: AnalysisStep[];
+  current_step?: number;
+  completed_steps?: number;
+  total_steps?: number;
+  estimated_remaining?: string;
+  result?: DrawingTestResult;
+  error?: string;
+}
