@@ -19,6 +19,17 @@ from ..models.friend import Friend
 
 router = APIRouter()
 
+def get_persona_type_from_friends_id(friends_id: int) -> str:
+    """friends_id를 페르소나 타입으로 매핑"""
+    persona_mapping = {
+        1: "추진형",  # 추진이
+        2: "내면형",  # 내면이  
+        3: "관계형",  # 관계이
+        4: "쾌락형",  # 쾌락이
+        5: "안정형"   # 안정이
+    }
+    return persona_mapping.get(friends_id, "내면형")  # 기본값: 내면형
+
 @router.post("/sessions", response_model=ChatSessionResponse)
 async def create_chat_session(
     session_data: ChatSessionCreate,
@@ -181,9 +192,16 @@ async def send_message(
                 detail="비활성화된 세션입니다."
             )
         
-        # AI 서비스를 통한 메시지 처리
+        # friends_id를 페르소나 타입으로 매핑
+        persona_type = get_persona_type_from_friends_id(session.friends_id)
+        
+        # AI 서비스를 통한 메시지 처리 (페르소나 타입 포함)
         ai_service = AIService(db)
-        ai_response_content = ai_service.process_message(session_id, message_request.content)
+        ai_response_content = ai_service.process_message(
+            session_id=session_id, 
+            user_message=message_request.content,
+            persona_type=persona_type
+        )
         
         # AI 서비스에서 이미 메시지를 저장했으므로 최근 메시지들을 다시 가져옴
         recent_messages = db.query(ChatMessage).filter(
@@ -290,4 +308,43 @@ async def get_session_messages(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"메시지 조회 중 오류가 발생했습니다: {str(e)}"
+        )
+
+@router.get("/sessions/{session_id}/greeting", response_model=dict)
+async def get_initial_greeting(
+    session_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """세션의 페르소나별 초기 인사 메시지 조회"""
+    try:
+        # 세션 존재 확인
+        session = db.query(ChatSession).filter(
+            ChatSession.chat_sessions_id == session_id
+        ).first()
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="세션을 찾을 수 없습니다."
+            )
+        
+        # friends_id를 페르소나 타입으로 매핑
+        persona_type = get_persona_type_from_friends_id(session.friends_id)
+        
+        # AI 서비스에서 페르소나별 인사 메시지 가져오기
+        ai_service = AIService(db)
+        greeting = ai_service.get_initial_greeting(persona_type)
+        
+        return {
+            "persona_type": persona_type,
+            "friends_id": session.friends_id,
+            "greeting": greeting
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"인사 메시지 조회 중 오류가 발생했습니다: {str(e)}"
         )

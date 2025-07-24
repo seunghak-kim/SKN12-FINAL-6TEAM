@@ -47,11 +47,13 @@ const ChatPage: React.FC<ChatPageProps> = ({
     isLoading,
     isSending,
     error,
+    greeting,
     createSession,
     sendMessage,
     loadSession,
     clearError,
-    clearMessages
+    clearMessages,
+    loadGreeting
   } = useChatSession();
 
   // 실제 사용자 ID 가져오기
@@ -368,7 +370,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
             {(lastBotMessage || chatMessages.length === 0) && (
               <div className="bg-gray-300 rounded-2xl p-6 mb-8 text-center">
                 <p className="text-gray-800 text-lg font-medium break-words word-wrap overflow-wrap">
-                  {lastBotMessage?.content || initialMessage}
+                  {lastBotMessage?.content || greeting || initialMessage}
                 </p>
               </div>
             )}
