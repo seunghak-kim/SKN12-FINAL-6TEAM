@@ -32,5 +32,8 @@ yarn-error.log*
 # 데이터 파일 안됨 
 /backend/data
 
-# pycache
-__pycache__*
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
