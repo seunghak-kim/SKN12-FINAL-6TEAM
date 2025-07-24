@@ -5,7 +5,7 @@ import ConsentModal from '../common/ConsentModal';
 import AnalysisModal from '../common/AnalysisModal';
 
 interface TestInstructionPageProps {
-  onStartAnalysis: (imageFile: File | null, description: string) => void;
+  onStartAnalysis: (imageFile: File | null, description: string) => Promise<void>;
   onNavigate?: (screen: string) => void;
 }
 

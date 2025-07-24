@@ -74,13 +74,8 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onComplete }) => 
       ));
       setCurrentMessage('분석이 완료되었습니다!');
       
-      // 완료 메시지를 잠깐 보여준 후 콜백 호출
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // 분석 완료 시 콜백 호출
-      if (onComplete) {
-        onComplete();
-      }
+      // 완료 메시지를 보여주고 외부에서 모달을 닫을 때까지 대기
+      // onComplete는 외부에서 실제 분석 완료 시 호출됨
     };
 
     progressSteps();

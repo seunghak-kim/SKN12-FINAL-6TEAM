@@ -19,16 +19,26 @@ from ..models.friend import Friend
 
 router = APIRouter()
 
-def get_persona_type_from_friends_id(friends_id: int) -> str:
-    """friends_id를 페르소나 타입으로 매핑"""
-    persona_mapping = {
+def get_persona_type_from_friends_id(friends_id: int, db: Session = None) -> str:
+    """friends_id를 페르소나 타입으로 매핑 (DB 동적 조회 + 기본값)"""
+    # DB에서 실제 friends 데이터 조회 시도
+    if db:
+        try:
+            friend = db.query(Friend).filter(Friend.friends_id == friends_id).first()
+            if friend and friend.friends_name:
+                return friend.friends_name
+        except Exception as e:
+            print(f"DB 조회 실패, 기본값 사용: {e}")
+    
+    # DB 조회 실패 시 기본 매핑 사용
+    default_mapping = {
         1: "추진형",  # 추진이
         2: "내면형",  # 내면이  
         3: "관계형",  # 관계이
         4: "쾌락형",  # 쾌락이
         5: "안정형"   # 안정이
     }
-    return persona_mapping.get(friends_id, "내면형")  # 기본값: 내면형
+    return default_mapping.get(friends_id, "내면형")
 
 @router.post("/sessions", response_model=ChatSessionResponse)
 async def create_chat_session(
@@ -193,7 +203,7 @@ async def send_message(
             )
         
         # friends_id를 페르소나 타입으로 매핑
-        persona_type = get_persona_type_from_friends_id(session.friends_id)
+        persona_type = get_persona_type_from_friends_id(session.friends_id, db)
         
         # AI 서비스를 통한 메시지 처리 (페르소나 타입 포함)
         ai_service = AIService(db)
@@ -329,7 +339,7 @@ async def get_initial_greeting(
             )
         
         # friends_id를 페르소나 타입으로 매핑
-        persona_type = get_persona_type_from_friends_id(session.friends_id)
+        persona_type = get_persona_type_from_friends_id(session.friends_id, db)
         
         # AI 서비스에서 페르소나별 인사 메시지 가져오기
         ai_service = AIService(db)

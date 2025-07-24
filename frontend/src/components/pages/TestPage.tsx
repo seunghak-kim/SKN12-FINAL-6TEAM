@@ -5,7 +5,7 @@ import AnalysisModal from '../common/AnalysisModal';
 import ConsentModal from '../common/ConsentModal';
 
 interface TestPageProps {
-  onStartAnalysis: (imageFile: File | null, description: string) => void;
+  onStartAnalysis: (imageFile: File | null, description: string) => Promise<void>;
   onNavigate?: (screen: string) => void;
 }
 
@@ -70,9 +70,16 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     setShowConsentModal(false);
   };
 
-  const handleAnalysis = () => {
+  const handleAnalysis = async () => {
     setIsAnalyzing(true);
-    onStartAnalysis(selectedImage, description);
+    try {
+      await onStartAnalysis(selectedImage, description);
+      // 실제 분석 완료 후 모달 닫기 및 결과 페이지 이동
+      handleAnalysisComplete();
+    } catch (error) {
+      console.error('분석 실패:', error);
+      handleAnalysisComplete();
+    }
   };
 
   const handleAnalysisComplete = () => {
