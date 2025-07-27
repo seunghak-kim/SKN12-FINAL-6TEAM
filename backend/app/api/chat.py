@@ -30,13 +30,13 @@ def get_persona_type_from_friends_id(friends_id: int, db: Session = None) -> str
         except Exception as e:
             print(f"DB 조회 실패, 기본값 사용: {e}")
     
-    # DB 조회 실패 시 기본 매핑 사용
+    # DB 조회 실패 시 기본 매핑 사용 (실제 DB 상황에 맞게 수정)
     default_mapping = {
         1: "추진형",  # 추진이
         2: "내면형",  # 내면이  
         3: "관계형",  # 관계이
-        4: "쾌락형",  # 쾌락이
-        5: "안정형"   # 안정이
+        4: "안정형",  # 안정이 (수정됨)
+        5: "쾌락형"   # 쾌락이 (수정됨)
     }
     return default_mapping.get(friends_id, "내면형")
 

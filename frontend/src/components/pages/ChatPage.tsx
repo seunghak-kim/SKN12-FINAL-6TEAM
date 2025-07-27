@@ -29,6 +29,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   userId, // 외부에서 전달받거나 내부에서 계산
   friendsId // 외부에서 전달받거나 selectedCharacter에서 가져옴
 }) => {
+  console.log('ChatPage - 받은 selectedCharacter:', selectedCharacter);
   const [inputMessage, setInputMessage] = useState('');
   const [currentRating, setCurrentRating] = useState(3);
   const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -225,8 +226,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
     
     return () => clearTimeout(timeoutId);
   }, [realUserId, navigate]);
-
-  const [showLoading, setShowLoading] = useState(true);
 
   // 로딩 타임아웃 관리
   useEffect(() => {

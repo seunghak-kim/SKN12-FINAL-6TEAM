@@ -22,7 +22,7 @@ def train_model():
     df = pd.DataFrame(data)  # columns=["text", "label"]
 
     # label을 숫자 인덱스로 변환
-    label2id = {"추진형": 0, "내면형": 1, "안정형": 2, "관계형": 3, "쾌락형": 4}
+    label2id = {"추진형": 0, "내면형": 1, "관계형": 2, "쾌락형": 3, "안정형": 4}
     id2label = {v: k for k, v in label2id.items()}
     df["label_id"] = df["label"].map(label2id)
 
@@ -52,7 +52,11 @@ def train_model():
     tokenizer = AutoTokenizer.from_pretrained(KOBERT_MODEL, use_fast=False)
 
     def preprocess(example):
-        return tokenizer(example["text"], truncation=True, padding="max_length", max_length=128)
+        encoded = tokenizer(example["text"], truncation=True, padding="max_length", max_length=128)
+        # token_type_ids 제거 (KoBERT 호환성 문제 해결)
+        if "token_type_ids" in encoded:
+            del encoded["token_type_ids"]
+        return encoded
 
     train_dataset = train_dataset.map(preprocess, batched=True)
     eval_dataset = eval_dataset.map(preprocess, batched=True)
@@ -69,7 +73,7 @@ def train_model():
         learning_rate=2e-5,
         weight_decay=0.01,
         warmup_steps=100,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         logging_dir=os.path.join(BASE_DIR, "logs"),
         load_best_model_at_end=True,
@@ -158,7 +162,7 @@ def cross_validate_model(k_folds=5):
     df = pd.DataFrame(data)
     
     # 라벨 변환
-    label2id = {"추진형": 0, "내면형": 1, "안정형": 2, "관계형": 3, "쾌락형": 4}
+    label2id = {"추진형": 0, "내면형": 1, "관계형": 2, "쾌락형": 3, "안정형": 4}
     df["label"] = df["label"].map(label2id)
     
     # K-Fold 교차 검증
@@ -190,7 +194,11 @@ def cross_validate_model(k_folds=5):
         tokenizer = AutoTokenizer.from_pretrained(KOBERT_MODEL)
         
         def preprocess(example):
-            return tokenizer(example["text"], truncation=True, padding="max_length", max_length=128)
+            encoded = tokenizer(example["text"], truncation=True, padding="max_length", max_length=128)
+            # token_type_ids 제거 (KoBERT 호환성 문제 해결)
+            if "token_type_ids" in encoded:
+                del encoded["token_type_ids"]
+            return encoded
         
         train_dataset = train_dataset.map(preprocess, batched=True)
         val_dataset = val_dataset.map(preprocess, batched=True)
@@ -207,7 +215,7 @@ def cross_validate_model(k_folds=5):
             learning_rate=2e-5,
             weight_decay=0.01,
             warmup_steps=100,
-            evaluation_strategy="epoch",
+            eval_strategy="epoch",
             save_strategy="no",  # 저장 안함
             logging_dir=f"./logs_fold_{fold}",
             load_best_model_at_end=True,
@@ -288,7 +296,7 @@ def predict_persona(text, model_dir=None):
     with torch.no_grad():
         outputs = model(**inputs)
         pred = torch.argmax(outputs.logits, dim=1).item()
-    id2label = {0: "추진형", 1: "내면형", 2: "안정형", 3: "관계형", 4: "쾌락형"}
+    id2label = {0: "추진형", 1: "내면형", 2: "관계형", 3: "쾌락형", 4: "안정형"}
     return id2label[pred]
 
 def predict_persona_probabilities(text, model_dir=None):
@@ -310,7 +318,7 @@ def predict_persona_probabilities(text, model_dir=None):
         # softmax를 사용하여 확률 계산
         probabilities = torch.softmax(outputs.logits, dim=1).squeeze()
     
-    id2label = {0: "추진형", 1: "내면형", 2: "안정형", 3: "관계형", 4: "쾌락형"}
+    id2label = {0: "추진형", 1: "내면형", 2: "관계형", 3: "쾌락형", 4: "안정형"}
     
     # 각 유형별 확률을 딕셔너리로 반환 (백분율)
     result = {}

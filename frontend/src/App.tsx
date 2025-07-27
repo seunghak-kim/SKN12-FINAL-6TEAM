@@ -36,7 +36,8 @@ const AppContent: React.FC = () => {
     handleDeleteAccount,
     handleContinueChat,
     handleUpdateProfile,
-    handleInitializeChat
+    handleInitializeChat,
+    updateTestResult
   } = useAppState();
 
   // URL에서 토큰 처리 (보안 이슈 해결용 임시 처리)
@@ -189,6 +190,7 @@ const AppContent: React.FC = () => {
               onStartChat={handleStartChat}
               onNavigate={handleNavigate}
               currentTestResult={currentTestResult}
+              updateTestResult={updateTestResult}
             />
           } 
         />
