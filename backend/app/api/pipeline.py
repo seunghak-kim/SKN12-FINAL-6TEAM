@@ -31,22 +31,46 @@ sys.path.insert(0, str(pipeline_module_path))
 
 try:
     from main import HTPAnalysisPipeline, PipelineStatus, PipelineResult
-except ImportError as e:
+    PIPELINE_IMPORT_ERROR = None
+    print("✅ HTP 파이프라인 모듈 import 성공")
+except Exception as e:
+    import sys
+    error_msg = str(e)
+    print(f"❌ HTP 파이프라인 import 실패: {e}", file=sys.stderr)
+    
+    if "numpy.dtype size changed" in error_msg:
+        print(f"💡 numpy/pandas 버전 충돌 해결방법:", file=sys.stderr)
+        print(f"   conda install -c conda-forge numpy pandas --force-reinstall", file=sys.stderr)
+        print(f"   또는 pip uninstall numpy pandas -y && pip install numpy pandas", file=sys.stderr)
+    else:
+        print(f"💡 일반적인 해결방법:", file=sys.stderr)
+        print(f"   pip install pandas transformers ultralytics torch opencv-python scikit-learn", file=sys.stderr)
+    
     HTPAnalysisPipeline = None
+    PipelineStatus = None
+    PipelineResult = None
+    PIPELINE_IMPORT_ERROR = error_msg
 
 router = APIRouter()
 
 # 전역 파이프라인 인스턴스
-pipeline_instance: Optional[HTPAnalysisPipeline] = None
+pipeline_instance= None
 
-def get_pipeline() -> HTPAnalysisPipeline:
+def get_pipeline():
     """파이프라인 인스턴스 가져오기 (싱글톤 패턴)"""
     global pipeline_instance
     if pipeline_instance is None:
         if HTPAnalysisPipeline is None:
+            missing_packages = ["pandas", "transformers", "ultralytics", "torch", "opencv-python", "scikit-learn"]
             raise HTTPException(
-                status_code=500, 
-                detail="HTP 분석 파이프라인을 로드할 수 없습니다."
+                status_code=503,  # Service Unavailable
+                detail={
+                    "error": "HTP 분석 파이프라인을 사용할 수 없습니다.",
+                    "reason": "필수 패키지가 설치되지 않았습니다.",
+                    "missing_packages": missing_packages,
+                    "install_command": f"pip install {' '.join(missing_packages)}",
+                    "status": "service_unavailable"
+                }
             )
         pipeline_instance = HTPAnalysisPipeline()
     return pipeline_instance
@@ -55,7 +79,8 @@ def get_pipeline() -> HTPAnalysisPipeline:
 @router.post("/analyze-image")
 async def analyze_drawing_image(
     background_tasks: BackgroundTasks,
-    file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(None),
+    image: Optional[UploadFile] = File(None),
     description: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
@@ -75,20 +100,32 @@ async def analyze_drawing_image(
     Returns:
         JSON: 분석 작업 시작 응답 및 작업 ID
     """
+    # file 또는 image 중 하나를 사용 (프론트엔드 호환성)
+    upload_file = file or image
+    
     print(f"🔍 API 엔드포인트 진입 - 함수 시작")
     print(f"📋 요청 파라미터 정보:")
     print(f"  - file: {file}")
-    print(f"  - file.filename: {getattr(file, 'filename', 'N/A')}")
-    print(f"  - file.content_type: {getattr(file, 'content_type', 'N/A')}")
+    print(f"  - image: {image}")
+    print(f"  - upload_file: {upload_file}")
+    print(f"  - filename: {getattr(upload_file, 'filename', 'N/A') if upload_file else 'N/A'}")
+    print(f"  - content_type: {getattr(upload_file, 'content_type', 'N/A') if upload_file else 'N/A'}")
     print(f"  - description: {description}")
     print(f"  - current_user: {current_user}")
     
     try:
+        if not upload_file:
+            print(f"❌ 검증 실패: 파일이 업로드되지 않음")
+            raise HTTPException(
+                status_code=422,
+                detail="이미지 파일이 업로드되지 않았습니다. 'file' 또는 'image' 필드에 파일을 첨부해주세요."
+            )
+        
         print(f"🚀 이미지 분석 요청 시작 - 사용자: {current_user['user_id']}")
-        print(f"📁 이미지 파일: {file.filename}, 크기: {file.size if file.size else 'unknown'}, 타입: {file.content_type}")
+        print(f"📁 이미지 파일: {upload_file.filename}, 크기: {upload_file.size if upload_file.size else 'unknown'}, 타입: {upload_file.content_type}")
         print(f"📝 설명: {description}")
         
-        if not file.filename:
+        if not upload_file.filename:
             print(f"❌ 검증 실패: 파일명이 없음")
             raise HTTPException(
                 status_code=422,
@@ -96,15 +133,16 @@ async def analyze_drawing_image(
             )
         
         # 1. 파일 검증
-        if not file.content_type or not file.content_type.startswith('image/'):
-            print(f"❌ 검증 실패: 잘못된 content-type: {file.content_type}")
+
+        if not upload_file.content_type or not upload_file.content_type.startswith('image/'):
+            print(f"❌ 검증 실패: 잘못된 content-type: {upload_file.content_type}")
             raise HTTPException(
                 status_code=422,
                 detail="지원하지 않는 파일 형식입니다. 이미지 파일을 업로드해주세요."
             )
         
         # 2. 고유 파일명 생성
-        file_extension = Path(file.filename).suffix.lower()
+        file_extension = Path(upload_file.filename).suffix.lower()
         if file_extension not in ['.jpg', '.jpeg', '.png', '.bmp', '.gif']:
             print(f"❌ 검증 실패: 지원하지 않는 확장자: {file_extension}")
             raise HTTPException(
@@ -134,7 +172,7 @@ async def analyze_drawing_image(
         import io
         
         # 업로드된 파일을 PIL Image로 로드
-        image_data = await file.read()
+        image_data = await upload_file.read()
         pil_image = PILImage.open(io.BytesIO(image_data))
         
         # RGB 모드로 변환 (RGBA 등 다른 모드 처리)
@@ -231,7 +269,7 @@ async def run_analysis_pipeline(
 
 
 async def save_analysis_result(
-    result: PipelineResult,
+    result: Any,  # PipelineResult가 None일 수 있으므로 Any 사용
     test_id: int,
     description: Optional[str],
     db: Session
@@ -261,7 +299,11 @@ async def save_analysis_result(
         friends_type_id = None
         summary_text = "분석을 완료할 수 없습니다."
         
-        if result.status == PipelineStatus.SUCCESS and result.personality_type:
+        if (PipelineStatus is not None and 
+            hasattr(result, 'status') and 
+            result.status == PipelineStatus.SUCCESS and 
+            hasattr(result, 'personality_type') and 
+            result.personality_type):
             friends_type_id = personality_mapping.get(result.personality_type)
             
             # result 파일에서 확률 정보 가져오기
@@ -540,47 +582,80 @@ async def check_pipeline_health():
         JSON: 파이프라인 상태 정보
     """
     try:
-        pipeline = get_pipeline()
-        
-        # 각 구성 요소 상태 확인
+        # 기본 상태 정보
         status = {
-            "pipeline_status": "healthy",
+            "pipeline_status": "unknown",
             "timestamp": datetime.now().isoformat(),
             "components": {
+                "pipeline_import": False,
                 "yolo_model": False,
                 "openai_api": False,
                 "kobert_model": False,
                 "directories": False
             },
-            "directories": {
-                "test_images": str(pipeline.config.test_img_dir),
-                "detection_results": str(pipeline.config.detection_results_dir),
-                "rag_docs": str(pipeline.config.rag_dir)
-            }
+            "directories": {},
+            "error_details": None
         }
         
-        # YOLO 모델 확인
-        yolo_path = pipeline.config.model_dir / pipeline.config.yolo_model_path
-        status["components"]["yolo_model"] = yolo_path.exists()
-        
-        # OpenAI API 키 확인
-        status["components"]["openai_api"] = bool(os.getenv('OPENAI_API_KEY'))
-        
-        # KoBERT 모델 확인
-        kobert_path = pipeline.config.model_dir / pipeline.config.kobert_model_path
-        status["components"]["kobert_model"] = kobert_path.exists()
-        
-        # 디렉토리 확인
-        required_dirs = [
-            pipeline.config.test_img_dir,
-            pipeline.config.detection_results_dir,
-            pipeline.config.rag_dir
-        ]
-        status["components"]["directories"] = all(d.exists() for d in required_dirs)
+        # 파이프라인 import 확인
+        if HTPAnalysisPipeline is not None:
+            status["components"]["pipeline_import"] = True
+            
+            try:
+                pipeline = get_pipeline()
+                
+                status["directories"] = {
+                    "test_images": str(pipeline.config.test_img_dir),
+                    "detection_results": str(pipeline.config.detection_results_dir),
+                    "rag_docs": str(pipeline.config.rag_dir)
+                }
+                
+                # YOLO 모델 확인
+                yolo_path = pipeline.config.model_dir / pipeline.config.yolo_model_path
+                status["components"]["yolo_model"] = yolo_path.exists()
+                
+                # OpenAI API 키 확인
+                status["components"]["openai_api"] = bool(os.getenv('OPENAI_API_KEY'))
+                
+                # KoBERT 모델 확인
+                kobert_path = pipeline.config.model_dir / pipeline.config.kobert_model_path
+                status["components"]["kobert_model"] = kobert_path.exists()
+                
+                # 디렉토리 확인
+                required_dirs = [
+                    pipeline.config.test_img_dir,
+                    pipeline.config.detection_results_dir,
+                    pipeline.config.rag_dir
+                ]
+                status["components"]["directories"] = all(d.exists() for d in required_dirs)
+                
+            except Exception as pipeline_error:
+                status["error_details"] = f"Pipeline initialization failed: {str(pipeline_error)}"
+        else:
+            if PIPELINE_IMPORT_ERROR and "numpy.dtype size changed" in PIPELINE_IMPORT_ERROR:
+                status["error_details"] = {
+                    "message": "numpy/pandas 버전 호환성 문제",
+                    "error": PIPELINE_IMPORT_ERROR,
+                    "solution": "conda install -c conda-forge numpy pandas --force-reinstall",
+                    "alternative": "pip uninstall numpy pandas -y && pip install numpy pandas",
+                    "help": "numpy와 pandas의 버전이 호환되지 않습니다. 재설치가 필요합니다."
+                }
+            else:
+                missing_packages = ["pandas", "transformers", "ultralytics", "torch", "opencv-python", "scikit-learn"]
+                status["error_details"] = {
+                    "message": "HTPAnalysisPipeline could not be imported",
+                    "error": PIPELINE_IMPORT_ERROR or "Unknown import error",
+                    "missing_packages": missing_packages,
+                    "install_command": f"pip install {' '.join(missing_packages)}",
+                    "help": "HTP 분석 기능을 사용하려면 위 패키지들을 설치해주세요."
+                }
         
         # 전체 상태 판단
-        all_healthy = all(status["components"].values())
-        status["pipeline_status"] = "healthy" if all_healthy else "degraded"
+        if status["components"]["pipeline_import"]:
+            all_healthy = all(status["components"].values())
+            status["pipeline_status"] = "healthy" if all_healthy else "degraded"
+        else:
+            status["pipeline_status"] = "unavailable"
         
         return JSONResponse(content=status)
         
@@ -590,6 +665,7 @@ async def check_pipeline_health():
             content={
                 "pipeline_status": "error",
                 "error": str(e),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
+                "error_details": "Health check failed completely"
             }
         )

@@ -29,6 +29,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   userId, // 외부에서 전달받거나 내부에서 계산
   friendsId // 외부에서 전달받거나 selectedCharacter에서 가져옴
 }) => {
+  console.log('ChatPage - 받은 selectedCharacter:', selectedCharacter);
   const [inputMessage, setInputMessage] = useState('');
   const [currentRating, setCurrentRating] = useState(3);
   const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -47,11 +48,13 @@ const ChatPage: React.FC<ChatPageProps> = ({
     isLoading,
     isSending,
     error,
+    greeting,
     createSession,
     sendMessage,
     loadSession,
     clearError,
-    clearMessages
+    clearMessages,
+    loadGreeting
   } = useChatSession();
 
   // 실제 사용자 ID 가져오기
@@ -368,7 +371,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
             {(lastBotMessage || chatMessages.length === 0) && (
               <div className="bg-gray-300 rounded-2xl p-6 mb-8 text-center">
                 <p className="text-gray-800 text-lg font-medium break-words word-wrap overflow-wrap">
-                  {lastBotMessage?.content || initialMessage}
+                  {lastBotMessage?.content || greeting || initialMessage}
                 </p>
               </div>
             )}

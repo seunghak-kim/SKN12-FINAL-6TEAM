@@ -7,7 +7,7 @@ import { PipelineStatusResponse } from '../../types';
 import { agreementService } from '../../services/agreementService';
 
 interface TestPageProps {
-  onStartAnalysis: (imageFile: File | null, description: string) => void;
+  onStartAnalysis: (imageFile: File | null, description: string) => Promise<void>;
   onNavigate?: (screen: string) => void;
 }
 
@@ -78,12 +78,8 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   };
 
   const handleStartTest = () => {
-    // 이미 동의했으면 바로 test-instruction으로 이동, 아니면 동의 모달 표시
-    if (hasAgreed) {
-      navigate('/test-instruction');
-    } else {
-      setShowConsentModal(true);
-    }
+    // 동의 상태와 관계없이 항상 동의 모달 표시
+    setShowConsentModal(true);
   };
 
   const handleConsentAgree = async () => {

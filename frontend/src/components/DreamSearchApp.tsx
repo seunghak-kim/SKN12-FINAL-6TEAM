@@ -26,7 +26,8 @@ const DreamSearchApp: React.FC = () => {
     handleCloseRatingModal,
     handleGoToMyPage,
     handleNewChat,
-    handleDeleteAccount
+    handleDeleteAccount,
+    updateTestResult
   } = useAppState();
 
   const handleNavigate = (screen: string) => {
@@ -62,6 +63,7 @@ const DreamSearchApp: React.FC = () => {
             onStartChat={handleStartChat}
             onNavigate={handleNavigate}
             currentTestResult={currentTestResult}
+            updateTestResult={updateTestResult}
           />
         );
       case 'chat':

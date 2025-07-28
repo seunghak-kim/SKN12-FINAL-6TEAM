@@ -60,11 +60,29 @@ app.include_router(pipeline_router, prefix="/api/v1/pipeline", tags=["pipeline"]
 async def startup_event():
     """애플리케이션 시작 시 실행"""
     try:
+        # 1. 데이터베이스 테이블 생성
         create_tables()
         print("Database tables created successfully")
+        
+        # 2. 페르소나 동기화
+        from .services.persona_sync import persona_sync_service
+        from .database import get_db
+        
+        db = next(get_db())
+        try:
+            sync_success = persona_sync_service.sync_friends_table(db)
+            if sync_success:
+                print("Persona synchronization completed successfully")
+            else:
+                print("Persona synchronization failed")
+        finally:
+            db.close()
+        
         print("Care Chat API is starting...")
     except Exception as e:
-        print(f" Database initialization failed: {e}")
+        print(f"Application initialization failed: {e}")
+        import traceback
+        traceback.print_exc()
         raise
 
 # 422 오류 전용 핸들러 추가
