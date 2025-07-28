@@ -10,9 +10,9 @@ from dataclasses import dataclass
 from enum import Enum
 
 # 내부 모듈 임포트
-from train_and_eval_kobert import run_persona_prediction_from_result
 from crop_by_labels import crop_objects_by_labels
 from analyze_images_with_gpt import analyze_image_gpt
+from keyword_classifier import run_keyword_prediction_from_result
 
 # 경로 설정
 sys.path.append(os.path.dirname(__file__))
@@ -305,7 +305,7 @@ class HTPAnalysisPipeline:
         return True
     
     def _execute_stage_3(self, result: PipelineResult) -> bool:
-        """3단계: KoBERT 성격 유형 분류
+        """3단계: 키워드 기반 성격 유형 분류 (best_keyword_classifier.pth 사용)
         
         Args:
             result: 결과 저장 객체
@@ -314,23 +314,29 @@ class HTPAnalysisPipeline:
             bool: 성공 여부
         """
         try:
-            self.logger.info("[3/3] KoBERT 성격 유형 분류 시작...")
+            self.logger.info("[3/3] 키워드 기반 성격 유형 분류 시작...")
             
-            # 성격 유형 예측 실행
-            prediction_result = run_persona_prediction_from_result(result.image_base)
-            
-            if prediction_result:
-                result.classification_success = True
-                result.personality_type = prediction_result.get('personality_type')
-                result.confidence_score = prediction_result.get('confidence', 0.0)
+            # 키워드 분류기 실행
+            try:
+                # 키워드 기반 성격 유형 예측 실행
+                prediction_result = run_keyword_prediction_from_result(result.image_base, quiet=False)
                 
-                self.logger.info(
-                    f"성격 유형 분류 완료: {result.personality_type} "
-                    f"(신뢰도: {result.confidence_score:.3f})"
-                )
-                return True
-            else:
-                self.logger.error("성격 유형 분류 결과를 받지 못했습니다.")
+                if prediction_result and prediction_result.get('personality_type'):
+                    result.classification_success = True
+                    result.personality_type = prediction_result.get('personality_type')
+                    result.confidence_score = prediction_result.get('confidence', 0.0)
+                    
+                    self.logger.info(
+                        f"키워드 기반 성격 유형 분류 완료: {result.personality_type} "
+                        f"(신뢰도: {result.confidence_score:.3f})"
+                    )
+                    return True
+                else:
+                    self.logger.error("키워드 분류 결과를 받지 못했습니다.")
+                    return False
+                    
+            except ImportError as e:
+                self.logger.error(f"키워드 분류기 import 실패: {e}")
                 return False
                 
         except Exception as e:
@@ -338,6 +344,8 @@ class HTPAnalysisPipeline:
             result.error_stage = "classification"
             result.error_message = str(e)
             return False
+    
+
     
     def analyze_image(self, image_input: str) -> PipelineResult:
         """이미지 분석 전체 파이프라인 실행
@@ -457,6 +465,77 @@ class HTPAnalysisPipeline:
         return status
 
 
+def _display_detailed_keyword_results(image_base: str, pipeline: HTPAnalysisPipeline):
+    """키워드 분석 결과를 상세하게 출력"""
+    try:
+        # 결과 파일 경로
+        result_file_path = pipeline.config.detection_results_dir / "results" / f"result_{image_base}.json"
+        
+        if not result_file_path.exists():
+            print(f"\n⚠️  키워드 분석 결과 파일을 찾을 수 없습니다: {result_file_path}")
+            return
+        
+        # 결과 파일 로드
+        with open(result_file_path, 'r', encoding='utf-8') as f:
+            result_data = json.load(f)
+        
+        # 키워드 분석 결과 추출
+        keyword_analysis = result_data.get('keyword_personality_analysis', {})
+        
+        if not keyword_analysis:
+            print(f"\n⚠️  키워드 분석 결과가 없습니다")
+            return
+        
+        print(f"\n🔍 키워드 기반 성격 분류 상세 결과")
+        print("="*50)
+        
+        # 예측된 성격 유형
+        predicted_personality = keyword_analysis.get('predicted_personality', 'N/A')
+        confidence = keyword_analysis.get('confidence', 0.0)
+        print(f"🎯 예측된 성격 유형: {predicted_personality}")
+        print(f"📊 신뢰도: {confidence:.3f} ({confidence*100:.1f}%)")
+        
+        # 사용된 키워드들
+        current_keywords = keyword_analysis.get('current_image_keywords', [])
+        previous_keywords = keyword_analysis.get('previous_stage_keywords', [])
+        total_keywords = keyword_analysis.get('total_keywords_used', 0)
+        
+        print(f"\n🔤 사용된 키워드 ({total_keywords}개):")
+        if current_keywords:
+            print(f"  📷 현재 이미지 키워드 ({len(current_keywords)}개):")
+            print(f"     {', '.join(current_keywords[:10])}")
+            if len(current_keywords) > 10:
+                print(f"     ... 외 {len(current_keywords)-10}개")
+        
+        if previous_keywords:
+            print(f"  📚 이전 단계 키워드 ({len(previous_keywords)}개):")
+            print(f"     {', '.join(previous_keywords[:10])}")
+            if len(previous_keywords) > 10:
+                print(f"     ... 외 {len(previous_keywords)-10}개")
+        
+        # 각 유형별 확률
+        probabilities = keyword_analysis.get('probabilities', {})
+        if probabilities:
+            print(f"\n📈 성격 유형별 확률:")
+            sorted_probs = sorted(probabilities.items(), key=lambda x: -x[1])
+            for i, (persona_type, prob) in enumerate(sorted_probs):
+                marker = "🏆" if persona_type == predicted_personality else "  "
+                bar_length = int(prob / 5)  # 100% = 20칸
+                bar = "█" * bar_length + "░" * (20 - bar_length)
+                print(f"     {marker} {persona_type:6s}: {prob:5.1f}% [{bar}]")
+        
+        # 모델 정보
+        model_used = keyword_analysis.get('model_used', 'N/A')
+        timestamp = keyword_analysis.get('analysis_timestamp', 'N/A')
+        print(f"\n🤖 사용된 모델: {model_used}")
+        print(f"⏰ 분석 시간: {timestamp}")
+        
+        print("="*50)
+        
+    except Exception as e:
+        print(f"\n❌ 키워드 분석 결과 출력 중 오류: {str(e)}")
+
+
 def main():
     """메인 함수 - CLI 인터페이스"""
     import argparse
@@ -512,6 +591,9 @@ def main():
         if result.status == PipelineStatus.SUCCESS:
             print(f"\n🎯 성격 유형: {result.personality_type}")
             print(f"🔍 신뢰도: {result.confidence_score:.1%}")
+            
+            # 키워드 분석 결과 상세 출력
+            _display_detailed_keyword_results(result.image_base, pipeline)
             
             if result.psychological_analysis:
                 print(f"\n📋 심리 분석 요약:")

@@ -136,11 +136,12 @@ async def update_drawing_test(test_id: int, db: Session = Depends(get_db)):
 
 # 테스트 결과 관련 엔드포인트
 from pydantic import BaseModel
+from typing import Optional
 
 class TestResultCreate(BaseModel):
     test_id: int
     friends_type: int
-    summary_text: str
+    summary_text: Optional[str] = None
 
 @router.post("/drawing-test-results", status_code=status.HTTP_201_CREATED)
 async def create_test_result(

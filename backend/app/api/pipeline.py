@@ -297,36 +297,86 @@ async def save_analysis_result(
         friends_type_id = None
         summary_text = "분석을 완료할 수 없습니다."
         
+        # 키워드 분석 결과 우선 처리
+        keyword_analysis_success = False
+        
         if (PipelineStatus is not None and 
             hasattr(result, 'status') and 
             result.status == PipelineStatus.SUCCESS and 
-            hasattr(result, 'personality_type') and 
-            result.personality_type):
-            friends_type_id = personality_mapping.get(result.personality_type)
+            hasattr(result, 'image_base')):
             
-            # result 파일에서 확률 정보 가져오기
+            # result 파일에서 키워드 분석 결과 확인
             result_file_path = pipeline.config.detection_results_dir / "results" / f"result_{result.image_base}.json"
-            probabilities = None
+            
             if result_file_path.exists():
                 try:
                     with open(result_file_path, 'r', encoding='utf-8') as f:
                         result_data = json.load(f)
-                        personality_analysis = result_data.get('personality_analysis', {})
-                        probabilities = personality_analysis.get('probabilities', {})
+                    
+                    # 1. 키워드 분석 결과 우선 처리
+                    keyword_analysis = result_data.get('keyword_personality_analysis', {})
+                    
+                    if keyword_analysis and keyword_analysis.get('predicted_personality'):
+                        predicted_personality = keyword_analysis.get('predicted_personality')
+                        confidence = keyword_analysis.get('confidence', 0.0)
+                        friends_type_id = personality_mapping.get(predicted_personality)
+                        
+                        # 키워드 정보
+                        current_keywords = keyword_analysis.get('current_image_keywords', [])
+                        previous_keywords = keyword_analysis.get('previous_stage_keywords', [])
+                        total_keywords = keyword_analysis.get('total_keywords_used', 0)
+                        probabilities = keyword_analysis.get('probabilities', {})
+                        
+                        # 상세한 summary_text 생성
+                        summary_parts = []
+                        
+                        # 기본 심리 분석 결과
+                        if result.psychological_analysis and result.psychological_analysis.get('result_text'):
+                            summary_parts.append(result.psychological_analysis['result_text'])
+                        
+                        # 키워드 분석 결과 추가
+                        summary_parts.append(f"\n[키워드 기반 성격 분석]")
+                        summary_parts.append(f"예측된 성격 유형: {predicted_personality}")
+                        summary_parts.append(f"분석 신뢰도: {confidence:.1%}")
+                        summary_parts.append(f"총 사용 키워드: {total_keywords}개")
+                        
+                        if current_keywords:
+                            summary_parts.append(f"주요 감정 키워드: {', '.join(current_keywords[:5])}")
+                        
+                        # 확률 정보
+                        if probabilities:
+                            sorted_probs = sorted(probabilities.items(), key=lambda x: -x[1])[:3]
+                            prob_text = ", ".join([f"{name}: {prob:.1f}%" for name, prob in sorted_probs])
+                            summary_parts.append(f"유형별 확률: {prob_text}")
+                        
+                        summary_text = "\n".join(summary_parts)
+                        keyword_analysis_success = True
+                        
+                        pipeline.logger.info(f"키워드 분석 결과 저장: {predicted_personality} (신뢰도: {confidence:.3f})")
+                    
+                    # 2. 키워드 분석 실패시 pipeline result 직접 사용
+                    if not keyword_analysis_success:
+                        if hasattr(result, 'personality_type') and result.personality_type:
+                            friends_type_id = personality_mapping.get(result.personality_type)
+                            
+                            if result.psychological_analysis and result.psychological_analysis.get('result_text'):
+                                summary_text = result.psychological_analysis['result_text']
+                                summary_text += f"\n[기본 분석] 성격 유형: {result.personality_type} (신뢰도: {result.confidence_score:.1%})"
+                            else:
+                                summary_text = f"성격 유형: {result.personality_type} (신뢰도: {result.confidence_score:.1%})"
+                            
+                            pipeline.logger.info(f"기본 결과 저장: {result.personality_type}")
+                
                 except Exception as e:
                     pipeline.logger.warning(f"result 파일 읽기 실패: {e}")
-            
-            # 심리분석 요약만 summary_text에 포함
-            if result.psychological_analysis:
-                analysis = result.psychological_analysis
-                if analysis.get('result_text'):
-                    summary_text = analysis['result_text']
-                else:
-                    summary_text = f"성격 유형: {result.personality_type} (신뢰도: {result.confidence_score:.1%})"
-            else:
-                summary_text = f"성격 유형: {result.personality_type} (신뢰도: {result.confidence_score:.1%})"
-            
-        elif result.error_message:
+                    
+                    # 파일 읽기 실패시 pipeline result 직접 사용
+                    if hasattr(result, 'personality_type') and result.personality_type:
+                        friends_type_id = personality_mapping.get(result.personality_type)
+                        summary_text = f"성격 유형: {result.personality_type}"
+        
+        # 오류 처리
+        if hasattr(result, 'error_message') and result.error_message:
             summary_text = f"분석 중 오류가 발생했습니다: {result.error_message}"
         
         # 결과 저장 (upsert 패턴)
@@ -431,7 +481,7 @@ async def get_analysis_status(
                         },
                         {
                             "name": "성격 분류",
-                            "description": "KoBERT를 사용한 성격유형 분류", 
+                            "description": "키워드 분류기를 사용한 성격유형 분류", 
                             "completed": classification_completed,
                             "current": analysis_completed and not classification_completed
                         }
@@ -475,7 +525,7 @@ async def get_analysis_status(
                 "steps": [
                     {"name": "객체 탐지", "description": "그림 요소 검출 중", "completed": False, "current": True},
                     {"name": "심리 분석", "description": "심리상태 분석 대기 중", "completed": False, "current": False},
-                    {"name": "성격 분류", "description": "성격유형 분류 대기 중", "completed": False, "current": False}
+                    {"name": "성격 분류", "description": "키워드 기반 성격유형 분류 대기 중", "completed": False, "current": False}
                 ],
                 "current_step": 1,
                 "completed_steps": 0,
@@ -483,12 +533,14 @@ async def get_analysis_status(
                 "estimated_remaining": "2-3분"
             })
         
-        # result 파일에서 추가 데이터 읽기
+        # result 파일에서 추가 데이터 읽기 (키워드 분석 우선)
         pipeline = get_pipeline()
         image_url = drawing_test.image_url
         result_text = None
         predicted_personality = None
         probabilities = {}
+        analysis_method = "unknown"
+        keyword_info = {}
         
         if image_url:
             import re
@@ -501,10 +553,31 @@ async def get_analysis_status(
                     try:
                         with open(result_file_path, 'r', encoding='utf-8') as f:
                             result_data = json.load(f)
-                            result_text = result_data.get('result_text', '')
-                            personality_analysis = result_data.get('personality_analysis', {})
-                            predicted_personality = personality_analysis.get('predicted_personality', '')
-                            probabilities = personality_analysis.get('probabilities', {})
+                        
+                        result_text = result_data.get('result_text', '')
+                        
+                        # 키워드 분석 결과 처리
+                        keyword_analysis = result_data.get('keyword_personality_analysis', {})
+                        
+                        if keyword_analysis and keyword_analysis.get('predicted_personality'):
+                            predicted_personality = keyword_analysis.get('predicted_personality', '')
+                            probabilities = keyword_analysis.get('probabilities', {})
+                            analysis_method = keyword_analysis.get('model_used', 'keyword_classifier')
+                            
+                            # 키워드 정보 추가
+                            keyword_info = {
+                                "current_keywords": keyword_analysis.get('current_image_keywords', []),
+                                "previous_keywords": keyword_analysis.get('previous_stage_keywords', []),
+                                "total_keywords": keyword_analysis.get('total_keywords_used', 0),
+                                "confidence": keyword_analysis.get('confidence', 0.0)
+                            }
+                            
+                            pipeline.logger.info(f"키워드 분석 결과 반환: {predicted_personality}")
+                        else:
+                            # 키워드 분석 결과가 없는 경우
+                            pipeline.logger.warning(f"키워드 분석 결과가 없습니다")
+                            analysis_method = "no_analysis"
+                            
                     except Exception as e:
                         pipeline.logger.warning(f"result 파일 읽기 실패: {e}")
 
@@ -516,7 +589,7 @@ async def get_analysis_status(
             "steps": [
                 {"name": "객체 탐지", "description": "YOLO를 사용한 그림 요소 검출", "completed": True, "current": False},
                 {"name": "심리 분석", "description": "GPT-4를 사용한 심리상태 분석", "completed": True, "current": False},
-                {"name": "성격 분류", "description": "KoBERT를 사용한 성격유형 분류", "completed": True, "current": False}
+                {"name": "성격 분류", "description": "키워드 분류기를 사용한 성격유형 분류", "completed": True, "current": False}
             ],
             "current_step": 3,
             "completed_steps": 3,
@@ -527,6 +600,8 @@ async def get_analysis_status(
                 "result_text": result_text,
                 "predicted_personality": predicted_personality,
                 "probabilities": probabilities,
+                "analysis_method": analysis_method,
+                "keyword_analysis": keyword_info,
                 "created_at": test_result.created_at.isoformat() if test_result.created_at else None
             }
         })
