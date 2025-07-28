@@ -14,6 +14,7 @@ from .api.test import router as test_router
 from .api.rating import router as rating_router
 from .api.agreement import router as agreement_router
 from .api.admin import router as admin_router
+from .api.pipeline import router as pipeline_router
 from .database import create_tables
 
 # 환경 변수 로드
@@ -50,8 +51,9 @@ app.include_router(friend_router, prefix="/friends", tags=["friends"])
 app.include_router(chat_router, prefix="/chat", tags=["chat"])
 app.include_router(test_router, prefix="/api/v1/test", tags=["tests"])
 app.include_router(rating_router, prefix="/ratings", tags=["ratings"])
-app.include_router(agreement_router, prefix="/agreements", tags=["agreements"])
+app.include_router(agreement_router, prefix="/api/v1/agreement", tags=["agreements"])
 app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
+app.include_router(pipeline_router, prefix="/api/v1/pipeline", tags=["pipeline"])
 
 # 시작 이벤트
 @app.on_event("startup")
@@ -64,6 +66,23 @@ async def startup_event():
     except Exception as e:
         print(f" Database initialization failed: {e}")
         raise
+
+# 422 오류 전용 핸들러 추가
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print(f"🚨 422 Validation Error:")
+    print(f"  URL: {request.url}")
+    print(f"  Method: {request.method}")
+    print(f"  Errors: {exc.errors()}")
+    print(f"  Body: {exc.body}")
+    
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": str(exc.body)}
+    )
 
 # 전역 예외 처리
 @app.exception_handler(Exception)

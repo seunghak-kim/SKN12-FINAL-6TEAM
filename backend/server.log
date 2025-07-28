@@ -1,0 +1,17 @@
+INFO:     Will watch for changes in these directories: ['/Users/macbook/Desktop/SKN12-FINAL-6TEAM/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [70696] using StatReload
+INFO:     Started server process [70700]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+✅ HTP 파이프라인 모듈 임포트 성공
+Database tables created successfully
+Care Chat API is starting...
+Verifying token: eyJhbGciOiJIUzI1NiIs...
+Secret key: QedQo2V19PE23FvF5sJW...
+Token verification successful: {'sub': '4', 'email': 'unknown', 'exp': 1755851625}
+INFO:     127.0.0.1:49976 - "POST /api/v1/pipeline/analyze-image HTTP/1.1" 422 Unprocessable Entity
+Verifying token: eyJhbGciOiJIUzI1NiIs...
+Secret key: QedQo2V19PE23FvF5sJW...
+Token verification successful: {'sub': '4', 'email': 'unknown', 'exp': 1755851625}
+INFO:     127.0.0.1:49978 - "POST /api/v1/pipeline/analyze-image HTTP/1.1" 422 Unprocessable Entity

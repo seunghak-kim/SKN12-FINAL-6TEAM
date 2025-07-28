@@ -18,6 +18,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onNavigate }) => {
       case '/main':
         return 'main';
       case '/test':
+      case '/test-instruction':
         return 'test';
       case '/results':
         return 'results';
