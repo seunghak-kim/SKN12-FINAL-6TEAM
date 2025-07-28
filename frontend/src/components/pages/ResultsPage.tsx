@@ -33,8 +33,6 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [isCreatingResult, setIsCreatingResult] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
-<<<<<<< HEAD
-=======
   const [actualPersonalityType, setActualPersonalityType] = useState<string>('내면형');
 
   // 성격 유형별 데이터 매핑
@@ -97,7 +95,6 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     };
     return typeToCharacter[personalityType] || '내면이';
   };
->>>>>>> origin/uiheon
 
   // TestInstructionPage에서 전달받은 데이터 처리
   useEffect(() => {
@@ -148,15 +145,12 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           const probabilities = data.result.probabilities;
           if (probabilities && Object.keys(probabilities).length > 0) {
             setProbabilities(probabilities);
-<<<<<<< HEAD
-=======
             // 실제 성격 유형 업데이트
             const mainType = getMainPersonalityType(probabilities);
             setActualPersonalityType(mainType);
             // 캐릭터 이름으로 변환해서 useAppState에 반영
             const characterName = getCharacterName(mainType);
             updateTestResult(characterName);
->>>>>>> origin/uiheon
           }
           
           // result_text가 있으면 분석 결과 업데이트
@@ -292,12 +286,6 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           </div>
         </div>
 
-<<<<<<< HEAD
-        {/* 확률 차트 컴포넌트 */}
-        {probabilities && Object.keys(probabilities).length > 0 && (
-          <ProbabilityChart probabilities={probabilities} />
-        )}
-=======
         {/* 확률 차트 컴포넌트 - 항상 표시 */}
         <ProbabilityChart 
           probabilities={probabilities || {
@@ -308,7 +296,6 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             '안정형': 0
           }} 
         />
->>>>>>> origin/uiheon
 
         <div className="bg-white rounded-xl shadow-md p-4">
           <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">
