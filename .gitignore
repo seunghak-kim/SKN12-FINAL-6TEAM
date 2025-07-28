@@ -32,8 +32,18 @@ yarn-error.log*
 # 데이터 파일 안됨 
 /backend/data
 
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
 # pycache
 __pycache__*
 
 /backend/result*
+<<<<<<< HEAD
 /backend/llm/detection_results*
+=======
+/backend/llm/detection_results*
+>>>>>>> origin/uiheon

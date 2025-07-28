@@ -13,6 +13,7 @@ interface CharactersPageProps {
 }
 
 const CharactersPage: React.FC<CharactersPageProps> = ({
+  characters,
   selectedCharacter,
   onCharacterSelect,
   onStartChat,
@@ -25,55 +26,38 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
   };
 
   const handleCharacterClick = (character: any) => {
+    console.log('CharactersPage - 클릭된 캐릭터:', character);
     onCharacterSelect(character);
     onStartChat();
     navigate('/chat');
   };
 
-  // 참고 스크린샷과 동일한 캐릭터 목록
-  const displayCharacters = [
-    {
-      id: '1',
-      name: '추진이',
-      description: '긍정적 생각 전환, 스트레스 해소, 자존감 향상 등을 통해 당신의 마음속 행복을 찾아줄 거예요. 안 되던 당신의 이야기를 듣고 함께 빛나는 해결책을 찾아 나갈 거예요.',
-      avatar: '😊',
-      color: 'from-yellow-400 to-orange-500',
-      buttonColor: 'bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700'
-    },
-    {
-      id: '2',
-      name: '내면이',
-      description: '분노와 좌절감을 건전하게 표현하고 해소하는 방법을 알려드려요. 감정을 억누르지 말고 함께 이야기하며 마음의 평화를 찾아보세요.',
-      avatar: '😖',
-      color: 'from-red-400 to-pink-600',
-      buttonColor: 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
-    },
-    {
-      id: '3',
-      name: '관계이',
-      description: '당신의 슬픔을 이해하고 함께 극복해나가는 방법을 찾아드립니다.',
-      avatar: '😘',
-      color: 'from-blue-400 to-indigo-600',
-      buttonColor: 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700',
-      isRecommended: true
-    },
-    {
-      id: '4',
-      name: '쾌락이',
-      description: '불안과 두려움을 극복하는 방법을 함께 찾아보아요. 작은 용기부터 시작해 정서적 자신감을 키워나가요.',
-      avatar: '🤪',
-      color: 'from-purple-400 to-violet-600',
-      buttonColor: 'bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700'
-    },
-    {
-      id: '5',
-      name: '안정이',
-      description: '솔직하고 직설적인 조언으로 현실적인 해결책을 제시해드려요. 때로는 쓴소리도 필요하니까요.',
-      avatar: '🤭',
-      color: 'from-gray-400 to-slate-600',
-      buttonColor: 'bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700'
-    }
-  ];
+  // 실제 characters 데이터를 기반으로 UI 스타일 매핑
+  const getCharacterStyle = (characterName: string) => {
+    const styles: { [key: string]: { color: string; buttonColor: string; } } = {
+      '추진이': {
+        color: 'from-yellow-400 to-orange-500',
+        buttonColor: 'bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700'
+      },
+      '내면이': {
+        color: 'from-red-400 to-pink-600', 
+        buttonColor: 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
+      },
+      '관계이': {
+        color: 'from-blue-400 to-indigo-600',
+        buttonColor: 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+      },
+      '쾌락이': {
+        color: 'from-purple-400 to-violet-600',
+        buttonColor: 'bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700'
+      },
+      '안정이': {
+        color: 'from-gray-400 to-slate-600',
+        buttonColor: 'bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700'
+      }
+    };
+    return styles[characterName] || styles['내면이'];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -97,16 +81,15 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {displayCharacters.map((character) => {
+            {characters.map((character) => {
               const isSelected = selectedCharacter && selectedCharacter.id === character.id;
               const isDisabled = isSelected;
+              const style = getCharacterStyle(character.name);
               
               return (
                 <div 
                   key={character.id} 
                   className={`bg-white/70 backdrop-blur-sm border-0 shadow-xl rounded-xl p-6 transition-all duration-300 flex flex-col h-80 ${
-                    character.isRecommended ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
-                  } ${
                     isSelected ? 'ring-2 ring-green-400 ring-opacity-60 bg-green-50/50' : ''
                   } ${
                     isDisabled 
@@ -115,17 +98,12 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
                   }`}
                 >
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${character.color} rounded-full flex items-center justify-center shadow-lg`}>
+                  <div className={`w-16 h-16 bg-gradient-to-br ${style.color} rounded-full flex items-center justify-center shadow-lg`}>
                     <span className="text-2xl">{character.avatar}</span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
                       <h3 className="text-xl font-bold text-gray-800">{character.name}</h3>
-                      {character.isRecommended && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
-                          매칭된 페르소나
-                        </span>
-                      )}
                       {isSelected && (
                         <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
                           대화 중
@@ -145,7 +123,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
                   className={`w-full py-3 rounded-full font-medium transition-all duration-300 shadow-lg mt-auto ${
                     isDisabled 
                       ? 'bg-gray-400 text-gray-100 cursor-not-allowed opacity-70' 
-                      : `${character.buttonColor} text-white hover:shadow-xl`
+                      : `${style.buttonColor} text-white hover:shadow-xl`
                   }`}
                 >
                   {isDisabled ? '현재 대화 중인 캐릭터' : `${character.name}와 대화하기`}

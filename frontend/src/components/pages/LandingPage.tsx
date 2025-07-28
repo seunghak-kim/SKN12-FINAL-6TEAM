@@ -37,16 +37,31 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGoogleLogin }) => {
       return;
     }
     
-    // 이미 로그인한 경우 메인으로 리디렉션
+    // 새로고침 vs 새 접속 구분하여 자동 로그인 처리
     const checkAuth = async () => {
-      const user = await authService.getCurrentUser();
-      if (user) {
-        if (user.is_first_login) {
-          navigate('/nickname');
-        } else {
-          navigate('/main');
+      // 새로고침인지 확인 (performance.navigation API 사용)
+      const isReload = performance.navigation && 
+        performance.navigation.type === performance.navigation.TYPE_RELOAD;
+      
+      // 또는 performance.getEntriesByType 사용 (더 호환성 좋음)
+      const navigationEntries = performance.getEntriesByType('navigation');
+      const isReloadCompat = navigationEntries.length > 0 && 
+        (navigationEntries[0] as PerformanceNavigationTiming).type === 'reload';
+      
+      const isPageReload = isReload || isReloadCompat;
+      
+      // 새로고침이거나 브라우저 뒤로가기인 경우에만 자동 로그인 시도
+      if (isPageReload) {
+        const user = await authService.getCurrentUser();
+        if (user) {
+          if (user.is_first_login) {
+            navigate('/nickname');
+          } else {
+            navigate('/main');
+          }
         }
       }
+      // 새 접속(프론트 서버 재시작 등)인 경우 랜딩페이지 유지
     };
     
     checkAuth();

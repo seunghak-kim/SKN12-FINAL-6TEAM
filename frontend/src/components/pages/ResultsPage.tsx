@@ -15,6 +15,7 @@ interface ResultsPageProps {
   onStartChat: () => void;
   onNavigate?: (screen: string) => void;
   currentTestResult: string;
+  updateTestResult: (newTestResult: string) => void;
 }
 
 const ResultsPage: React.FC<ResultsPageProps> = ({
@@ -22,7 +23,8 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   onCharacterSelect,
   onStartChat,
   onNavigate,
-  currentTestResult
+  currentTestResult,
+  updateTestResult
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,12 +33,97 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [isCreatingResult, setIsCreatingResult] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
+<<<<<<< HEAD
+=======
+  const [actualPersonalityType, setActualPersonalityType] = useState<string>('내면형');
+
+  // 성격 유형별 데이터 매핑
+  const personalityData: { [key: string]: { friendsType: number; emoji: string; message: string; keywords: string[]; color: string; } } = {
+    '추진형': {
+      friendsType: 1,
+      emoji: '💪',
+      message: '목표를 향해 나아가자! 어떤 장애물도 내가 극복할 수 있어. 도전이 두렵지 않아!',
+      keywords: ['목표 지향', '리더십', '적극성'],
+      color: 'red'
+    },
+    '내면형': {
+      friendsType: 2, 
+      emoji: '😖',
+      message: '아무도 내 기분을 제대로 이해하지 못할 거야... 괜찮아, 혼자인 게 더 편하니까. 내 세상 안에서 나는 완전하거든.',
+      keywords: ['감정적 깊이', '내성적 성향', '공감 능력'],
+      color: 'blue'
+    },
+    '관계형': {
+      friendsType: 3,
+      emoji: '🤝', 
+      message: '함께하면 더 좋은 일들이 생길 거야! 혼자보다는 다 같이 할 때 더 의미있어.',
+      keywords: ['사교성', '협력', '친화력'],
+      color: 'green'
+    },
+    '쾌락형': {
+      friendsType: 4,
+      emoji: '😄',
+      message: '인생은 즐거워야 해! 재미있는 일들을 찾아보자! 매 순간이 새로운 모험이야.',
+      keywords: ['즐거움 추구', '활발함', '창의성'],
+      color: 'yellow'
+    },
+    '안정형': {
+      friendsType: 5,
+      emoji: '😌',
+      message: '차분하고 안정적인 게 최고야. 평온함 속에서 행복을 찾자. 급할 건 없어.',
+      keywords: ['안정감', '신중함', '조화'],
+      color: 'purple'
+    }
+  };
+
+  // 실제 분석 결과에서 주 성격 유형 추출
+  const getMainPersonalityType = (probabilities: { [key: string]: number }) => {
+    if (!probabilities || Object.keys(probabilities).length === 0) {
+      return '내면형'; // 기본값
+    }
+    
+    return Object.entries(probabilities)
+      .sort(([,a], [,b]) => b - a)[0][0]; // 가장 높은 확률의 유형
+  };
+
+  // 성격 유형을 캐릭터 이름으로 변환
+  const getCharacterName = (personalityType: string) => {
+    const typeToCharacter: { [key: string]: string } = {
+      '추진형': '추진이',
+      '내면형': '내면이', 
+      '관계형': '관계이',
+      '쾌락형': '쾌락이',
+      '안정형': '안정이'
+    };
+    return typeToCharacter[personalityType] || '내면이';
+  };
+>>>>>>> origin/uiheon
 
   // TestInstructionPage에서 전달받은 데이터 처리
   useEffect(() => {
-    const stateData = location.state as { testId: number; imageUrl: string } | null;
+    const stateData = location.state as { 
+      testId: number | null; 
+      imageUrl?: string; 
+      error?: boolean; 
+      errorMessage?: string;
+      fromPipeline?: boolean;
+    } | null;
     
-    if (stateData?.testId) {
+    if (stateData?.error) {
+      // 분석 실패 시 0% 데이터 표시
+      console.log('분석 실패 상태로 0% UI 표시');
+      setTestData({ testId: null, error: true, errorMessage: stateData.errorMessage });
+      setAnalysisResult(stateData.errorMessage || '분석 중 오류가 발생했습니다.');
+      
+      // 모든 페르소나를 0%로 설정
+      setProbabilities({
+        '추진형': 0,
+        '내면형': 0,
+        '관계형': 0,
+        '쾌락형': 0,
+        '안정형': 0
+      });
+    } else if (stateData?.testId) {
       setTestData(stateData);
       // AI 분석 결과 생성 및 DB 저장
       createTestResult(stateData.testId);
@@ -61,6 +148,15 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           const probabilities = data.result.probabilities;
           if (probabilities && Object.keys(probabilities).length > 0) {
             setProbabilities(probabilities);
+<<<<<<< HEAD
+=======
+            // 실제 성격 유형 업데이트
+            const mainType = getMainPersonalityType(probabilities);
+            setActualPersonalityType(mainType);
+            // 캐릭터 이름으로 변환해서 useAppState에 반영
+            const characterName = getCharacterName(mainType);
+            updateTestResult(characterName);
+>>>>>>> origin/uiheon
           }
           
           // result_text가 있으면 분석 결과 업데이트
@@ -90,7 +186,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         },
         body: JSON.stringify({
           test_id: testId,
-          friends_type: 2, // 내면이 
+          friends_type: personalityData[actualPersonalityType]?.friendsType || 2,
           summary_text: testResultText
         })
       });
@@ -127,18 +223,18 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       <div className="container mx-auto px-4 py-4 max-w-4xl">
         <div className="text-center mb-4">
           <div className="flex justify-center items-center gap-3 mb-4">
-            <div className="text-4xl">😖</div>
+            <div className="text-4xl">{personalityData[actualPersonalityType]?.emoji || '😖'}</div>
             <div className="bg-white rounded-xl p-3 shadow-md relative">
               <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2">
                 <div className="w-3 h-3 bg-white rotate-45 shadow-md"></div>
               </div>
               <p className="text-gray-700 font-medium text-sm">
-                아무도 내 기분을 제대로 이해하지 못할 거야... 괜찮아, 혼자인 게 더 편하니까. 내 세상 안에서 나는 완전하거든.
+                {personalityData[actualPersonalityType]?.message || '아무도 내 기분을 제대로 이해하지 못할 거야... 괜찮아, 혼자인 게 더 편하니까. 내 세상 안에서 나는 완전하거든.'}
               </p>
             </div>
           </div>
           <h2 className="text-xl font-bold text-gray-800 mb-1">
-            당신의 페르소나는 <span className="text-blue-600">{currentTestResult}</span> 입니다
+            당신의 페르소나는 <span className={`text-${personalityData[actualPersonalityType]?.color || 'blue'}-600`}>{actualPersonalityType}</span> 입니다
           </h2>
         </div>
 
@@ -162,9 +258,11 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                     {analysisResult}
                   </p>
                   <div className="flex justify-center flex-wrap gap-2">
-                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">감정적 깊이</span>
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">내성적 성향</span>
-                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">공감 능력</span>
+                    {(personalityData[actualPersonalityType]?.keywords || ['감정적 깊이', '내성적 성향', '공감 능력']).map((keyword, index) => (
+                      <span key={index} className={`bg-${personalityData[actualPersonalityType]?.color || 'blue'}-100 text-${personalityData[actualPersonalityType]?.color || 'blue'}-800 px-3 py-1 rounded-full text-sm font-medium`}>
+                        {keyword}
+                      </span>
+                    ))}
                   </div>
                 </>
               ) : (
@@ -194,10 +292,23 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* 확률 차트 컴포넌트 */}
         {probabilities && Object.keys(probabilities).length > 0 && (
           <ProbabilityChart probabilities={probabilities} />
         )}
+=======
+        {/* 확률 차트 컴포넌트 - 항상 표시 */}
+        <ProbabilityChart 
+          probabilities={probabilities || {
+            '추진형': 0,
+            '내면형': 0,
+            '관계형': 0,
+            '쾌락형': 0,
+            '안정형': 0
+          }} 
+        />
+>>>>>>> origin/uiheon
 
         <div className="bg-white rounded-xl shadow-md p-4">
           <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">
@@ -207,8 +318,8 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             <div className="w-full max-w-sm">
             {characters
               .filter(character => {
-                // 현재 테스트 결과와 일치하는 캐릭터만 표시
-                return character.name === currentTestResult;
+                // 실제 분석된 성격 유형을 캐릭터 이름으로 변환해서 매칭
+                return character.name === getCharacterName(actualPersonalityType);
               })
               .map(character => (
                 <div key={character.id} className="text-center">

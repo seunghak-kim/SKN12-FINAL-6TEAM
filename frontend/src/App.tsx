@@ -14,6 +14,7 @@ import AuthCallbackPage from './components/pages/AuthCallbackPage';
 // import FloatingChatBot from './components/common/FloatingChatBot';
 import { useAppState } from './hooks/useAppState';
 import { authService } from './services/authService';
+import { testService } from './services/testService';
 import './App.css';
 import './components/DreamSearchApp.css';
 
@@ -35,7 +36,8 @@ const AppContent: React.FC = () => {
     handleDeleteAccount,
     handleContinueChat,
     handleUpdateProfile,
-    handleInitializeChat
+    handleInitializeChat,
+    updateTestResult
   } = useAppState();
 
   // URL에서 토큰 처리 (보안 이슈 해결용 임시 처리)
@@ -123,10 +125,26 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleStartAnalysis = (imageFile: File | null, description: string) => {
-    // 여기서 이미지와 설명을 저장하거나 처리할 수 있습니다
-    console.log('Analysis started with:', { imageFile, description });
-    handleStartDreamSearch();
+  const handleStartAnalysis = async (imageFile: File | null, description: string) => {
+    if (!imageFile) {
+      console.error('이미지 파일이 없습니다.');
+      return;
+    }
+
+    try {
+      console.log('실제 분석 시작:', { imageFile, description });
+      
+      // 실제 분석 API 호출
+      const result = await testService.uploadDrawingImage(imageFile);
+      console.log('분석 완료:', result);
+      
+      // 분석 완료 후 결과 페이지로 이동
+      handleStartDreamSearch();
+    } catch (error) {
+      console.error('분석 실패:', error);
+      // 에러 발생 시에도 결과 페이지로 이동 (기존 동작 유지)
+      handleStartDreamSearch();
+    }
   };
 
   return (
@@ -172,6 +190,7 @@ const AppContent: React.FC = () => {
               onStartChat={handleStartChat}
               onNavigate={handleNavigate}
               currentTestResult={currentTestResult}
+              updateTestResult={updateTestResult}
             />
           } 
         />

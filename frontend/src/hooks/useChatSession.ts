@@ -14,6 +14,7 @@ interface UseChatSessionReturn {
   isLoading: boolean;
   isSending: boolean;
   error: string | null;
+  greeting: string | null;
 
   // 액션
   createSession: (data: CreateSessionRequest) => Promise<void>;
@@ -22,6 +23,7 @@ interface UseChatSessionReturn {
   deleteSession: (sessionId: string) => Promise<void>;
   clearError: () => void;
   clearMessages: () => void;
+  loadGreeting: (sessionId: string) => Promise<void>;
 }
 
 export const useChatSession = (): UseChatSessionReturn => {
@@ -30,6 +32,7 @@ export const useChatSession = (): UseChatSessionReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState<string | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   // 에러 처리 헬퍼
@@ -66,7 +69,16 @@ export const useChatSession = (): UseChatSessionReturn => {
       console.log('세션 생성 성공:', newSession);
       setSession(newSession);
       
-      // 세션 생성 후 메시지 로드
+      // 세션 생성 후 greeting 메시지 로드
+      try {
+        const greetingData = await chatService.getSessionGreeting(newSession.chat_sessions_id);
+        console.log('greeting 로드 성공:', greetingData);
+        setGreeting(greetingData.greeting);
+      } catch (greetingError) {
+        console.error('greeting 로드 실패:', greetingError);
+      }
+      
+      // 세션 생성 후 기존 메시지 로드
       try {
         const sessionMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
         const frontendMessages = sessionMessages.map(msg => 
@@ -167,6 +179,17 @@ export const useChatSession = (): UseChatSessionReturn => {
     setMessages([]);
   }, []);
 
+  // greeting 로드
+  const loadGreeting = useCallback(async (sessionId: string) => {
+    try {
+      const greetingData = await chatService.getSessionGreeting(sessionId);
+      setGreeting(greetingData.greeting);
+    } catch (error) {
+      console.error('greeting 로드 실패:', error);
+      handleError(error);
+    }
+  }, [handleError]);
+
   return {
     // 상태
     session,
@@ -174,6 +197,7 @@ export const useChatSession = (): UseChatSessionReturn => {
     isLoading,
     isSending,
     error,
+    greeting,
 
     // 액션
     createSession,
@@ -181,6 +205,7 @@ export const useChatSession = (): UseChatSessionReturn => {
     loadSession,
     deleteSession,
     clearError,
-    clearMessages
+    clearMessages,
+    loadGreeting
   };
 };

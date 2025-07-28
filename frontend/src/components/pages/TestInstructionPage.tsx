@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
+<<<<<<< HEAD
 import ConsentModal from '../common/ConsentModal';
+=======
+>>>>>>> origin/uiheon
 import PipelineHealthCheck from '../common/PipelineHealthCheck';
 import PipelineTestPanel from '../common/PipelineTestPanel';
 
 interface TestInstructionPageProps {
-  onStartAnalysis: (imageFile: File | null, description: string) => void;
+  onStartAnalysis: (imageFile: File | null, description: string) => Promise<void>;
   onNavigate?: (screen: string) => void;
 }
 
@@ -17,7 +20,10 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
   const [description, setDescription] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+<<<<<<< HEAD
   const [showConsentModal, setShowConsentModal] = useState(false);
+=======
+>>>>>>> origin/uiheon
   const [showHealthCheck, setShowHealthCheck] = useState(false);
   const [showTestPanel, setShowTestPanel] = useState(false);
 
@@ -58,17 +64,11 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
     }
   };
 
-  const handleStartTest = () => {
-    setShowConsentModal(true);
+  const handleStartTest = async () => {
+    // 개인정보 동의 팝업 없이 바로 분석 시작
+    handleAnalysis();
   };
 
-  const handleConsentAgree = () => {
-    setShowConsentModal(false);
-  };
-
-  const handleConsentClose = () => {
-    setShowConsentModal(false);
-  };
 
   const handleAnalysis = async () => {
     if (!selectedImage) return;
@@ -114,6 +114,7 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
       console.error('❌ 파이프라인 분석 실패:', error);
       setIsAnalyzing(false);
       
+<<<<<<< HEAD
       // 에러 메시지를 더 상세하게 표시
       let errorMessage = '분석 중 오류가 발생했습니다.';
       if (error instanceof Error) {
@@ -121,6 +122,18 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
       }
       
       alert(`분석 실패: ${errorMessage}\n\n다시 시도해주세요.`);
+=======
+      // 분석 실패해도 결과 페이지로 이동 (0% UI 표시)
+      console.log('분석 실패했지만 결과 페이지로 이동하여 0% UI 표시');
+      navigate('/results', { 
+        state: { 
+          testId: null, // testId가 없음을 표시
+          fromPipeline: true,
+          error: true, // 분석 실패 플래그
+          errorMessage: error instanceof Error ? error.message : '분석 중 오류가 발생했습니다.'
+        } 
+      });
+>>>>>>> origin/uiheon
     }
   };
 
@@ -259,7 +272,7 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
                 ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1' 
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
-            onClick={handleAnalysis}
+            onClick={handleStartTest}
             disabled={!canAnalyze}
           >
             {isAnalyzing ? (
@@ -282,11 +295,6 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
         </div>
       </div>
 
-      <ConsentModal 
-        isOpen={showConsentModal}
-        onClose={handleConsentClose}
-        onAgree={handleConsentAgree}
-      />
       
       
       <PipelineHealthCheck 
@@ -294,6 +302,15 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
         onClose={() => setShowHealthCheck(false)}
       />
       
+<<<<<<< HEAD
+      
+      <PipelineHealthCheck 
+        isVisible={showHealthCheck}
+        onClose={() => setShowHealthCheck(false)}
+      />
+      
+=======
+>>>>>>> origin/uiheon
       <PipelineTestPanel 
         isVisible={showTestPanel}
         onClose={() => setShowTestPanel(false)}

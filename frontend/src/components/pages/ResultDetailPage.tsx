@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navigation from '../common/Navigation';
-import { ArrowLeft, MessageSquare, Loader } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Users, Loader } from 'lucide-react';
 import { TestResult } from '../../types';
 import { testService } from '../../services/testService';
 
