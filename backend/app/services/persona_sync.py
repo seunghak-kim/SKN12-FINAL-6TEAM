@@ -15,7 +15,7 @@ class PersonaSyncService:
     
     def __init__(self):
         # 프롬프트 파일 경로 설정
-        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         self.prompts_dir = os.path.join(current_dir, "prompts")
         
         # 프롬프트 파일과 페르소나 매핑
@@ -23,8 +23,8 @@ class PersonaSyncService:
             "추진형": "chujin.md",
             "내면형": "nemyeon.md", 
             "관계형": "gwangye.md",
-            "안정형": "anjeong.md",
-            "쾌락형": "querock.md"
+            "쾌락형": "querock.md",
+            "안정형": "anjeong.md"
         }
         
     def extract_persona_info(self, file_path: str) -> Dict[str, str]:
