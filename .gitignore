@@ -42,8 +42,4 @@ __pycache__/
 __pycache__*
 
 /backend/result*
-<<<<<<< HEAD
 /backend/llm/detection_results*
-=======
-/backend/llm/detection_results*
->>>>>>> origin/uiheon

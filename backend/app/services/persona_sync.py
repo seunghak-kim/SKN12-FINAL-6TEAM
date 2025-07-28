@@ -171,9 +171,7 @@ class PersonaSyncService:
                     "friends_name": persona_type,
                     "friends_description": default_descriptions.get(persona_type, f"{persona_type} 성향의 전문 심리 상담 챗봇"),
                     "is_active": True
-                })
-                logger.warning(f"프롬프트 파일 없음, 특화된 기본값 사용: {filename}")
-        
+                })        
         return persona_data
     
     def sync_friends_table(self, db: Session) -> bool:
