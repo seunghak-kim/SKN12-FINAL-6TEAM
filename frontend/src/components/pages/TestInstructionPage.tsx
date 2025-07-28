@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import ConsentModal from '../common/ConsentModal';
-import AnalysisModal from '../common/AnalysisModal';
+import PipelineHealthCheck from '../common/PipelineHealthCheck';
+import PipelineTestPanel from '../common/PipelineTestPanel';
 
 interface TestInstructionPageProps {
   onStartAnalysis: (imageFile: File | null, description: string) => void;
@@ -17,6 +18,8 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
   const [isDragOver, setIsDragOver] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [showHealthCheck, setShowHealthCheck] = useState(false);
+  const [showTestPanel, setShowTestPanel] = useState(false);
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file);
@@ -73,25 +76,51 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
     setIsAnalyzing(true);
     
     try {
-      // 이미지 업로드 및 테스트 생성
+      // 새로운 파이프라인 API 사용
       const { testService } = await import('../../services/testService');
-      const uploadResult = await testService.uploadDrawingImage(selectedImage);
       
-      // 업로드 성공 후 결과 페이지로 이동하면서 testId 전달
-      setTimeout(() => {
-        setIsAnalyzing(false);
-        navigate('/results', { 
-          state: { 
-            testId: uploadResult.test_id,
-            imageUrl: uploadResult.image_url 
-          } 
-        });
-      }, 2000);
+      console.log('🚀 파이프라인 분석 시작:', selectedImage.name);
+      
+      // 이미지 분석 시작
+      const analysisResult = await testService.analyzeImage(selectedImage, description);
+      console.log('✅ 분석 시작 응답:', analysisResult);
+      
+      const testId = analysisResult.test_id;
+      
+      // 분석 상태 폴링 시작
+      console.log('📡 상태 폴링 시작, test_id:', testId);
+      await testService.pollAnalysisStatus(testId.toString(), (status) => {
+        console.log('📊 폴링 상태 업데이트:', status);
+        
+        // 진행률에 따른 UI 업데이트 (AnalysisModal에서 처리)
+        // 여기서는 로그만 출력
+        if (status.status === 'processing') {
+          console.log(`⏳ 분석 진행 중: ${status.message}`);
+        }
+      });
+      
+      console.log('🎉 분석 완료! 결과 페이지로 이동');
+      
+      // 분석 완료 후 결과 페이지로 이동
+      setIsAnalyzing(false);
+      navigate('/results', { 
+        state: { 
+          testId: testId,
+          fromPipeline: true
+        } 
+      });
       
     } catch (error) {
-      console.error('이미지 업로드 실패:', error);
+      console.error('❌ 파이프라인 분석 실패:', error);
       setIsAnalyzing(false);
-      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+      
+      // 에러 메시지를 더 상세하게 표시
+      let errorMessage = '분석 중 오류가 발생했습니다.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      alert(`분석 실패: ${errorMessage}\n\n다시 시도해주세요.`);
     }
   };
 
@@ -109,7 +138,25 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">HTP 심리검사</h1>
+          <div className="flex items-center justify-center mb-4">
+            <h1 className="text-3xl font-bold text-gray-800">HTP 심리검사</h1>
+            <div className="ml-4 flex space-x-2">
+              <button
+                onClick={() => setShowHealthCheck(true)}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1 rounded-lg text-sm font-medium transition-colors"
+                title="파이프라인 상태 확인"
+              >
+                🔧 상태확인
+              </button>
+              <button
+                onClick={() => setShowTestPanel(true)}
+                className="bg-blue-100 hover:bg-blue-200 text-blue-600 px-3 py-1 rounded-lg text-sm font-medium transition-colors"
+                title="API 테스트 패널"
+              >
+                🧪 API테스트
+              </button>
+            </div>
+          </div>
           <p className="text-gray-600">그림을 업로드하고 설명을 작성해주세요</p>
         </div>
 
@@ -216,10 +263,7 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
             disabled={!canAnalyze}
           >
             {isAnalyzing ? (
-              <span className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>분석 중...</span>
-              </span>
+              '분석 중...'
             ) : canAnalyze ? (
               <span className="flex items-center space-x-2">
                 <span>🔍</span>
@@ -244,7 +288,16 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
         onAgree={handleConsentAgree}
       />
       
-      <AnalysisModal isOpen={isAnalyzing} onComplete={handleAnalysisComplete} />
+      
+      <PipelineHealthCheck 
+        isVisible={showHealthCheck}
+        onClose={() => setShowHealthCheck(false)}
+      />
+      
+      <PipelineTestPanel 
+        isVisible={showTestPanel}
+        onClose={() => setShowTestPanel(false)}
+      />
     </div>
   );
 };

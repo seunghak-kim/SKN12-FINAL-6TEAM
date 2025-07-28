@@ -19,6 +19,7 @@
 거북이상담소는 AI 기반 심리 상담 챗봇 서비스로, 사용자가 5가지 성격 유형별 AI 상담사와 대화할 수 있는 플랫폼을 제공합니다.
 
 ### 주요 기능
+
 - **🤖 AI 상담 챗봇**: OpenAI GPT-4o를 활용한 개성 있는 AI 상담사들
 - **🎨 그림 심리 검사**: 사용자가 그린 그림을 분석하여 성격 유형 진단
 - **👥 소셜 로그인**: Google OAuth2를 통한 간편 로그인
@@ -29,26 +30,31 @@
 ## 🛠 기술 스택
 
 ### 백엔드 프레임워크
+
 - **FastAPI**: 고성능 Python 웹 프레임워크
 - **Python 3.8+**: 주 개발 언어
 - **Uvicorn**: ASGI 서버
 
 ### 데이터베이스
+
 - **PostgreSQL**: 메인 데이터베이스
 - **SQLAlchemy**: ORM (Object-Relational Mapping)
 - **Psycopg2**: PostgreSQL 드라이버
 
 ### AI & 머신러닝
+
 - **OpenAI GPT-4o**: 대화형 AI 모델
 - **LangChain**: AI 모델 통합 프레임워크
 - **YOLO**: 이미지 객체 검출 (그림 분석용)
 
 ### 인증 & 보안
+
 - **Google OAuth2**: 소셜 로그인
 - **JWT**: 토큰 기반 인증
 - **Pydantic**: 데이터 검증
 
 ### 기타
+
 - **Python-dotenv**: 환경 변수 관리
 - **Pandas**: 데이터 처리
 - **Python-multipart**: 파일 업로드
@@ -101,12 +107,15 @@ backend/
 ## 🚀 설치 및 실행
 
 ### 1. 의존성 설치
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 2. 환경 변수 설정
+
 `.env` 파일을 생성하고 다음 변수들을 설정하세요:
+
 ```env
 DATABASE_URL=postgresql://username:password@localhost:5432/database_name
 OPENAI_API_KEY=your_openai_api_key
@@ -115,12 +124,15 @@ DEBUG=True
 ```
 
 ### 3. 데이터베이스 설정
+
 PostgreSQL 데이터베이스를 생성하고 `create_db.sql` 스크립트를 실행하세요:
+
 ```bash
 psql -U username -d database_name -f create_db.sql
 ```
 
 ### 4. 서버 실행
+
 ```bash
 # 개발 서버
 python -m app.main
@@ -130,6 +142,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 서버가 실행되면 다음 URL에서 접근할 수 있습니다:
+
 - API 서버: http://localhost:8000
 - API 문서: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
@@ -137,92 +150,101 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ## 📡 API 엔드포인트
 
 ### 🔐 인증 API (`/auth`)
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/auth/google` | Google ID 토큰 로그인/회원가입 |
-| POST | `/auth/test-login` | 테스트 로그인 |
-| GET | `/auth/google/callback` | Google OAuth 콜백 |
-| POST | `/auth/verify-token` | JWT 토큰 검증 |
-| GET | `/auth/me` | 현재 사용자 정보 조회 |
-| POST | `/auth/check-nickname` | 닉네임 중복 확인 |
-| GET | `/auth/get-token` | 쿠키에서 토큰 조회 |
-| POST | `/auth/complete-signup` | 닉네임으로 회원가입 완료 |
+
+| Method | Endpoint                | 설명                           |
+| ------ | ----------------------- | ------------------------------ |
+| POST   | `/auth/google`          | Google ID 토큰 로그인/회원가입 |
+| POST   | `/auth/test-login`      | 테스트 로그인                  |
+| GET    | `/auth/google/callback` | Google OAuth 콜백              |
+| POST   | `/auth/verify-token`    | JWT 토큰 검증                  |
+| GET    | `/auth/me`              | 현재 사용자 정보 조회          |
+| POST   | `/auth/check-nickname`  | 닉네임 중복 확인               |
+| GET    | `/auth/get-token`       | 쿠키에서 토큰 조회             |
+| POST   | `/auth/complete-signup` | 닉네임으로 회원가입 완료       |
 
 ### 👤 사용자 API (`/users`)
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/users/register` | 일반 사용자 회원가입 |
-| POST | `/users/social-login` | 소셜 로그인 |
-| GET | `/users` | 사용자 목록 조회 (페이지네이션) |
-| GET | `/users/{user_id}` | 특정 사용자 조회 |
-| PUT | `/users/{user_id}` | 사용자 정보 수정 |
-| POST | `/users/{user_id}/change-password` | 비밀번호 변경 |
-| DELETE | `/users/{user_id}` | 사용자 삭제 (소프트 삭제) |
-| GET | `/users/{user_id}/profile` | 사용자 프로필 및 통계 |
-| GET | `/users/{user_id}/chat-history` | 사용자 채팅 기록 |
-| GET | `/users/{user_id}/test-results` | 사용자 검사 결과 |
+
+| Method | Endpoint                           | 설명                            |
+| ------ | ---------------------------------- | ------------------------------- |
+| POST   | `/users/register`                  | 일반 사용자 회원가입            |
+| POST   | `/users/social-login`              | 소셜 로그인                     |
+| GET    | `/users`                           | 사용자 목록 조회 (페이지네이션) |
+| GET    | `/users/{user_id}`                 | 특정 사용자 조회                |
+| PUT    | `/users/{user_id}`                 | 사용자 정보 수정                |
+| POST   | `/users/{user_id}/change-password` | 비밀번호 변경                   |
+| DELETE | `/users/{user_id}`                 | 사용자 삭제 (소프트 삭제)       |
+| GET    | `/users/{user_id}/profile`         | 사용자 프로필 및 통계           |
+| GET    | `/users/{user_id}/chat-history`    | 사용자 채팅 기록                |
+| GET    | `/users/{user_id}/test-results`    | 사용자 검사 결과                |
 
 ### 💬 채팅 API (`/chat`)
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/chat/sessions` | 새 채팅 세션 생성 |
-| GET | `/chat/sessions` | 사용자의 채팅 세션 목록 |
-| GET | `/chat/sessions/{session_id}` | 세션 상세 정보 및 메시지 |
-| POST | `/chat/sessions/{session_id}/messages` | 메시지 전송 및 AI 응답 |
-| DELETE | `/chat/sessions/{session_id}` | 세션 삭제 (소프트 삭제) |
-| GET | `/chat/sessions/{session_id}/messages` | 세션의 모든 메시지 |
+
+| Method | Endpoint                               | 설명                     |
+| ------ | -------------------------------------- | ------------------------ |
+| POST   | `/chat/sessions`                       | 새 채팅 세션 생성        |
+| GET    | `/chat/sessions`                       | 사용자의 채팅 세션 목록  |
+| GET    | `/chat/sessions/{session_id}`          | 세션 상세 정보 및 메시지 |
+| POST   | `/chat/sessions/{session_id}/messages` | 메시지 전송 및 AI 응답   |
+| DELETE | `/chat/sessions/{session_id}`          | 세션 삭제 (소프트 삭제)  |
+| GET    | `/chat/sessions/{session_id}/messages` | 세션의 모든 메시지       |
 
 ### 🤖 친구(AI 상담사) API (`/friends`)
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/friends/` | 새 친구 생성 |
-| GET | `/friends/` | 활성 친구 목록 |
-| GET | `/friends/{friend_id}` | 특정 친구 정보 |
-| PUT | `/friends/{friend_id}` | 친구 정보 수정 |
+
+| Method | Endpoint               | 설명                    |
+| ------ | ---------------------- | ----------------------- |
+| POST   | `/friends/`            | 새 친구 생성            |
+| GET    | `/friends/`            | 활성 친구 목록          |
+| GET    | `/friends/{friend_id}` | 특정 친구 정보          |
+| PUT    | `/friends/{friend_id}` | 친구 정보 수정          |
 | DELETE | `/friends/{friend_id}` | 친구 삭제 (소프트 삭제) |
 
 ### 🎨 그림 검사 API (`/api/v1/test`)
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/api/v1/test/drawing-tests/upload` | 그림 업로드 및 검사 생성 |
-| GET | `/api/v1/test/drawing-tests` | 그림 검사 목록 |
-| GET | `/api/v1/test/drawing-tests/{test_id}` | 특정 그림 검사 |
-| PUT | `/api/v1/test/drawing-tests/{test_id}` | 그림 검사 수정 |
-| POST | `/api/v1/test/drawing-test-results` | 검사 결과 생성/수정 |
-| GET | `/api/v1/test/drawing-test-results/my-results` | 내 검사 결과 |
-| GET | `/api/v1/test/drawing-test-results/{result_id}` | 특정 검사 결과 |
+
+| Method | Endpoint                                        | 설명                     |
+| ------ | ----------------------------------------------- | ------------------------ |
+| POST   | `/api/v1/test/drawing-tests/upload`             | 그림 업로드 및 검사 생성 |
+| GET    | `/api/v1/test/drawing-tests`                    | 그림 검사 목록           |
+| GET    | `/api/v1/test/drawing-tests/{test_id}`          | 특정 그림 검사           |
+| PUT    | `/api/v1/test/drawing-tests/{test_id}`          | 그림 검사 수정           |
+| POST   | `/api/v1/test/drawing-test-results`             | 검사 결과 생성/수정      |
+| GET    | `/api/v1/test/drawing-test-results/my-results`  | 내 검사 결과             |
+| GET    | `/api/v1/test/drawing-test-results/{result_id}` | 특정 검사 결과           |
 
 ### ⭐ 평가 API (`/ratings`)
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/ratings/` | 세션 평가 생성 |
-| GET | `/ratings/` | 평가 목록 (필터링 가능) |
-| GET | `/ratings/{rating_id}` | 특정 평가 |
-| PUT | `/ratings/{rating_id}` | 평가 수정 |
-| DELETE | `/ratings/{rating_id}` | 평가 삭제 |
-| GET | `/ratings/sessions/{session_id}/average` | 세션 평균 평점 |
-| GET | `/ratings/users/{user_id}/average` | 사용자 평균 평점 |
+
+| Method | Endpoint                                 | 설명                    |
+| ------ | ---------------------------------------- | ----------------------- |
+| POST   | `/ratings/`                              | 세션 평가 생성          |
+| GET    | `/ratings/`                              | 평가 목록 (필터링 가능) |
+| GET    | `/ratings/{rating_id}`                   | 특정 평가               |
+| PUT    | `/ratings/{rating_id}`                   | 평가 수정               |
+| DELETE | `/ratings/{rating_id}`                   | 평가 삭제               |
+| GET    | `/ratings/sessions/{session_id}/average` | 세션 평균 평점          |
+| GET    | `/ratings/users/{user_id}/average`       | 사용자 평균 평점        |
 
 ### 📋 약관 동의 API (`/agreements`)
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/agreements/` | 약관 동의 생성 |
-| GET | `/agreements/` | 약관 동의 목록 |
-| GET | `/agreements/{agreement_id}` | 특정 약관 동의 |
-| PUT | `/agreements/{agreement_id}` | 약관 동의 수정 |
-| DELETE | `/agreements/{agreement_id}` | 약관 동의 삭제 |
-| GET | `/agreements/users/{user_id}/status` | 사용자 약관 동의 상태 |
-| POST | `/agreements/users/{user_id}/bulk` | 약관 일괄 동의 |
+
+| Method | Endpoint                             | 설명                  |
+| ------ | ------------------------------------ | --------------------- |
+| POST   | `/agreements/`                       | 약관 동의 생성        |
+| GET    | `/agreements/`                       | 약관 동의 목록        |
+| GET    | `/agreements/{agreement_id}`         | 특정 약관 동의        |
+| PUT    | `/agreements/{agreement_id}`         | 약관 동의 수정        |
+| DELETE | `/agreements/{agreement_id}`         | 약관 동의 삭제        |
+| GET    | `/agreements/users/{user_id}/status` | 사용자 약관 동의 상태 |
+| POST   | `/agreements/users/{user_id}/bulk`   | 약관 일괄 동의        |
 
 ### 🛠 관리자 API (`/api/v1/admin`)
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/api/v1/admin/reset-database` | 데이터베이스 초기화 (개발용) |
-| GET | `/api/v1/admin/database-status` | 데이터베이스 상태 및 테이블 카운트 |
+
+| Method | Endpoint                        | 설명                               |
+| ------ | ------------------------------- | ---------------------------------- |
+| POST   | `/api/v1/admin/reset-database`  | 데이터베이스 초기화 (개발용)       |
+| GET    | `/api/v1/admin/database-status` | 데이터베이스 상태 및 테이블 카운트 |
 
 ## 🗄 데이터베이스
 
 ### ERD (Entity Relationship Diagram)
+
 데이터베이스는 다음과 같은 주요 테이블들로 구성됩니다:
 
 ```
@@ -248,22 +270,27 @@ agreements (약관 동의)
 ### 주요 테이블 설명
 
 #### 1. 사용자 관리 테이블
+
 - **users**: 일반 사용자의 인증 정보
 - **social_users**: 소셜 로그인 사용자 정보
 - **user_informations**: 통합된 사용자 프로필 정보
 
 #### 2. AI 상담사 테이블
+
 - **friends**: AI 상담사 캐릭터 정보 (추진형, 내면형, 관계형, 쾌락형, 안정형)
 
 #### 3. 채팅 시스템 테이블
+
 - **chat_sessions**: 사용자와 AI 상담사 간의 대화 세션
 - **chat_messages**: 개별 채팅 메시지
 
 #### 4. 심리 검사 테이블
+
 - **drawing_tests**: 사용자가 업로드한 그림 검사
 - **drawing_test_results**: AI 분석을 통한 성격 유형 진단 결과
 
 #### 5. 피드백 테이블
+
 - **ratings**: 상담 세션에 대한 사용자 평가
 - **agreements**: 서비스 이용약관 동의 기록
 
@@ -401,6 +428,7 @@ INSERT INTO friends (friends_name, friends_description, tts_audio_url, tts_voice
 ### 주요 쿼리 패턴
 
 #### 사용자 관련 쿼리
+
 ```sql
 -- 사용자 정보 조회 (JOIN 사용)
 SELECT ui.*, su.social_id, u.user_id as regular_user_id
@@ -410,11 +438,11 @@ LEFT JOIN users u ON ui.regular_user_id = u.user_id
 WHERE ui.user_id = :user_id AND ui.status = 'ACTIVE';
 
 -- 닉네임 중복 확인
-SELECT COUNT(*) FROM user_informations 
+SELECT COUNT(*) FROM user_informations
 WHERE nickname = :nickname AND status = 'ACTIVE';
 
 -- 사용자 통계 정보
-SELECT 
+SELECT
     ui.*,
     COUNT(DISTINCT cs.chat_sessions_id) as chat_count,
     COUNT(DISTINCT dt.test_id) as test_count
@@ -426,6 +454,7 @@ GROUP BY ui.user_id;
 ```
 
 #### 채팅 관련 쿼리
+
 ```sql
 -- 사용자의 활성 채팅 세션 목록 (메시지가 있는 것만)
 SELECT DISTINCT cs.*
@@ -435,18 +464,19 @@ WHERE cs.user_id = :user_id AND cs.is_active = true
 ORDER BY cs.created_at DESC;
 
 -- 세션의 메시지 목록
-SELECT * FROM chat_messages 
-WHERE session_id = :session_id 
+SELECT * FROM chat_messages
+WHERE session_id = :session_id
 ORDER BY created_at ASC;
 
 -- 최근 메시지 조회 (AI 응답 생성용)
-SELECT * FROM chat_messages 
-WHERE session_id = :session_id 
-ORDER BY created_at DESC 
+SELECT * FROM chat_messages
+WHERE session_id = :session_id
+ORDER BY created_at DESC
 LIMIT 10;
 ```
 
 #### 검사 관련 쿼리
+
 ```sql
 -- 사용자의 그림 검사 목록
 SELECT dt.*, dtr.friends_type, dtr.summary_text, f.friends_name
@@ -459,35 +489,37 @@ ORDER BY dt.submitted_at DESC;
 -- 검사 결과 업서트 (있으면 업데이트, 없으면 삽입)
 INSERT INTO drawing_test_results (test_id, friends_type, summary_text, created_at)
 VALUES (:test_id, :friends_type, :summary_text, NOW())
-ON CONFLICT (test_id) 
-DO UPDATE SET 
+ON CONFLICT (test_id)
+DO UPDATE SET
     friends_type = :friends_type,
     summary_text = :summary_text,
     created_at = NOW();
 ```
 
 #### 평가 관련 쿼리
+
 ```sql
 -- 세션 평균 평점
-SELECT 
+SELECT
     AVG(rating) as average_rating,
     COUNT(*) as rating_count
-FROM ratings 
+FROM ratings
 WHERE session_id = :session_id;
 
 -- 사용자 평균 평점
-SELECT 
+SELECT
     AVG(rating) as average_rating,
     COUNT(*) as rating_count
-FROM ratings 
+FROM ratings
 WHERE user_id = :user_id;
 
 -- 중복 평가 방지
-SELECT * FROM ratings 
+SELECT * FROM ratings
 WHERE user_id = :user_id AND session_id = :session_id;
 ```
 
 #### 관리자 쿼리
+
 ```sql
 -- 테이블별 레코드 수 조회
 SELECT COUNT(*) FROM friends;
@@ -516,6 +548,7 @@ DROP TABLE IF EXISTS friends CASCADE;
 ### 트랜잭션 패턴
 
 #### 표준 CRUD 트랜잭션
+
 ```python
 # 생성
 try:
@@ -548,16 +581,17 @@ except Exception as e:
 ```
 
 #### 복합 트랜잭션 (관련 테이블 동시 처리)
+
 ```python
 # 사용자 생성 시 관련 테이블 동시 생성
 try:
     # 1. 메인 사용자 정보 생성
     db.add(user_info)
     db.flush()  # ID 생성을 위해 flush
-    
+
     # 2. 관련 데이터 생성
     db.add(related_data)
-    
+
     # 3. 모든 변경사항 커밋
     db.commit()
     db.refresh(user_info)
@@ -570,12 +604,14 @@ except Exception as e:
 ## 🤖 AI 서비스
 
 ### OpenAI GPT-4o 통합
-- **모델**: `gpt-4o`  
+
+- **모델**: `gpt-4o`
 - **Temperature**: 0.9 (창의적 응답)
 - **Max Tokens**: 1000
 - **Context Length**: 최근 10개 메시지 유지
 
 ### AI 상담사 캐릭터
+
 1. **추진형** (추진이): 목표 지향적, 도전적 성격
 2. **내면형** (내면이): 깊은 사고, 성찰 중심
 3. **관계형** (관계이): 인간관계, 소통 전문
@@ -583,6 +619,7 @@ except Exception as e:
 5. **안정형** (안정이): 안정감, 평온함 중시
 
 ### 그림 분석 AI
+
 - **YOLO 모델**: 그림 속 객체 검출
 - **GPT-4o Vision**: 그림 심리 분석
 - **성격 유형 매칭**: 그림 분석 결과를 바탕으로 적합한 AI 상담사 추천
@@ -590,18 +627,21 @@ except Exception as e:
 ## 🔒 보안
 
 ### 인증 & 권한
+
 - **JWT 토큰**: 30일 만료
 - **Google OAuth2**: 안전한 소셜 로그인
 - **비밀번호 해싱**: 안전한 비밀번호 저장
 - **CORS 설정**: 허용된 도메인만 접근 가능
 
 ### 데이터 보호
+
 - **SQL Injection 방지**: SQLAlchemy ORM 사용
 - **입력 데이터 검증**: Pydantic 스키마 검증
 - **소프트 삭제**: 데이터 완전 삭제 대신 비활성화
 - **환경 변수**: 민감한 정보 환경 변수로 관리
 
 ### API 보안
+
 - **요청 속도 제한**: 과도한 요청 방지
 - **HTTPS**: 암호화된 통신
 - **에러 정보 최소화**: 내부 정보 노출 방지

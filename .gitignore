@@ -34,3 +34,6 @@ yarn-error.log*
 
 # pycache
 __pycache__*
+
+/backend/result*
+/backend/llm/detection_results*
