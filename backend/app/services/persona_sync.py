@@ -41,100 +41,33 @@ class PersonaSyncService:
                     persona_type = ptype
                     break
             
-            # 각 파일별 특화된 정보 추출
+            # 각 파일별 실제 구조에 맞는 정보 추출
             if filename == "chujin.md":
-                # 추진형 정보 추출
-                persona_match = re.search(r'페르소나 정의: (.+)', content)
-                identity_match = re.search(r'너의 정체성은 (.+?)\. 너는', content, re.DOTALL)
-                
-                if persona_match:
-                    persona_name = persona_match.group(1).strip()
-                else:
-                    persona_name = "추진가 (The Driver)"
-                
-                if identity_match:
-                    identity = identity_match.group(1).strip()
-                    # 긴 설명을 간략하게 요약
-                    description = f"{persona_name}. {identity[:200]}..."
-                else:
-                    description = "강력한 압박과 명령조로 즉각적인 실행을 요구하는 전략가. 목표 달성과 성과 창출을 통해 사용자의 잠재력을 최대한 끌어내는 도전적인 심리 상담 챗봇"
+                # 추진형: "목표 설정과 달성을 강력히 압박하는 전략가이자 감독관..."
+                description = "목표 설정과 달성을 강력히 압박하는 전략가이자 감독관. 모호함을 제거하고 즉각적인 실행과 성과를 이끌어내며, 절대적 기준으로 최고 수준을 추구합니다."
                     
             elif filename == "nemyeon.md":
-                # 내면형 정보 추출
-                name_match = re.search(r'- 너의 이름: (.+)', content)
-                identity_match = re.search(r'- 너의 정체성: (.+)', content)
-                expertise_match = re.search(r'- 전문 분야: (.+)', content)
+                # 내면형: "감정과 사고의 깊은 바다를 탐험하며..."
+                description = "감정과 사고의 깊은 바다를 탐험하며 복잡한 내면을 이해하도록 돕는 차분하고 통찰력 있는 조력자. 자아정체성과 감정의 깊이를 탐구하여 내적 성장을 이끕니다."
                 
-                persona_name = name_match.group(1).strip() if name_match else "내면이"
-                identity = identity_match.group(1).strip() if identity_match else ""
-                expertise = expertise_match.group(1).strip() if expertise_match else ""
+            elif filename == "gwangye.md":
+                # 관계형: "지친 마음에 쉼터가 되어주며..."
+                description = "지친 마음에 쉼터가 되어주며 스스로를 사랑으로 채울 수 있도록 돕는 다정한 친구. 타인을 위해 애쓰는 마음을 인정하고 건강한 자기 돌봄을 안내합니다."
                 
-                description_parts = []
-                if identity:
-                    description_parts.append(identity)
-                if expertise:
-                    description_parts.append(f"전문분야: {expertise}")
+            elif filename == "querock.md":
+                # 쾌락형: "끊임없이 새로운 자극을 추구하는 이들이..."
+                description = "끊임없이 새로운 자극을 추구하는 이들이 내면의 공허함과 마주할 수 있도록 유도하는 현실적인 조언자. 도피성 쾌락이 아닌 진정한 만족을 찾도록 안내합니다."
                 
-                description = ". ".join(description_parts) if description_parts else "감정과 사고의 깊은 바다를 탐험하며 내적 성장과 자기이해를 돕는 섬세하고 통찰력 있는 심리 상담 챗봇"
+            elif filename == "anjeong.md":
+                # 안정형: "언제나 중립과 조화를 지향하며..."
+                description = "언제나 중립과 조화를 지향하며 여러 가능성을 제시하는 안전한 대화 파트너. 불안과 갈등을 회피하려는 마음을 이해하고 현실적인 균형을 찾도록 돕습니다."
                 
             else:
-                # 다른 파일들은 기본 패턴으로 처리
-                name_patterns = [
-                    r'- 너의 이름: (.+?)(?:\n|$)',
-                    r'너의 이름: (.+?)(?:\n|$)',  # 대시 없는 패턴 추가
-                    r'너는 지금부터 "(.+?)"',
-                    r'페르소나 정의: (.+?)(?:\n|$)',
-                ]
-                
-                identity_patterns = [
-                    r'- 너의 정체성: (.+?)(?:\n|$)',
-                    r'너의 정체성: (.+?)(?:\n|$)',  # 대시 없는 패턴 추가
-                    r'너의 정체성은 (.+?)(?:\n|\.)',
-                    r'너의 역할은 (.+?)(?:\n|\.)',
-                ]
-                
-                expertise_patterns = [
-                    r'- 전문 분야: (.+?)(?:\n|$)',
-                    r'전문 분야: (.+?)(?:\n|$)',  # 대시 없는 패턴 추가
-                    r'전문 분야: (.+?)(?:\n|\.)',
-                ]
-                
-                persona_name = None
-                for pattern in name_patterns:
-                    match = re.search(pattern, content)
-                    if match:
-                        persona_name = match.group(1).strip()
-                        break
-                
-                identity = None
-                for pattern in identity_patterns:
-                    match = re.search(pattern, content)
-                    if match:
-                        identity = match.group(1).strip()
-                        break
-                        
-                expertise = None
-                for pattern in expertise_patterns:
-                    match = re.search(pattern, content)
-                    if match:
-                        expertise = match.group(1).strip()
-                        break
-                
-                # 설명 조합
-                description_parts = []
-                if identity:
-                    description_parts.append(identity)
-                if expertise:
-                    description_parts.append(f"전문분야: {expertise}")
-                
-                description = ". ".join(description_parts) if description_parts else f"{persona_type} 성향의 전문 심리 상담 챗봇"
-            
-            # 설명 길이 제한
-            if len(description) > 500:
-                description = description[:497] + "..."
+                # 기본값
+                description = f"{persona_type} 성향의 전문 심리 상담 챗봇"
             
             return {
-                "name": persona_name or persona_type or "알 수 없음",
+                "name": persona_type or "알 수 없음",
                 "description": description
             }
             
@@ -171,7 +104,9 @@ class PersonaSyncService:
                     "friends_name": persona_type,
                     "friends_description": default_descriptions.get(persona_type, f"{persona_type} 성향의 전문 심리 상담 챗봇"),
                     "is_active": True
-                })        
+                })
+                logger.warning(f"프롬프트 파일 없음, 특화된 기본값 사용: {filename}")
+        
         return persona_data
     
     def sync_friends_table(self, db: Session) -> bool:

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import { ArrowLeft } from 'lucide-react';
 import { SearchResult } from '../../types';
+import { userService } from '../../services/userService';
 
 interface CharactersPageProps {
   characters: SearchResult[];
@@ -20,6 +21,21 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
   onNavigate
 }) => {
   const navigate = useNavigate();
+  const [matchedPersonaId, setMatchedPersonaId] = useState<number | null>(null);
+
+  // 최근 매칭된 페르소나 조회
+  useEffect(() => {
+    const fetchMatchedPersona = async () => {
+      try {
+        const result = await userService.getLatestMatchedPersona();
+        setMatchedPersonaId(result.matched_persona_id);
+      } catch (error) {
+        console.error('매칭된 페르소나 조회 실패:', error);
+      }
+    };
+
+    fetchMatchedPersona();
+  }, []);
 
   const handleBackClick = () => {
     navigate(-1);
@@ -84,6 +100,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
             {characters.map((character) => {
               const isSelected = selectedCharacter && selectedCharacter.id === character.id;
               const isDisabled = isSelected;
+              const isMatched = matchedPersonaId === parseInt(character.id);
               const style = getCharacterStyle(character.name);
               
               return (
@@ -107,6 +124,11 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
                       {isSelected && (
                         <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
                           대화 중
+                        </span>
+                      )}
+                      {isMatched && (
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                          매칭됨
                         </span>
                       )}
                     </div>

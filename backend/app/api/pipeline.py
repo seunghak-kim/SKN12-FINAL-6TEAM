@@ -316,44 +316,15 @@ async def save_analysis_result(
                 except Exception as e:
                     pipeline.logger.warning(f"result 파일 읽기 실패: {e}")
             
-            # 상세 분석 결과 구성
-            summary_parts = []
-            
+            # 심리분석 요약만 summary_text에 포함
             if result.psychological_analysis:
                 analysis = result.psychological_analysis
-                summary_parts.append(f"🎯 성격 유형: {result.personality_type}")
-                summary_parts.append(f"📊 신뢰도: {result.confidence_score:.1%}")
-                summary_parts.append("")
-                
-                # 확률 정보 추가
-                if probabilities:
-                    summary_parts.append("📈 유형별 확률 분석:")
-                    for persona_type, prob in sorted(probabilities.items(), key=lambda x: -x[1]):
-                        summary_parts.append(f"• {persona_type}: {prob:.1f}%")
-                    summary_parts.append("")
-                
                 if analysis.get('result_text'):
-                    summary_parts.append("📋 심리 분석 요약:")
-                    summary_parts.append(analysis['result_text'])
-                    summary_parts.append("")
-                
-                if analysis.get('items') and isinstance(analysis['items'], list):
-                    summary_parts.append("🔍 세부 분석 요소:")
-                    for item in analysis['items'][:5]:  # 최대 5개 항목만 표시
-                        if isinstance(item, dict):
-                            element = item.get('element', 'N/A')
-                            condition = item.get('condition', 'N/A')
-                            keywords = item.get('keywords', [])
-                            if isinstance(keywords, list) and keywords:
-                                keyword_str = ', '.join(keywords[:3])  # 최대 3개 키워드
-                                summary_parts.append(f"• {element}: {condition} ({keyword_str})")
-            
-            if description:
-                summary_parts.append("")
-                summary_parts.append("💭 사용자 설명:")
-                summary_parts.append(description)
-            
-            summary_text = "\n".join(summary_parts)
+                    summary_text = analysis['result_text']
+                else:
+                    summary_text = f"성격 유형: {result.personality_type} (신뢰도: {result.confidence_score:.1%})"
+            else:
+                summary_text = f"성격 유형: {result.personality_type} (신뢰도: {result.confidence_score:.1%})"
             
         elif result.error_message:
             summary_text = f"분석 중 오류가 발생했습니다: {result.error_message}"

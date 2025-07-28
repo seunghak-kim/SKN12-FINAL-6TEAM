@@ -138,9 +138,9 @@ ALTER TABLE public.drawing_test_results OWNER TO postgres;
 GRANT ALL ON TABLE public.drawing_test_results TO postgres;
 
 
--- INSERT INTO friends (friends_name,friends_description,tts_audio_url,tts_voice_type,is_active,created_at) VALUES
---	 ('추진형','목표 지향적이고 도전적인 성격의 친구입니다. 항상 앞으로 나아가려 하고, 문제 해결을 위해 적극적으로 행동합니다.',NULL,NULL,true,'2025-07-17 17:23:42.919576'),
---	 ('내면형','깊이 있는 사고와 성찰을 좋아하는 친구입니다. 조용하고 차분하며, 내적 성장과 자기 이해를 중요시합니다.',NULL,NULL,true,'2025-07-17 17:24:29.849924'),
---	 ('관계형','사람들과의 관계를 중시하고 소통을 즐기는 친구입니다. 공감 능력이 뛰어나고 다른 사람들과 함께 시간을 보내는 것을 좋아합니다.',NULL,NULL,true,'2025-07-17 17:24:38.821091'),
---	 ('쾌락형','즐거움과 재미를 추구하는 친구입니다. 활기차고 유쾌하며, 새로운 경험과 모험을 즐기고 긍정적인 에너지를 전파합니다.',NULL,NULL,true,'2025-07-17 17:24:47.037083'),
---	 ('안정형','안정감과 평온함을 중시하는 친구입니다. 차분하고 신중하며, 예측 가능한 환경에서 꾸준히 성장하는 것을 선호합니다.',NULL,NULL,true,'2025-07-17 17:24:54.018487');
+INSERT INTO friends (friends_name,friends_description,tts_audio_url,tts_voice_type,is_active,created_at) VALUES
+	 ('추진이','목표 달성과 성공을 추구하며, 효율적이고 실용적인 해결책을 제시합니다.',NULL,NULL,true,NOW()),
+	 ('내면이','깊이 있는 자기 성찰과 개인적 성장에 집중합니다.',NULL,NULL,true,NOW()),
+	 ('관계이','타인과의 조화로운 관계 형성에 뛰어납니다.',NULL,NULL,true,NOW()),
+	 ('쾌락이','삶의 즐거움과 다양한 경험을 추구합니다.',NULL,NULL,true,NOW()),
+	 ('안정이','평화롭고 안정적인 환경을 선호하며, 갈등을 조화롭게 해결합니다.',NULL,NULL,true,NOW());

@@ -35,8 +35,8 @@ def get_persona_type_from_friends_id(friends_id: int, db: Session = None) -> str
         1: "추진형",  # 추진이
         2: "내면형",  # 내면이  
         3: "관계형",  # 관계이
-        4: "안정형",  # 안정이 (수정됨)
-        5: "쾌락형"   # 쾌락이 (수정됨)
+        4: "쾌락형",  # 쾌락이
+        5: "안정형"   # 안정이
     }
     return default_mapping.get(friends_id, "내면형")
 

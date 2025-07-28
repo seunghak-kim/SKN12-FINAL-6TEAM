@@ -34,6 +34,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [showImageModal, setShowImageModal] = useState(false);
   const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
   const [actualPersonalityType, setActualPersonalityType] = useState<string>('내면형');
+  const [pipelineResult, setPipelineResult] = useState<any>(null);
 
   // 성격 유형별 데이터 매핑
   const personalityData: { [key: string]: { friendsType: number; emoji: string; message: string; keywords: string[]; color: string; } } = {
@@ -122,12 +123,23 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       });
     } else if (stateData?.testId) {
       setTestData(stateData);
-      // AI 분석 결과 생성 및 DB 저장
-      createTestResult(stateData.testId);
-      // 분석 상태 조회하여 확률 데이터 가져오기
-      fetchAnalysisStatus(stateData.testId);
+      // 순서가 중요: 먼저 분석 데이터를 가져온 후 DB 저장
+      initializeTestResult(stateData.testId);
     }
   }, [location.state]);
+
+  // 분석 데이터 가져온 후 DB 저장하는 순서 보장
+  const initializeTestResult = async (testId: number) => {
+    try {
+      // 1. 먼저 분석 상태 조회하여 파이프라인 결과 가져오기
+      const pipelineData = await fetchAnalysisStatus(testId);
+      
+      // 2. 그 다음 DB에 저장 (파이프라인 데이터를 직접 전달)
+      await createTestResult(testId, pipelineData);
+    } catch (error) {
+      console.error('테스트 결과 초기화 실패:', error);
+    }
+  };
 
   const fetchAnalysisStatus = async (testId: number) => {
     try {
@@ -140,16 +152,20 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       
       if (response.ok) {
         const data = await response.json();
+        
         if (data.status === 'completed' && data.result) {
+          // 파이프라인 결과 저장 (state 업데이트용)
+          setPipelineResult(data.result);
+          
           // API에서 직접 확률 데이터 가져오기
           const probabilities = data.result.probabilities;
           if (probabilities && Object.keys(probabilities).length > 0) {
             setProbabilities(probabilities);
-            // 실제 성격 유형 업데이트
-            const mainType = getMainPersonalityType(probabilities);
-            setActualPersonalityType(mainType);
+            // 실제 성격 유형 업데이트 (파이프라인에서 예측한 값 직접 사용)
+            const predictedType = data.result?.predicted_personality || '내면형';
+            setActualPersonalityType(predictedType);
             // 캐릭터 이름으로 변환해서 useAppState에 반영
-            const characterName = getCharacterName(mainType);
+            const characterName = getCharacterName(predictedType);
             updateTestResult(characterName);
           }
           
@@ -157,21 +173,33 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           if (data.result.result_text) {
             setAnalysisResult(data.result.result_text);
           }
+          
+          // 파이프라인 데이터를 직접 반환 (state에 의존하지 않음)
+          return data.result;
+        } else {
+          return null;
         }
+      } else {
+        console.error('분석 상태 조회 실패:', response.status, response.statusText);
+        return null;
       }
     } catch (error) {
-      console.error('분석 상태 조회 실패:', error);
+      console.error('분석 상태 조회 오류:', error);
+      return null;
     }
   };
 
-  const createTestResult = async (testId: number) => {
+  const createTestResult = async (testId: number, pipelineData?: any) => {
     setIsCreatingResult(true);
     
     try {
-      // 간단한 테스트 결과 텍스트
-      const testResultText = "테스트 결과: 그림을 통해 당신의 심리 상태를 분석했습니다. 현재 감정 상태를 잘 표현하고 있으며, 이를 통해 더 나은 대화를 나눌 수 있을 것입니다.";
+      // 파이프라인 데이터 직접 사용 (state에 의존하지 않음)
+      const predictedPersonality = pipelineData?.predicted_personality || actualPersonalityType;
+      const pipelineFriendsType = pipelineData?.friends_type;
       
-      // 테스트 결과를 DB에 저장
+      // friends_type만 업데이트 (summary_text는 파이프라인에서 이미 설정됨)
+      const finalFriendsType = pipelineFriendsType || personalityData[predictedPersonality]?.friendsType || 2;
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/test/drawing-test-results`, {
         method: 'POST',
         headers: {
@@ -180,20 +208,24 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         },
         body: JSON.stringify({
           test_id: testId,
-          friends_type: personalityData[actualPersonalityType]?.friendsType || 2,
-          summary_text: testResultText
+          friends_type: finalFriendsType
+          // summary_text 제거: 파이프라인에서 이미 상세한 분석 결과 저장됨
         })
       });
       
       if (!response.ok) {
         const errorData = await response.json();
         console.error('API 에러 응답:', errorData);
-        // 이미 결과가 있더라도 일단 진행
-        setAnalysisResult(testResultText);
+        // 파이프라인 결과 텍스트를 사용
+        if (pipelineData?.result_text) {
+          setAnalysisResult(pipelineData.result_text);
+        }
       } else {
         const result = await response.json();
-        console.log('결과 저장 성공:', result);
-        setAnalysisResult(testResultText);
+        // 파이프라인 결과 텍스트를 사용
+        if (pipelineData?.result_text) {
+          setAnalysisResult(pipelineData.result_text);
+        }
       }
       
     } catch (error) {
@@ -247,18 +279,9 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                   <span className="text-gray-600">AI가 그림을 분석하고 있습니다...</span>
                 </div>
               ) : analysisResult ? (
-                <>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4 text-center max-w-2xl mx-auto">
-                    {analysisResult}
-                  </p>
-                  <div className="flex justify-center flex-wrap gap-2">
-                    {(personalityData[actualPersonalityType]?.keywords || ['감정적 깊이', '내성적 성향', '공감 능력']).map((keyword, index) => (
-                      <span key={index} className={`bg-${personalityData[actualPersonalityType]?.color || 'blue'}-100 text-${personalityData[actualPersonalityType]?.color || 'blue'}-800 px-3 py-1 rounded-full text-sm font-medium`}>
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4 text-center max-w-2xl mx-auto">
+                  {analysisResult}
+                </p>
               ) : (
                 <p className="text-gray-600 text-sm leading-relaxed mb-4 text-center max-w-2xl mx-auto">
                   당신의 그림에서 나타난 심리적 특성을 분석한 결과, 현재 내면의 슬픔과 고민이 깊어 보입니다. 이러한 감정을 이해하고 함께 극복해나가는 것이 중요합니다.

@@ -48,9 +48,9 @@ async def reset_database(
         
         for friend_id, name, description in friends_data:
             db.execute(text("""
-                INSERT INTO friends (id, friends_name, description, created_at, updated_at) 
-                VALUES (:id, :name, :desc, NOW(), NOW())
-                ON CONFLICT (id) DO NOTHING
+                INSERT INTO friends (friends_id, friends_name, friends_description, created_at) 
+                VALUES (:id, :name, :desc, NOW())
+                ON CONFLICT (friends_id) DO NOTHING
             """), {"id": friend_id, "name": name, "desc": description})
         
         db.commit()

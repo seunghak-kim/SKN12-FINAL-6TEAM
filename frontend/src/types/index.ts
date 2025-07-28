@@ -178,3 +178,29 @@ export interface PipelineStatusResponse {
   result?: DrawingTestResult;
   error?: string;
 }
+
+// Rating API - 평가 요청
+export interface RatingRequest {
+  session_id: string;
+  user_id: number;
+  rating: number;  // 1-5
+  comment?: string;
+}
+
+// Rating API - 평가 응답  
+export interface RatingResponse {
+  ratings_id: number;
+  session_id: string;
+  user_id: number;
+  rating: number;
+  comment?: string;
+  created_at: string;
+}
+
+// Rating API - 평균 평점 응답
+export interface AverageRatingResponse {
+  session_id?: string;
+  user_id?: number;
+  average_rating: number;
+  total_ratings: number;
+}

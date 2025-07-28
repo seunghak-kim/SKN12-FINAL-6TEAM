@@ -137,6 +137,11 @@ class UserService {
     return result;
   }
 
+  // 최근 매칭된 페르소나 조회
+  async getLatestMatchedPersona(): Promise<{ matched_persona_id: number | null; matched_at?: string }> {
+    return await apiClient.get<{ matched_persona_id: number | null; matched_at?: string }>('/api/v1/test/drawing-test-results/latest-matched');
+  }
+
   // 캐시 수동 무효화 (필요시)
   clearCache(userId?: number): void {
     if (userId) {

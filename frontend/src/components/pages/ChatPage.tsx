@@ -6,6 +6,8 @@ import StarRating from '../common/StarRating';
 import { FrontendChatMessage, SearchResult } from '../../types';
 import { useChatSession } from '../../hooks/useChatSession';
 import { authService } from '../../services/authService';
+import { ratingService } from '../../services/ratingService';
+import { RatingRequest } from '../../types';
 
 interface ChatPageProps {
   selectedCharacter: SearchResult | null;
@@ -32,6 +34,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
   console.log('ChatPage - 받은 selectedCharacter:', selectedCharacter);
   const [inputMessage, setInputMessage] = useState('');
   const [currentRating, setCurrentRating] = useState(3);
+  const [ratingComment, setRatingComment] = useState('');
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [isChatEnded, setIsChatEnded] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
@@ -292,6 +296,38 @@ const ChatPage: React.FC<ChatPageProps> = ({
     setCurrentRating(rating);
   };
 
+  const handleSubmitRating = async () => {
+    if (!session || !currentUserId || isSubmittingRating) return;
+    
+    setIsSubmittingRating(true);
+    
+    try {
+      const ratingData: RatingRequest = {
+        session_id: session.chat_sessions_id,
+        user_id: currentUserId,
+        rating: currentRating,
+        comment: ratingComment.trim() || undefined
+      };
+      
+      await ratingService.createRating(ratingData);
+      
+      // 성공 시 모달 닫기
+      onCloseRatingModal();
+      
+      // 성공 메시지 표시 (선택사항)
+      alert('평가가 성공적으로 제출되었습니다!');
+      
+      // 다른 캐릭터 페이지로 이동
+      navigate('/characters');
+      
+    } catch (error) {
+      console.error('평가 제출 실패:', error);
+      alert('평가 제출에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
+
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
   };
@@ -499,29 +535,54 @@ const ChatPage: React.FC<ChatPageProps> = ({
       </div>
 
       <Modal isOpen={showRatingModal} onClose={onCloseRatingModal} className="rating-modal">
-        <h3>만족도 조사</h3>
-        <div className="rating-section">
-          <StarRating 
-            initialRating={3}
-            onRatingChange={handleRatingChange}
-            centered={true}
-          />
-          <p className="rating-text">
-            {currentRating > 0 && `${currentRating}점을 선택하셨습니다.`}
-          </p>
-        </div>
-        <div className="rating-feedback">
-          <h4>기타 의견(선택)</h4>
-          <textarea placeholder="이 캐릭터는 제 취향 돋구었어요, 저에게 딱 맞는 해결책을 제시해줬어요 등 챗봇에 대한 의견을 자유롭게 적어주세요"></textarea>
-          <button 
-            className="submit-btn"
-            onClick={() => {
-              onCloseRatingModal();
-              navigate('/characters');
-            }}
-          >
-            다른 캐릭터랑도 대화해보기
-          </button>
+        <div className="p-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">만족도 조사</h3>
+          
+          <div className="mb-6">
+            <p className="text-sm text-gray-600 mb-3 text-center">
+              {selectedCharacter?.name}와의 대화는 어떠셨나요?
+            </p>
+            <StarRating 
+              initialRating={currentRating}
+              onRatingChange={handleRatingChange}
+              centered={true}
+            />
+            <p className="text-center text-sm text-gray-500 mt-2">
+              {currentRating > 0 && `${currentRating}점을 선택하셨습니다.`}
+            </p>
+          </div>
+          
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">기타 의견 (선택사항)</h4>
+            <textarea 
+              value={ratingComment}
+              onChange={(e) => setRatingComment(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={3}
+              placeholder="이 캐릭터는 제 취향이었어요, 저에게 딱 맞는 해결책을 제시해줬어요 등 챗봇에 대한 의견을 자유롭게 적어주세요"
+              maxLength={500}
+            />
+            <p className="text-xs text-gray-400 mt-1 text-right">
+              {ratingComment.length}/500
+            </p>
+          </div>
+          
+          <div className="flex gap-3">
+            <button 
+              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-colors"
+              onClick={onCloseRatingModal}
+              disabled={isSubmittingRating}
+            >
+              취소
+            </button>
+            <button 
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSubmitRating}
+              disabled={isSubmittingRating || currentRating === 0}
+            >
+              {isSubmittingRating ? '제출 중...' : '평가 제출'}
+            </button>
+          </div>
         </div>
       </Modal>
     </div>

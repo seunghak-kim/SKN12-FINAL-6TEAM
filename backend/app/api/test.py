@@ -169,7 +169,9 @@ async def create_test_result(
     if existing_result:
         # 기존 결과 업데이트
         existing_result.friends_type = result_data.friends_type
-        existing_result.summary_text = result_data.summary_text
+        # summary_text가 제공된 경우에만 업데이트 (파이프라인 결과 보존)
+        if result_data.summary_text:
+            existing_result.summary_text = result_data.summary_text
         db.commit()
         db.refresh(existing_result)
         
@@ -186,7 +188,7 @@ async def create_test_result(
         new_result = DrawingTestResult(
             test_id=result_data.test_id,
             friends_type=result_data.friends_type,
-            summary_text=result_data.summary_text
+            summary_text=result_data.summary_text or "분석 결과가 생성되지 않았습니다."
         )
         
         db.add(new_result)
@@ -249,6 +251,60 @@ async def get_my_test_results(
         response_data.append(test_data)
     
     return response_data
+
+@router.get("/drawing-test-results/latest-matched")
+async def get_latest_matched_persona(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """현재 사용자의 가장 최근 매칭된 페르소나 조회"""
+    
+    # 사용자의 가장 최근 테스트 결과 조회
+    latest_result = db.query(DrawingTestResult).join(DrawingTest).filter(
+        DrawingTest.user_id == current_user["user_id"],
+        DrawingTestResult.friends_type.isnot(None)
+    ).order_by(DrawingTestResult.created_at.desc()).first()
+    
+    if not latest_result:
+        return {"matched_persona_id": None}
+    
+    return {
+        "matched_persona_id": latest_result.friends_type,
+        "matched_at": latest_result.created_at
+    }
+
+@router.get("/debug/table-status")
+async def debug_table_status(db: Session = Depends(get_db)):
+    """디버깅용: 테이블 상태 확인"""
+    try:
+        # DrawingTest 테이블 카운트
+        test_count = db.query(DrawingTest).count()
+        
+        # DrawingTestResult 테이블 카운트
+        result_count = db.query(DrawingTestResult).count()
+        
+        # 최근 5개 결과
+        recent_results = db.query(DrawingTestResult).order_by(
+            DrawingTestResult.created_at.desc()
+        ).limit(5).all()
+        
+        recent_data = []
+        for result in recent_results:
+            recent_data.append({
+                "result_id": result.result_id,
+                "test_id": result.test_id,
+                "friends_type": result.friends_type,
+                "created_at": result.created_at
+            })
+        
+        return {
+            "drawing_tests_count": test_count,
+            "drawing_test_results_count": result_count,
+            "recent_results": recent_data
+        }
+        
+    except Exception as e:
+        return {"error": str(e)}
 
 @router.get("/drawing-test-results/{result_id}")
 async def get_test_result(result_id: int, db: Session = Depends(get_db)):
