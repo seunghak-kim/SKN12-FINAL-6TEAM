@@ -104,11 +104,16 @@ class ChatService:
         }
     
     def _load_prompts(self) -> Dict[str, str]:
-        """프롬프트 로드"""
+        """체이닝된 프롬프트 로드"""
         try:
-            prompts_path = os.path.join(os.path.dirname(__file__), '../..', 'prompts', 'nemyeon.md')
-            with open(prompts_path, 'r', encoding='utf-8') as f:
-                content = f.read()
+            # 체이닝 시스템을 사용하여 프롬프트 로드
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+            from prompt_chaining import get_chained_prompt
+            
+            # 내면형(nemyeon) 체이닝된 프롬프트 로드
+            content = get_chained_prompt('nemyeon')
             
             # 정확한 섹션 매칭을 위한 정규식
             sections = {

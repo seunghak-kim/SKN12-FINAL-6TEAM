@@ -13,13 +13,13 @@ class PersonaPromptManager:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.prompts_dir = os.path.join(current_dir, "..", "..", "prompts")
         
-        # 페르소나 타입과 파일명 매핑
+        # 페르소나 타입과 파일명 매핑 (체이닝 시스템용 _persona.md 파일 사용)
         self.persona_files = {
-            "내면형": "nemyeon.md",
-            "추진형": "chujin.md", 
-            "관계형": "gwangye.md",
-            "안정형": "anjeong.md",
-            "쾌락형": "querock.md"
+            "내면형": "nemyeon_persona.md",
+            "추진형": "chujin_persona.md", 
+            "관계형": "gwangye_persona.md",
+            "안정형": "anjeong_persona.md",
+            "쾌락형": "querock_persona.md"
         }
         
         # 프롬프트 템플릿 캐시
@@ -73,20 +73,44 @@ class PersonaPromptManager:
         return PromptTemplate.from_template(default_content)
     
     def get_persona_prompt(self, persona_type: str, **kwargs) -> str:
-        """페르소나별 프롬프트 생성 (변수 주입 가능)"""
-        if persona_type not in self._template_cache:
+        """페르소나별 체이닝된 프롬프트 생성 (공통규칙 + 개별페르소나)"""
+        # 페르소나 타입을 체이닝 시스템의 키로 변환
+        persona_mapping = {
+            "내면형": "nemyeon",
+            "추진형": "chujin", 
+            "관계형": "gwangye",
+            "안정형": "anjeong",
+            "쾌락형": "querock"
+        }
+        
+        if persona_type not in persona_mapping:
             logger.error(f"지원하지 않는 페르소나 타입: {persona_type}")
             raise ValueError(f"지원하지 않는 페르소나 타입: {persona_type}")
         
-        template = self._template_cache[persona_type]
+        persona_key = persona_mapping[persona_type]
         
-        # 템플릿에 변수가 있으면 주입, 없으면 원본 반환
         try:
-            return template.format(**kwargs)
-        except KeyError as e:
-            logger.warning(f"프롬프트 템플릿 변수 누락: {e}, 원본 템플릿 사용")
-            # 변수가 없는 템플릿이면 그냥 template 내용 반환
-            return template.template
+            # 체이닝 시스템을 사용하여 공통규칙 + 개별페르소나 프롬프트 생성
+            from prompt_chaining import get_chained_prompt
+            chained_prompt = get_chained_prompt(persona_key)
+            
+            logger.info(f"체이닝된 프롬프트 생성 성공: {persona_type}")
+            return chained_prompt
+            
+        except Exception as e:
+            logger.error(f"체이닝된 프롬프트 생성 실패: {persona_type}, 오류: {e}")
+            # 실패 시 기존 캐시된 템플릿 사용 (fallback)
+            if persona_type in self._template_cache:
+                template = self._template_cache[persona_type]
+                try:
+                    return template.format(**kwargs)
+                except KeyError as e:
+                    logger.warning(f"프롬프트 템플릿 변수 누락: {e}, 원본 템플릿 사용")
+                    return template.template
+            else:
+                # 최후의 수단으로 기본 템플릿 생성
+                default_template = self._create_default_template(persona_type)
+                return default_template.template
     
     def get_available_personas(self) -> list:
         """사용 가능한 페르소나 타입 목록 반환"""
