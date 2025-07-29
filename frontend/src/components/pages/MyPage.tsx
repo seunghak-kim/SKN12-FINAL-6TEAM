@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
-import { ChatHistory, TestResult, UserProfile, DrawingTest } from '../../types';
-import { MessageCircle, FileText, Trash2, User, Calendar, MessageSquare, Edit2, Camera, Check, X, Loader } from 'lucide-react';
+import { ChatHistory, TestResult, UserProfile } from '../../types';
+import { MessageCircle, FileText, User, Calendar, Edit2, Camera, Check, X, Loader } from 'lucide-react';
 import { userService } from '../../services/userService';
 import { authService } from '../../services/authService';
 import { chatService } from '../../services/chatService';
 import { testService } from '../../services/testService';
+import { Button } from "../../components/ui/button";
 
 interface MyPageProps {
   onNewChat: () => void;
@@ -295,7 +296,7 @@ const MyPage: React.FC<MyPageProps> = ({
     }
 
     return () => {
-            chatObserver.disconnect();
+      chatObserver.disconnect();
       testObserver.disconnect();
     };
   }, [hasMoreChats, hasMoreTests, isLoadingChats, isLoadingTests, loadMoreChats, loadMoreTests]);
@@ -528,10 +529,10 @@ const MyPage: React.FC<MyPageProps> = ({
           </div>
 
           {/* User Profile Card */}
-          <div className="bg-white/70 backdrop-blur-sm border-0 shadow-xl rounded-xl p-6">
+          <div className="bg-slate-700/50 backdrop-blur-sm border border-white/20 shadow-xl rounded-3xl p-8">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center overflow-hidden">
                   {profileImage ? (
                     <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -550,17 +551,19 @@ const MyPage: React.FC<MyPageProps> = ({
                   </label>
                 )}
               </div>
+
               <div className="flex-1">
                 {isEditingProfile ? (
                   <div className="space-y-3">
+                    {/* 닉네임 입력 */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">닉네임</label>
+                      <label className="block text-sm font-medium text-white mb-1">닉네임</label>
                       <div className="flex space-x-2">
                         <input
                           type="text"
                           value={editingName}
                           onChange={handleNameChange}
-                          className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                          className={`flex-1 px-3 py-2 border rounded-md bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                             nameError ? 'border-red-300' : 'border-gray-300'
                           }`}
                           placeholder="닉네임을 입력하세요"
@@ -571,17 +574,17 @@ const MyPage: React.FC<MyPageProps> = ({
                           className={`px-4 py-2 text-sm rounded-md transition-colors ${
                             isCheckingNickname || !editingName.trim()
                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                              : 'bg-indigo-600 text-white hover:bg-indigo-700'
                           }`}
                         >
                           {isCheckingNickname ? '확인 중...' : '중복 확인'}
                         </button>
                       </div>
-                      
+
                       {/* 닉네임 검사 결과 */}
                       {nicknameCheckResult && (
                         <div className={`mt-2 flex items-center space-x-1 text-sm ${
-                          nicknameCheckResult === 'available' ? 'text-green-600' : 'text-red-600'
+                          nicknameCheckResult === 'available' ? 'text-green-400' : 'text-red-400'
                         }`}>
                           {nicknameCheckResult === 'available' ? (
                             <>
@@ -601,40 +604,39 @@ const MyPage: React.FC<MyPageProps> = ({
                           )}
                         </div>
                       )}
-                      
+
                       {/* 에러 메시지 */}
                       {nameError && (
-                        <div className="mt-2 flex items-center space-x-1 text-sm text-red-600">
+                        <div className="mt-2 flex items-center space-x-1 text-sm text-red-400">
                           <X className="w-4 h-4" />
                           <span>{nameError}</span>
                         </div>
                       )}
                     </div>
-                    
-                    {/* 이미지 업로드 에러 메시지 */}
+
+                    {/* 이미지 업로드 에러 */}
                     {imageError && (
-                      <div className="flex items-center space-x-1 text-sm text-red-600">
+                      <div className="flex items-center space-x-1 text-sm text-red-400">
                         <X className="w-4 h-4" />
                         <span>{imageError}</span>
                       </div>
                     )}
-                    
-                    {/* 저장 에러 메시지 */}
+
+                    {/* 저장 성공/실패 메시지 */}
                     {saveError && (
-                      <div className="flex items-center space-x-1 text-sm text-red-600">
+                      <div className="flex items-center space-x-1 text-sm text-red-400">
                         <X className="w-4 h-4" />
                         <span>{saveError}</span>
                       </div>
                     )}
-                    
-                    {/* 저장 성공 메시지 */}
                     {saveSuccess && (
-                      <div className="flex items-center space-x-1 text-sm text-green-600">
+                      <div className="flex items-center space-x-1 text-sm text-green-400">
                         <Check className="w-4 h-4" />
                         <span>프로필이 성공적으로 저장되었습니다.</span>
                       </div>
                     )}
-                    
+
+                    {/* 저장/취소 버튼 */}
                     <div className="flex space-x-2">
                       <button
                         onClick={handleProfileSave}
@@ -668,23 +670,23 @@ const MyPage: React.FC<MyPageProps> = ({
                   <div>
                     {isLoadingProfile ? (
                       <div className="flex items-center space-x-2">
-                        <Loader className="w-5 h-5 animate-spin text-blue-500" />
-                        <span className="text-gray-600">프로필 로딩 중...</span>
+                        <Loader className="w-5 h-5 animate-spin text-white" />
+                        <span className="text-white/70">프로필 로딩 중...</span>
                       </div>
                     ) : (
                       <div>
                         <div className="flex items-center space-x-2">
-                          <h2 className="text-xl font-bold text-gray-800">{userProfile?.name || '사용자'}</h2>
+                          <h2 className="text-xl font-bold text-white">{userProfile?.name || '사용자'}</h2>
                           <button
                             onClick={handleProfileEdit}
-                            className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+                            className="p-1 text-white/60 hover:text-white transition-colors"
                             title="프로필 편집"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <p className="text-gray-600 text-left">{userProfile?.email}</p>
-                        <div className="flex items-center space-x-6 mt-2 text-sm text-gray-500">
+                        <p className="text-white/70">{userProfile?.email}</p>
+                        <div className="flex items-center space-x-6 mt-2 text-sm text-white/50">
                           <span className="flex items-center space-x-1">
                             <Calendar className="w-4 h-4" />
                             <span>가입일: {userProfile?.joinDate && formatDate(userProfile.joinDate)}</span>
@@ -700,175 +702,153 @@ const MyPage: React.FC<MyPageProps> = ({
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Chat History */}
-            <div className="bg-white/70 backdrop-blur-sm border-0 shadow-xl rounded-xl">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="flex items-center space-x-2 text-xl font-bold text-gray-800">
-                  <MessageCircle className="w-5 h-5" />
-                  <span>채팅 히스토리</span>
-                </h3>
-              </div>
-              <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
-                {displayedChats.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>아직 채팅 기록이 없습니다.</p>
-                  </div>
-                ) : (
-                  <>
-                    {Object.entries(chatsByDate)
-                      .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-                      .map(([date, chats]) => (
-                        <div key={date} className="space-y-2">
-                          <h4 className="text-sm font-medium text-gray-500">{formatDate(date)}</h4>
-                          {chats.map((chat: ChatHistory) => (
-                            <div key={chat.id} className="flex items-center justify-between p-3 hover:bg-gray-50/50 rounded-lg transition-colors">
-                              <div className="flex items-center space-x-3">
-                                <div className="text-2xl">{chat.characterAvatar}</div>
-                                <div>
-                                  <p className="font-medium text-gray-800">{chat.characterName}와의 대화</p>
-                                  <p className="text-sm text-gray-500">
-                                    {chat.messages && chat.messages.length > 0 && chat.messages[chat.messages.length - 1]?.timestamp 
-                                      ? formatTime(chat.messages[chat.messages.length - 1].timestamp) 
-                                      : '시간 정보 없음'} · 메시지 {chat.messages?.length || 0}개
-                                  </p>
-                                </div>
-                              </div>
-                              <button 
-                                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                                onClick={() => handleContinueChat(chat)}
-                              >
-                                이어서 대화하기
-                              </button>
-                            </div>
-                          ))}
-                          {date !== Object.keys(chatsByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[Object.keys(chatsByDate).length - 1] && (
-                            <div className="border-t border-gray-100 my-2"></div>
-                          )}
-                        </div>
-                      ))}
-                    
-                    {/* 로딩 인디케이터 */}
-                    {isLoadingChats && (
-                      <div className="flex justify-center py-4">
-                        <Loader className="w-6 h-6 animate-spin text-blue-500" />
-                      </div>
-                    )}
-                    
-                    {/* 무한 스크롤 트리거 */}
-                    {hasMoreChats && (
-                      <div ref={chatObserverRef} className="h-4" />
-                    )}
-                    
-                    {/* 더 이상 로드할 데이터가 없을 때 */}
-                    {!hasMoreChats && displayedChats.length > 0 && (
-                      <div className="text-center py-4 text-gray-500 text-sm">
-                        모든 채팅 기록을 불러왔습니다.
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+          {/* Chat History */}
+          <div className="bg-slate-700/50 backdrop-blur-sm border border-white/20 shadow-xl rounded-3xl">
+            <div className="p-6 border-b border-white/20">
+              <h3 className="flex items-center space-x-2 text-xl font-bold text-white">
+                <MessageCircle className="w-5 h-5 text-white" />
+                <span>채팅 히스토리</span>
+              </h3>
             </div>
-
-            {/* Test Results */}
-            <div className="bg-white/70 backdrop-blur-sm border-0 shadow-xl rounded-xl">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="flex items-center space-x-2 text-xl font-bold text-gray-800">
-                  <FileText className="w-5 h-5" />
-                  <span>그림 검사 결과</span>
-                </h3>
-              </div>
-              <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
-                {displayedTests.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>아직 검사 결과가 없습니다.</p>
-                  </div>
-                ) : (
-                  <>
-                    {Object.entries(testsByDate)
-                      .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-                      .map(([date, tests]) => (
-                        <div key={date} className="space-y-2">
-                          <h4 className="text-sm font-medium text-gray-500">{formatDate(date)}</h4>
-                          {tests.map((test: TestResult) => (
-                            <div key={test.id} className="flex items-center justify-between p-3 hover:bg-gray-50/50 rounded-lg transition-colors">
-                              <div className="flex items-center space-x-4">
-                                {test.images && test.images[0] && (
-                                  <img src={testService.getImageUrl(test.images[0])} alt="Test Result" className="w-16 h-16 rounded-lg object-cover" />
-                                )}
-                                <div>
-                                  <p className="font-medium text-gray-800">{formatDate(test.date)} 결과</p>
-                                  <p className="text-sm text-indigo-600">페르소나: {test.characterMatch}</p>
-                                  {test.images && (
-                                    <p className="text-xs text-gray-400">첨부된 이미지: {test.images.length}개</p>
-                                  )}
-                                </div>
+            <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
+              {displayedChats.length === 0 ? (
+                <div className="text-center py-8 text-white/50">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-3 text-white/20" />
+                  <p>아직 채팅 기록이 없습니다.</p>
+                </div>
+              ) : (
+                <>
+                  {Object.entries(chatsByDate)
+                    .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+                    .map(([date, chats]) => (
+                      <div key={date} className="space-y-2">
+                        <h4 className="text-sm font-medium text-white/60">{formatDate(date)}</h4>
+                        {chats.map((chat: ChatHistory) => (
+                          <div
+                            key={chat.id}
+                            className="flex items-center justify-between p-3 hover:bg-slate-600/30 rounded-xl transition-colors"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center text-xl">
+                                {chat.characterAvatar}
                               </div>
-                              <button 
-                                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                                onClick={() => navigate(`/result-detail/${test.id}`)}
-                              >
-                                자세히 보기
-                              </button>
+                              <div>
+                                <p className="font-medium text-white">{chat.characterName}와의 대화</p>
+                                <p className="text-sm text-white/60">
+                                  {chat.messages && chat.messages.length > 0 && chat.messages[chat.messages.length - 1]?.timestamp 
+                                    ? formatTime(chat.messages[chat.messages.length - 1].timestamp) 
+                                    : '시간 정보 없음'} · 메시지 {chat.messages?.length || 0}개
+                                </p>
+                              </div>
                             </div>
-                          ))}
-                          {date !== Object.keys(testsByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[Object.keys(testsByDate).length - 1] && (
-                            <div className="border-t border-gray-100 my-2"></div>
-                          )}
-                        </div>
-                      ))}
-                    
-                    {/* 로딩 인디케이터 */}
-                    {isLoadingTests && (
-                      <div className="flex justify-center py-4">
-                        <Loader className="w-6 h-6 animate-spin text-blue-500" />
+                            <button 
+                              className="px-3 py-1 text-sm border border-white/30 text-white hover:bg-white/10 rounded-full transition-colors"
+                              onClick={() => handleContinueChat(chat)}
+                            >
+                              이어서 대화하기
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    )}
-                    
-                    {/* 무한 스크롤 트리거 */}
-                    {hasMoreTests && (
-                      <div ref={testObserverRef} className="h-4" />
-                    )}
-                    
-                    {/* 더 이상 로드할 데이터가 없을 때 */}
-                    {!hasMoreTests && displayedTests.length > 0 && (
-                      <div className="text-center py-4 text-gray-500 text-sm">
-                        모든 검사 결과를 불러왔습니다.
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+                    ))}
+
+                  {isLoadingChats && (
+                    <div className="flex justify-center py-4">
+                      <Loader className="w-6 h-6 animate-spin text-white" />
+                    </div>
+                  )}
+
+                  {hasMoreChats && <div ref={chatObserverRef} className="h-4" />}
+
+                  {!hasMoreChats && displayedChats.length > 0 && (
+                    <div className="text-center py-4 text-white/50 text-sm">
+                      모든 채팅 기록을 불러왔습니다.
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
+          {/* Test Results */}
+          <div className="bg-slate-700/50 backdrop-blur-sm border border-white/20 shadow-xl rounded-3xl">
+            <div className="p-6 border-b border-white/20">
+              <h3 className="flex items-center space-x-2 text-xl font-bold text-white">
+                <FileText className="w-5 h-5 text-white" />
+                <span>그림 검사 결과</span>
+              </h3>
+            </div>
+            <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
+              {displayedTests.length === 0 ? (
+                <div className="text-center py-8 text-white/50">
+                  <FileText className="w-12 h-12 mx-auto mb-3 text-white/20" />
+                  <p>아직 검사 결과가 없습니다.</p>
+                </div>
+              ) : (
+                <>
+                  {Object.entries(testsByDate)
+                    .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+                    .map(([date, tests]) => (
+                      <div key={date} className="space-y-2">
+                        <h4 className="text-sm font-medium text-white/60">{formatDate(date)}</h4>
+                        {tests.map((test: TestResult) => (
+                          <div
+                            key={test.id}
+                            className="flex items-center justify-between p-3 hover:bg-slate-600/30 rounded-xl transition-colors"
+                          >
+                            <div className="flex items-center space-x-4">
+                              {test.images && test.images[0] && (
+                                <img
+                                  src={testService.getImageUrl(test.images[0])}
+                                  alt="Test Result"
+                                  className="w-16 h-16 rounded-lg object-cover border border-white/20"
+                                />
+                              )}
+                              <div>
+                                <p className="font-medium text-white">{formatDate(test.date)} 결과</p>
+                                <p className="text-sm text-purple-200">페르소나: {test.characterMatch}</p>
+                                {test.images && (
+                                  <p className="text-xs text-white/40">첨부된 이미지: {test.images.length}개</p>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              className="px-3 py-1 text-sm border border-white/30 text-white hover:bg-white/10 rounded-full transition-colors"
+                              onClick={() => navigate(`/result-detail/${test.id}`)}
+                            >
+                              자세히 보기
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+
+                  {isLoadingTests && (
+                    <div className="flex justify-center py-4">
+                      <Loader className="w-6 h-6 animate-spin text-white" />
+                    </div>
+                  )}
+
+                  {hasMoreTests && <div ref={testObserverRef} className="h-4" />}
+
+                  {!hasMoreTests && displayedTests.length > 0 && (
+                    <div className="text-center py-4 text-white/50 text-sm">
+                      모든 검사 결과를 불러왔습니다.
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
 
           {/* Account Management */}
-          <div className="bg-white/70 backdrop-blur-sm border-0 shadow-xl rounded-xl">
-            <div className="p-6 border-b border-gray-100">
-              <h3 className="text-xl font-bold text-gray-800">계정 관리</h3>
-            </div>
-            <div className="p-6">
-              <div className="flex justify-between items-center">
-                <button 
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
-                  onClick={handleNewChat}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>새로운 대화 시작</span>
-                </button>
-                <button 
-                  className="flex items-center space-x-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                  onClick={onDeleteAccount}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>회원 탈퇴</span>
-                </button>
-              </div>
-            </div>
+          <div className="text-center">
+            <Button
+              onClick={() => onNavigate?.("welcome")}
+              className="bg-slate-600/50 hover:bg-slate-600/70 text-white px-6 py-3 rounded-full font-medium"
+            >
+              회원탈퇴
+            </Button>
           </div>
         </div>
       </main>
