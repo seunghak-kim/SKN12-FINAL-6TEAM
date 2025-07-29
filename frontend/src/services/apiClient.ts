@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
 // API 기본 설정
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -17,7 +17,7 @@ class ApiClient {
 
     // 요청 인터셉터
     this.client.interceptors.request.use(
-      (config) => {
+      (config: InternalAxiosRequestConfig) => {
         // 인증 토큰 추가
         const token = localStorage.getItem('access_token');
         if (token) {
@@ -25,13 +25,13 @@ class ApiClient {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error: AxiosError) => Promise.reject(error)
     );
 
     // 응답 인터셉터
     this.client.interceptors.response.use(
       (response: AxiosResponse) => response,
-      (error) => {
+      (error: AxiosError) => {
         if (error.response?.status === 401) {
           // 인증 오류 처리
           console.log('Authentication error');
