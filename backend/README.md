@@ -117,11 +117,23 @@ pip install -r requirements.txt
 `.env` 파일을 생성하고 다음 변수들을 설정하세요:
 
 ```env
+# 데이터베이스 설정
 DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+
+# OpenAI API 설정
 OPENAI_API_KEY=your_openai_api_key
+
+# HuggingFace 설정 (HTP 성격 분류 모델용)
+HF_TOKEN=your_huggingface_token_here
+HF_MODEL_NAME=Bokji/HTP-personality-classifier
+
+# 앱 보안 설정
 SECRET_KEY=your_secret_key
+
+# 개발 모드
 DEBUG=True
 ```
+
 
 ### 3. 데이터베이스 설정
 
