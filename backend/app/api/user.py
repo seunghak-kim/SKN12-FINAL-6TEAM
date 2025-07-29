@@ -218,7 +218,10 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
             detail="사용자를 찾을 수 없습니다."
         )
     
+    from datetime import datetime, timezone
+    
     user_info.status = "INACTIVE"
+    user_info.deleted_at = datetime.now(timezone.utc)
     db.commit()
     
     return {"message": "사용자가 성공적으로 삭제되었습니다."}

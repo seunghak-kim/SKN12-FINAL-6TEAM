@@ -44,8 +44,8 @@ class UserInformation(Base):
     deleted_at = Column(DateTime)
     
     # Foreign Key 관계
-    social_user_id = Column(Integer, ForeignKey('social_users.social_user_id'))
-    regular_user_id = Column(Integer, ForeignKey('users.user_id'))
+    social_user_id = Column(Integer, ForeignKey('social_users.social_user_id', ondelete='CASCADE'))
+    regular_user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'))
     
     # 관계 정의
     social_user = relationship("SocialUser", back_populates="user_information")
@@ -53,9 +53,9 @@ class UserInformation(Base):
     
     # 다른 테이블과의 관계 (cascade delete)
     chat_sessions = relationship("ChatSession", back_populates="user_information", cascade="all, delete-orphan")
-    drawing_tests = relationship("DrawingTest", back_populates="user_information")
-    ratings = relationship("Rating", back_populates="user_information")
-    agreements = relationship("Agreement", back_populates="user_information")
+    drawing_tests = relationship("DrawingTest", back_populates="user_information", cascade="all, delete-orphan")
+    ratings = relationship("Rating", back_populates="user_information", cascade="all, delete-orphan")
+    agreements = relationship("Agreement", back_populates="user_information", cascade="all, delete-orphan")
     
     def __repr__(self):
         email_value = getattr(self, 'email', None) or 'None'
