@@ -9,7 +9,7 @@ class Rating(Base):
     __tablename__ = "ratings"
     
     ratings_id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(UUID(as_uuid=True), ForeignKey('chat_sessions.chat_sessions_id', ondelete='CASCADE'), unique=True, nullable=False)
+    session_id = Column(UUID(as_uuid=True), ForeignKey('chat_sessions.chat_sessions_id', ondelete='CASCADE'), nullable=False)
     user_id = Column(Integer, ForeignKey('user_informations.user_id', ondelete='CASCADE'), nullable=False)
     friends_id = Column(Integer, ForeignKey('friends.friends_id'), nullable=False)
     rating = Column(Integer, nullable=False)

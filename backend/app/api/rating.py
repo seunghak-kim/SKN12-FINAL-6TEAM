@@ -26,21 +26,21 @@ async def create_rating(
             detail="다른 사용자의 평가를 생성할 수 없습니다."
         )
     
-    # 같은 사용자의 같은 세션에 대한 평가가 이미 있는지 확인
-    existing_rating = db.query(Rating).filter(
-        Rating.user_id == rating_data.user_id,
-        Rating.session_id == rating_data.session_id
-    ).first()
+    # 모든 사용자의 의견 수용을 위해 중복 평가 허용 (모든 평가 데이터 보존)
     
-    if existing_rating:
+    # 세션 정보에서 friends_id 가져오기
+    from app.models.chat import ChatSession
+    session = db.query(ChatSession).filter(ChatSession.chat_sessions_id == rating_data.session_id).first()
+    if not session:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="이미 이 세션에 대한 평가가 존재합니다."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="해당 세션을 찾을 수 없습니다."
         )
     
     new_rating = Rating(
         user_id=rating_data.user_id,
         session_id=rating_data.session_id,
+        friends_id=session.friends_id,  # 세션에서 friends_id 자동 설정
         rating=rating_data.rating,
         comment=rating_data.comment
     )

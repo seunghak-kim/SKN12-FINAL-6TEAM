@@ -13,9 +13,9 @@ sys.path.append(os.path.dirname(__file__))
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-DOCS_DIR = os.path.join(os.path.dirname(__file__), '../rag')
-IMAGE_DIR = os.path.join(os.path.dirname(__file__), '../detection_results/images')
-RESULT_DIR = os.path.join(os.path.dirname(__file__), '../detection_results/results')
+DOCS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../rag'))
+IMAGE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../detection_results/images'))
+RESULT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../detection_results/results'))
 
 # RAG 문서 불러오기
 RAG_FILES = [
@@ -46,29 +46,50 @@ def load_rag_docs():
     docs = []
     rag_images = []
     
-    for fname in RAG_FILES:
-        with open(fname, encoding="utf-8") as f:
-            doc_content = f.read()
-            docs.append(doc_content)
-            
-            # 이미지 경로 추출
-            image_paths = extract_image_paths_from_md(doc_content)
-            for img_path in image_paths:
-                # 상대 경로를 절대 경로로 변환
-                full_img_path = os.path.join(DOCS_DIR, img_path)
-                if os.path.exists(full_img_path):
-                    img_base64 = encode_image_to_base64(full_img_path)
-                    if img_base64:
-                        rag_images.append({
-                            "path": img_path,
-                            "base64": img_base64
-                        })
+    print(f"RAG 문서 로드 시작. DOCS_DIR: {DOCS_DIR}")
     
+    for fname in RAG_FILES:
+        print(f"RAG 파일 로드 시도: {fname}")
+        if not os.path.exists(fname):
+            print(f"RAG 파일이 존재하지 않습니다: {fname}")
+            continue
+            
+        try:
+            with open(fname, encoding="utf-8") as f:
+                doc_content = f.read()
+                docs.append(doc_content)
+                print(f"RAG 파일 로드 성공: {fname}")
+                
+                # 이미지 경로 추출
+                image_paths = extract_image_paths_from_md(doc_content)
+                for img_path in image_paths:
+                    # 상대 경로를 절대 경로로 변환
+                    full_img_path = os.path.join(DOCS_DIR, img_path)
+                    if os.path.exists(full_img_path):
+                        img_base64 = encode_image_to_base64(full_img_path)
+                        if img_base64:
+                            rag_images.append({
+                                "path": img_path,
+                                "base64": img_base64
+                            })
+        except Exception as e:
+            print(f"RAG 파일 로드 실패: {fname}, 오류: {e}")
+            continue
+    
+    print(f"RAG 문서 로드 완료. 총 문서: {len(docs)}개, 이미지: {len(rag_images)}개")
     return "\n\n".join(docs), rag_images
 
-RAG_GUIDE, RAG_IMAGES = load_rag_docs()
+# RAG 문서는 필요할 때 로드하도록 변경
+RAG_GUIDE = None
+RAG_IMAGES = None
 
-PROMPT = f'''
+def get_rag_data():
+    global RAG_GUIDE, RAG_IMAGES
+    if RAG_GUIDE is None or RAG_IMAGES is None:
+        RAG_GUIDE, RAG_IMAGES = load_rag_docs()
+    return RAG_GUIDE, RAG_IMAGES
+
+PROMPT_TEMPLATE = '''
 모든 답변은 반드시 한글로 작성해 주세요.
 주어진 그림은 실제 장소나 인물이 아닌, 심리 검사를 위해 직접 손으로 그린 그림입니다. 
 분석은 전문가처럼 자세하고 상세히 제시해야 하며, 모든 답변은 ~입니다 체로 적습니다.
@@ -111,13 +132,15 @@ def analyze_image_with_gpt(image_path, prompt, include_rag_images=False):
         ]
         
         # RAG 이미지들을 포함하는 경우
-        if include_rag_images and RAG_IMAGES:
-            content.append({"type": "text", "text": "\n\n[참고용 예시 이미지들]"})
-            for rag_img in RAG_IMAGES:
-                rag_data_url = f"data:image/png;base64,{rag_img['base64']}"
-                content.append({
-                    "type": "text", 
-                    "text": f"예시 이미지 경로: {rag_img['path']}"
+        if include_rag_images:
+            _, rag_images = get_rag_data()
+            if rag_images:
+                content.append({"type": "text", "text": "\n\n[참고용 예시 이미지들]"})
+                for rag_img in rag_images:
+                    rag_data_url = f"data:image/png;base64,{rag_img['base64']}"
+                    content.append({
+                        "type": "text", 
+                        "text": f"예시 이미지 경로: {rag_img['path']}"
                 })
                 content.append({
                     "type": "image_url", 
@@ -127,7 +150,7 @@ def analyze_image_with_gpt(image_path, prompt, include_rag_images=False):
         response = openai.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "당신은 심리 분석가입니다."},
+                {"role": "system", "content": "당신은 그림 검사 결과를 바탕으로 피검사자의 심리를 예측하는데 전문가입니다."},
                 {
                     "role": "user",
                     "content": content
@@ -206,8 +229,14 @@ def analyze_image_gpt(image_base):
 
     print(f"\n===== {target_filename} 심리 분석 결과 =====")
     try:
+        # RAG 데이터 로드
+        rag_guide, rag_images = get_rag_data()
+        
+        # 프롬프트 생성
+        prompt = PROMPT_TEMPLATE.format(RAG_GUIDE=rag_guide)
+        
         # 1차 GPT 해석 (RAG 이미지 제외 - 토큰 제한으로 인해)
-        result_text_gpt = analyze_image_with_gpt(image_path, PROMPT, include_rag_images=False)
+        result_text_gpt = analyze_image_with_gpt(image_path, prompt, include_rag_images=False)
         print(result_text_gpt)  # 1차 해석 텍스트 바로 출력
         # rag_doc_*.md 경로 리스트
         rag_md_paths = RAG_FILES
