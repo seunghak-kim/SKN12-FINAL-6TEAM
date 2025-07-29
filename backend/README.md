@@ -224,15 +224,15 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ### ⭐ 평가 API (`/ratings`)
 
-| Method | Endpoint                                 | 설명                    |
-| ------ | ---------------------------------------- | ----------------------- |
-| POST   | `/ratings/`                              | 세션 평가 생성          |
-| GET    | `/ratings/`                              | 평가 목록 (필터링 가능) |
-| GET    | `/ratings/{rating_id}`                   | 특정 평가               |
-| PUT    | `/ratings/{rating_id}`                   | 평가 수정               |
-| DELETE | `/ratings/{rating_id}`                   | 평가 삭제               |
-| GET    | `/ratings/sessions/{session_id}/average` | 세션 평균 평점          |
-| GET    | `/ratings/users/{user_id}/average`       | 사용자 평균 평점        |
+| Method | Endpoint                                 | 설명                               |
+| ------ | ---------------------------------------- | ---------------------------------- |
+| POST   | `/ratings/`                              | 세션 평가 생성 (중복 평가 허용)    |
+| GET    | `/ratings/`                              | 평가 목록 (필터링 가능)            |
+| GET    | `/ratings/{rating_id}`                   | 특정 평가                          |
+| PUT    | `/ratings/{rating_id}`                   | 평가 수정                          |
+| DELETE | `/ratings/{rating_id}`                   | 평가 삭제                          |
+| GET    | `/ratings/sessions/{session_id}/average` | 세션 평균 평점 (모든 평가 기반)    |
+| GET    | `/ratings/users/{user_id}/average`       | 사용자 평균 평점                   |
 
 ### 📋 약관 동의 API (`/agreements`)
 
@@ -303,7 +303,7 @@ agreements (약관 동의)
 
 #### 5. 피드백 테이블
 
-- **ratings**: 상담 세션에 대한 사용자 평가
+- **ratings**: 상담 세션에 대한 사용자 평가 (중복 평가 허용, friends_id 포함)
 - **agreements**: 서비스 이용약관 동의 기록
 
 ## 🗂 데이터베이스 쿼리
@@ -391,13 +391,14 @@ CREATE TABLE public.ratings (
     ratings_id serial4 NOT NULL,
     session_id uuid NOT NULL,
     user_id int4 NOT NULL,
+    friends_id int4 NOT NULL,
     rating int4 NOT NULL,
     comment text NULL,
     created_at timestamp DEFAULT now() NOT NULL,
     CONSTRAINT ratings_pkey PRIMARY KEY (ratings_id),
-    CONSTRAINT ratings_session_id_key UNIQUE (session_id),
-    CONSTRAINT ratings_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(chat_sessions_id),
-    CONSTRAINT ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_informations(user_id)
+    CONSTRAINT ratings_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(chat_sessions_id) ON DELETE CASCADE,
+    CONSTRAINT ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_informations(user_id) ON DELETE CASCADE,
+    CONSTRAINT ratings_friends_id_fkey FOREIGN KEY (friends_id) REFERENCES public.friends(friends_id)
 );
 
 -- 채팅 메시지 테이블
@@ -525,9 +526,10 @@ SELECT
 FROM ratings
 WHERE user_id = :user_id;
 
--- 중복 평가 방지
+-- 사용자의 특정 세션 평가 조회 (중복 평가 허용)
 SELECT * FROM ratings
-WHERE user_id = :user_id AND session_id = :session_id;
+WHERE user_id = :user_id AND session_id = :session_id
+ORDER BY created_at DESC;
 ```
 
 #### 관리자 쿼리
