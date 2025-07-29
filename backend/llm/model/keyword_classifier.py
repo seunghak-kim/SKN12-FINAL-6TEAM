@@ -389,27 +389,31 @@ def run_keyword_prediction_from_result(image_base: str, quiet: bool = True) -> D
         # 1. 현재 이미지 분석 결과에서 키워드 추출
         current_keywords = classifier._extract_emotion_keywords(raw_text)
         
-        # 2. 이전 단계의 키워드 데이터 로드
+        # 2. 이전 단계의 감정 키워드 데이터 로드
         previous_keywords = _load_previous_stage_keywords()
         
-        # 3. 모든 키워드 결합 (현재 + 이전 단계)
-        all_keywords = list(set(current_keywords + previous_keywords))
+        # 3. 가중치 적용한 키워드 결합
+        # 현재 이미지 키워드: 3배 가중치
+        # 이전 단계 키워드: 1배 가중치
+        weighted_keywords = current_keywords * 3 + previous_keywords[:15]  # 이전 키워드는 최대 15개로 제한
         
         # 키워드가 충분하지 않은 경우 텍스트에서 추가 추출
-        if len(all_keywords) < 5:
+        if len(set(weighted_keywords)) < 5:
             text_words = raw_text.split()
             meaningful_words = [word for word in text_words if len(word) >= 2 and not word.isdigit()]
-            all_keywords.extend(meaningful_words[:10])
-            all_keywords = list(set(all_keywords))
+            weighted_keywords.extend(meaningful_words[:5])
+        
+        # 중복 제거하되 가중치는 유지
+        unique_keywords = list(dict.fromkeys(weighted_keywords))  # 순서를 유지하면서 중복 제거
         
         # 키워드 기반 예측 수행
-        prediction_result = classifier.predict_from_keywords(all_keywords)
+        prediction_result = classifier.predict_from_keywords(unique_keywords)
         
         if not quiet:
-            print(f"\n[키워드 기반 성격 유형 예측 결과]")
-            print(f"현재 이미지 키워드: {current_keywords}")
-            print(f"이전 단계 키워드: {previous_keywords[:10]}..." if len(previous_keywords) > 10 else f"이전 단계 키워드: {previous_keywords}")
-            print(f"총 사용 키워드 수: {len(all_keywords)}")
+            print(f"\n[개선된 키워드 기반 성격 유형 예측 결과]")
+            print(f"현재 이미지 키워드 (가중치 3배): {current_keywords}")
+            print(f"이전 단계 감정 키워드 (가중치 1배): {previous_keywords[:10]}..." if len(previous_keywords) > 10 else f"이전 단계 감정 키워드: {previous_keywords}")
+            print(f"총 사용 키워드 수: {len(unique_keywords)} (가중치 적용)")
             print(f"예측된 성격 유형: {prediction_result['personality_type']}")
             print(f"신뢰도: {prediction_result['confidence']:.3f}")
             
@@ -425,9 +429,10 @@ def run_keyword_prediction_from_result(image_base: str, quiet: bool = True) -> D
             "probabilities": prediction_result['probabilities'],
             "current_image_keywords": current_keywords,
             "previous_stage_keywords": previous_keywords[:20],  # 상위 20개만 저장
-            "total_keywords_used": len(all_keywords),
+            "total_keywords_used": len(unique_keywords),
+            "weighting_applied": "current_3x_previous_1x",  # 가중치 정보 추가
             "analysis_timestamp": datetime.now().isoformat(),
-            "model_used": "keyword_classifier_enhanced"
+            "model_used": "keyword_classifier_enhanced_v2"
         }
         
         # 업데이트된 내용을 다시 저장
@@ -435,7 +440,7 @@ def run_keyword_prediction_from_result(image_base: str, quiet: bool = True) -> D
             json.dump(result_data, f, ensure_ascii=False, indent=2)
         
         if not quiet:
-            print(f"키워드 분석 결과가 저장되었습니다: {result_json_path}")
+            print(f"개선된 키워드 분석 결과가 저장되었습니다: {result_json_path}")
         
         return prediction_result
         
@@ -453,41 +458,53 @@ def run_keyword_prediction_from_result(image_base: str, quiet: bool = True) -> D
         }
 
 def _load_previous_stage_keywords() -> List[str]:
-    """이전 단계에서 추출된 키워드들을 로드"""
+    """이전 단계에서 추출된 키워드들을 로드 (감정 키워드만 필터링)"""
     keywords = []
+    
+    # 감정 관련 키워드 카테고리 정의
+    emotion_related_words = {
+        # 감정 상태
+        "불안", "걱정", "초조", "긴장", "불안감", "사회불안", "정서불안", "심리불안",
+        "우울", "슬픔", "절망", "무기력", "침울", "우울감", "내적우울감",
+        "애정", "사랑", "애정결핍", "관심", "애착", "애정욕구", "관심욕구",
+        "분노", "화", "짜증", "격분", "성난", "적대감", "공격성",
+        "두려움", "공포", "무서움", "겁", "공포감", "경계심",
+        "외로움", "고독", "소외", "쓸쓸", "고립감", "단절감",
+        "스트레스", "압박", "부담", "긴장감", "압박감",
+        "위축", "소극적", "내향적", "수동적", "소심함", "자신감부족",
+        "행복", "기쁨", "즐거움", "만족", "편안", "안정", "평온",
+        # 감정 표현 동사
+        "느끼다", "감정", "마음", "기분", "상태", "심리", "정서",
+        # HTP 심리 관련
+        "애정결핍", "관심결핍", "인정결핍", "사랑결핍", "정서적결핍"
+    }
     
     try:
         # 전처리 결과 디렉토리 경로
         preprocess_result_dir = os.path.join(BASE_DIR, "../../preprocess/result")
         
-        # 도서 키워드 로드
-        book_keywords_path = os.path.join(preprocess_result_dir, "book_keywords.json")
-        if os.path.exists(book_keywords_path):
-            with open(book_keywords_path, 'r', encoding='utf-8') as f:
-                book_data = json.load(f)
-                book_keywords = [item["keyword"] for item in book_data if item.get("keyword")]
-                keywords.extend(book_keywords)
-        
-        # 채팅 키워드 로드
+        # 채팅 키워드 로드 (감정 키워드가 많음)
         chat_keywords_path = os.path.join(preprocess_result_dir, "chat_data_keywords.json")
         if os.path.exists(chat_keywords_path):
             with open(chat_keywords_path, 'r', encoding='utf-8') as f:
                 chat_data = json.load(f)
                 chat_keywords = [item["keyword"] for item in chat_data 
                                if item.get("keyword") and item["keyword"] != "분석 실패"]
-                keywords.extend(chat_keywords)
+                # 감정 관련 키워드만 필터링
+                emotion_keywords = [kw for kw in chat_keywords 
+                                  if any(emotion in kw for emotion in emotion_related_words)]
+                keywords.extend(emotion_keywords)
         
-        # 기타 키워드 텍스트 파일 로드
-        book_keywords_text_path = os.path.join(preprocess_result_dir, "book_keywords_text.json")
-        if os.path.exists(book_keywords_text_path):
-            with open(book_keywords_text_path, 'r', encoding='utf-8') as f:
-                book_text_data = json.load(f)
-                if isinstance(book_text_data, list):
-                    for item in book_text_data:
-                        if isinstance(item, dict) and "text" in item:
-                            # 텍스트를 단어로 분할하여 키워드로 활용
-                            words = item["text"].split()
-                            keywords.extend(words[:3])  # 처음 3개 단어만
+        # 도서 키워드에서 감정 관련만 선택
+        book_keywords_path = os.path.join(preprocess_result_dir, "book_keywords.json")
+        if os.path.exists(book_keywords_path):
+            with open(book_keywords_path, 'r', encoding='utf-8') as f:
+                book_data = json.load(f)
+                book_keywords = [item["keyword"] for item in book_data if item.get("keyword")]
+                # 감정 관련 키워드만 필터링
+                emotion_keywords = [kw for kw in book_keywords 
+                                  if any(emotion in kw for emotion in emotion_related_words)]
+                keywords.extend(emotion_keywords)
         
         # 중복 제거 및 필터링
         unique_keywords = []
@@ -503,7 +520,7 @@ def _load_previous_stage_keywords() -> List[str]:
                 keyword not in unique_keywords):
                 unique_keywords.append(keyword)
         
-        return unique_keywords[:50]  # 최대 50개까지만 반환
+        return unique_keywords[:30]  # 감정 키워드만이므로 30개로 줄임
         
     except Exception as e:
         print(f"이전 단계 키워드 로드 실패: {e}")
