@@ -102,7 +102,7 @@ GRANT ALL ON TABLE public.drawing_tests TO postgres;
 
 -- DROP TABLE public.ratings;
 
-CREATE TABLE public.ratings ( ratings_id serial4 NOT NULL, session_id uuid NOT NULL, user_id int4 NOT NULL, friends_id int4 NOT NULL, rating int4 NOT NULL, "comment" text NULL, created_at timestamp DEFAULT now() NOT NULL, CONSTRAINT ratings_pkey PRIMARY KEY (ratings_id), CONSTRAINT ratings_session_id_key UNIQUE (session_id), CONSTRAINT ratings_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(chat_sessions_id) ON DELETE CASCADE, CONSTRAINT ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_informations(user_id) ON DELETE CASCADE, CONSTRAINT ratings_friends_id_fkey FOREIGN KEY (friends_id) REFERENCES public.friends(friends_id));
+CREATE TABLE public.ratings ( ratings_id serial4 NOT NULL, session_id uuid NOT NULL, user_id int4 NOT NULL, friends_id int4 NOT NULL, rating int4 NOT NULL, "comment" text NULL, created_at timestamp DEFAULT now() NOT NULL, CONSTRAINT ratings_pkey PRIMARY KEY (ratings_id), CONSTRAINT ratings_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(chat_sessions_id) ON DELETE CASCADE, CONSTRAINT ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_informations(user_id) ON DELETE CASCADE, CONSTRAINT ratings_friends_id_fkey FOREIGN KEY (friends_id) REFERENCES public.friends(friends_id));
 
 -- Permissions
 
