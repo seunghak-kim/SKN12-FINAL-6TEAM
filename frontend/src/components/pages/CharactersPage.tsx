@@ -1,11 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
-import { ArrowLeft } from 'lucide-react';
 import { SearchResult } from '../../types';
+import { Button } from "../../components/ui/button";
+import { ChevronLeft } from "lucide-react";
+
+// 확장된 캐릭터 타입 (UI용 추가 필드 포함)
+interface ExtendedCharacter extends SearchResult {
+  color: string;
+  emoji: string;
+  buttonText: string;
+  personality_type: string;
+  score: number;
+  badge?: string;
+}
 
 interface CharactersPageProps {
-  characters: SearchResult[];
+  characters?: SearchResult[];
   selectedCharacter?: SearchResult | null;
   onCharacterSelect: (character: SearchResult) => void;
   onStartChat: () => void;
@@ -13,136 +24,173 @@ interface CharactersPageProps {
 }
 
 const CharactersPage: React.FC<CharactersPageProps> = ({
-  characters,
-  selectedCharacter,
+  characters: propCharacters,
   onCharacterSelect,
   onStartChat,
   onNavigate
 }) => {
   const navigate = useNavigate();
 
-  const handleBackClick = () => {
-    navigate(-1);
+  // 기본 캐릭터 데이터 (props로 전달되지 않은 경우 사용)
+  const defaultCharacters: ExtendedCharacter[] = [
+    {
+      id: "1",
+      name: "추진이",
+      description: "긍정적 생각 전환, 스트레스 해소, 자존감 향상 등을 통해 심리적인 해결책을 찾아 나갈 거예요.",
+      avatar: "🦊",
+      color: "from-orange-500 to-red-600",
+      emoji: "🦊",
+      buttonText: "추진이와 대화하기",
+      personality_type: "추진형",
+      score: 0.85
+    },
+    {
+      id: "2",
+      name: "관계이",
+      description: "당신의 고민을 이해하고 함께 극복해나가는 방법을 찾아드립니다. 저와 함께 나아가봐요.",
+      avatar: "🦝",
+      color: "from-blue-500 to-purple-600",
+      emoji: "🦝",
+      buttonText: "관계이와 대화하기",
+      badge: "매칭된 페르소나",
+      personality_type: "관계형",
+      score: 0.92
+    },
+    {
+      id: "3",
+      name: "내면이",
+      description: "본질과 감정을 진정하게 표현하고 해소하는 방법을 알려드릴게요. 마음의 평화를 찾아봐요.",
+      avatar: "🐰",
+      color: "from-gray-500 to-gray-700",
+      emoji: "🐰",
+      buttonText: "내면이와 대화하기",
+      badge: "대화 중",
+      personality_type: "내성형",
+      score: 0.78
+    },
+    {
+      id: "4",
+      name: "쾌락이",
+      description: "불안과 두려움을 함께 극복해보아요. 누구보다 유쾌하고 재미있게 당신을 응원해드릴게요.",
+      avatar: "🐱",
+      color: "from-pink-500 to-red-600",
+      emoji: "🐱",
+      buttonText: "쾌락이와 대화하기",
+      personality_type: "활동형",
+      score: 0.73
+    },
+    {
+      id: "5",
+      name: "안정이",
+      description: "저는 항상 당신 편이에요. 따뜻한 위로의 한마디로 당신의 마음이 평화로워지도록 도울게요.",
+      avatar: "🐼",
+      color: "from-green-500 to-emerald-600",
+      emoji: "🐼",
+      buttonText: "안정이와 대화하기",
+      personality_type: "안정형",
+      score: 0.88
+    },
+  ];
+
+  // SearchResult를 ExtendedCharacter로 변환하는 함수
+  const convertToExtendedCharacter = (character: SearchResult): ExtendedCharacter => {
+    // 기본 스타일 매핑
+    const styleMap: { [key: string]: { color: string; emoji: string; buttonText: string; } } = {
+      '추진이': { color: 'from-orange-500 to-red-600', emoji: '🦊', buttonText: '추진이와 대화하기' },
+      '관계이': { color: 'from-blue-500 to-purple-600', emoji: '🦝', buttonText: '관계이와 대화하기' },
+      '내면이': { color: 'from-gray-500 to-gray-700', emoji: '🐰', buttonText: '내면이와 대화하기' },
+      '쾌락이': { color: 'from-pink-500 to-red-600', emoji: '🐱', buttonText: '쾌락이와 대화하기' },
+      '안정이': { color: 'from-green-500 to-emerald-600', emoji: '🐼', buttonText: '안정이와 대화하기' },
+    };
+
+    const style = styleMap[character.name] || styleMap['내면이'];
+    
+    return {
+      ...character,
+      color: style.color,
+      emoji: character.avatar || style.emoji,
+      buttonText: style.buttonText,
+      personality_type: character.name.replace('이', '형'),
+      score: Math.random() * 0.3 + 0.7 // 0.7~1.0 사이 랜덤 점수
+    };
   };
 
-  const handleCharacterClick = (character: any) => {
+  // props에서 받은 캐릭터 데이터가 있으면 변환해서 사용, 없으면 기본 데이터 사용
+  const characters = propCharacters 
+    ? propCharacters.map(convertToExtendedCharacter)
+    : defaultCharacters;
+
+  const handleCharacterClick = (character: ExtendedCharacter) => {
     console.log('CharactersPage - 클릭된 캐릭터:', character);
-    onCharacterSelect(character);
+    // ExtendedCharacter를 SearchResult로 변환해서 전달
+    const searchResult: SearchResult = {
+      id: character.id,
+      name: character.name,
+      description: character.description,
+      avatar: character.avatar
+    };
+    onCharacterSelect(searchResult);
     onStartChat();
     navigate('/chat');
   };
 
-  // 실제 characters 데이터를 기반으로 UI 스타일 매핑
-  const getCharacterStyle = (characterName: string) => {
-    const styles: { [key: string]: { color: string; buttonColor: string; } } = {
-      '추진이': {
-        color: 'from-yellow-400 to-orange-500',
-        buttonColor: 'bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700'
-      },
-      '내면이': {
-        color: 'from-red-400 to-pink-600', 
-        buttonColor: 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
-      },
-      '관계이': {
-        color: 'from-blue-400 to-indigo-600',
-        buttonColor: 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
-      },
-      '쾌락이': {
-        color: 'from-purple-400 to-violet-600',
-        buttonColor: 'bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700'
-      },
-      '안정이': {
-        color: 'from-gray-400 to-slate-600',
-        buttonColor: 'bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700'
-      }
-    };
-    return styles[characterName] || styles['내면이'];
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
       <Navigation onNavigate={onNavigate} />
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={handleBackClick}
-              className="flex items-center space-x-2 text-gray-600 hover:text-indigo-600 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>대화로 돌아가기</span>
-            </button>
-          </div>
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-20 w-24 h-24 bg-gradient-to-br from-orange-400 to-red-500 rounded-full opacity-40 blur-lg"></div>
+      <div className="absolute bottom-20 right-20 w-32 h-32 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full opacity-30 blur-xl"></div>
+      <div className="absolute bottom-32 right-32 w-48 h-64 bg-gradient-to-br from-pink-400 via-purple-500 to-orange-600 opacity-60 transform rotate-12 rounded-lg shadow-2xl"></div>
 
-          <div className="text-center space-y-4">
-            <h1 className="text-3xl font-bold text-gray-800">다른 캐릭터와 대화해보기</h1>
-            <p className="text-gray-600">각 캐릭터는 다른 감정과 상황에 특화되어 있어요</p>
-          </div>
+      {/* Back button */}
+      <button
+        onClick={() => onNavigate?.("main")}
+        className="absolute top-24 left-8 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full px-4 py-2 text-white text-sm font-medium transition-colors flex items-center"
+      >
+        <ChevronLeft size={16} className="mr-1" />
+        메인으로 돌아가기
+      </button>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {characters.map((character) => {
-              const isSelected = selectedCharacter && selectedCharacter.id === character.id;
-              const isDisabled = isSelected;
-              const style = getCharacterStyle(character.name);
-              
-              return (
-                <div 
-                  key={character.id} 
-                  className={`bg-white/70 backdrop-blur-sm border-0 shadow-xl rounded-xl p-6 transition-all duration-300 flex flex-col h-80 ${
-                    isSelected ? 'ring-2 ring-green-400 ring-opacity-60 bg-green-50/50' : ''
-                  } ${
-                    isDisabled 
-                      ? 'opacity-70 cursor-not-allowed' 
-                      : 'hover:shadow-2xl cursor-pointer'
-                  }`}
-                >
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${style.color} rounded-full flex items-center justify-center shadow-lg`}>
-                    <span className="text-2xl">{character.avatar}</span>
+      <div className="relative z-10 container mx-auto px-8 py-24">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">다른 캐릭터와 대화해보기</h1>
+          <p className="text-white/80 text-lg">각 캐릭터는 다른 접근과 상황에 특화되어 있어요</p>
+        </div>
+
+        <div className="max-w-4xl mx-auto space-y-6">
+          {characters.map((character, index) => (
+            <div key={character.id || index} className="bg-slate-600/40 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-6">
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center">
+                    <span className="text-3xl">{character.emoji}</span>
                   </div>
+
                   <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-xl font-bold text-gray-800">{character.name}</h3>
-                      {isSelected && (
-                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
-                          대화 중
+                    <div className="flex items-center mb-2">
+                      <h3 className="text-2xl font-bold text-white mr-3">{character.name}</h3>
+                      {character.badge && (
+                        <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-white">
+                          {character.badge}
                         </span>
                       )}
                     </div>
+                    <p className="text-white/90 text-sm leading-relaxed max-w-md">{character.description}</p>
                   </div>
                 </div>
-                
-                <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-grow">
-                  {character.description}
-                </p>
-                
-                <button
-                  onClick={() => !isDisabled && handleCharacterClick(character)}
-                  disabled={!!isDisabled}
-                  className={`w-full py-3 rounded-full font-medium transition-all duration-300 shadow-lg mt-auto ${
-                    isDisabled 
-                      ? 'bg-gray-400 text-gray-100 cursor-not-allowed opacity-70' 
-                      : `${style.buttonColor} text-white hover:shadow-xl`
-                  }`}
-                >
-                  {isDisabled ? '현재 대화 중인 캐릭터' : `${character.name}와 대화하기`}
-                </button>
-              </div>
-              );
-            })}
-          </div>
 
-          <div className="text-center">
-            <button
-              onClick={() => navigate('/mypage')}
-              className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
-            >
-              모든 결과 유형 보기
-            </button>
-          </div>
+                <Button
+                  onClick={() => handleCharacterClick(character)}
+                  className={`bg-gradient-to-r ${character.color} hover:opacity-90 text-white px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap`}
+                >
+                  {character.buttonText}
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 };
