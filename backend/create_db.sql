@@ -46,7 +46,7 @@ GRANT ALL ON TABLE public.users TO postgres;
 
 -- DROP TABLE public.user_informations;
 
-CREATE TABLE public.user_informations ( user_id serial4 NOT NULL, nickname varchar(20) NOT NULL, status varchar(10) NOT NULL, created_at timestamp DEFAULT now() NOT NULL, deleted_at timestamp NULL, social_user_id int4 NULL, regular_user_id int4 NULL, CONSTRAINT user_informations_pkey PRIMARY KEY (user_id), CONSTRAINT user_informations_regular_user_id_fkey FOREIGN KEY (regular_user_id) REFERENCES public.users(user_id), CONSTRAINT user_informations_social_user_id_fkey FOREIGN KEY (social_user_id) REFERENCES public.social_users(social_user_id));
+CREATE TABLE public.user_informations ( user_id serial4 NOT NULL, nickname varchar(20) NOT NULL, status varchar(10) NOT NULL, created_at timestamp DEFAULT now() NOT NULL, deleted_at timestamp NULL, social_user_id int4 NULL, regular_user_id int4 NULL, CONSTRAINT user_informations_pkey PRIMARY KEY (user_id), CONSTRAINT user_informations_regular_user_id_fkey FOREIGN KEY (regular_user_id) REFERENCES public.users(user_id) ON DELETE CASCADE, CONSTRAINT user_informations_social_user_id_fkey FOREIGN KEY (social_user_id) REFERENCES public.social_users(social_user_id) ON DELETE CASCADE);
 
 -- Permissions
 
@@ -102,7 +102,7 @@ GRANT ALL ON TABLE public.drawing_tests TO postgres;
 
 -- DROP TABLE public.ratings;
 
-CREATE TABLE public.ratings ( ratings_id serial4 NOT NULL, session_id uuid NOT NULL, user_id int4 NOT NULL, rating int4 NOT NULL, "comment" text NULL, created_at timestamp DEFAULT now() NOT NULL, CONSTRAINT ratings_pkey PRIMARY KEY (ratings_id), CONSTRAINT ratings_session_id_key UNIQUE (session_id), CONSTRAINT ratings_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(chat_sessions_id), CONSTRAINT ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_informations(user_id));
+CREATE TABLE public.ratings ( ratings_id serial4 NOT NULL, session_id uuid NOT NULL, user_id int4 NOT NULL, friends_id int4 NOT NULL, rating int4 NOT NULL, "comment" text NULL, created_at timestamp DEFAULT now() NOT NULL, CONSTRAINT ratings_pkey PRIMARY KEY (ratings_id), CONSTRAINT ratings_session_id_key UNIQUE (session_id), CONSTRAINT ratings_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(chat_sessions_id) ON DELETE CASCADE, CONSTRAINT ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_informations(user_id) ON DELETE CASCADE, CONSTRAINT ratings_friends_id_fkey FOREIGN KEY (friends_id) REFERENCES public.friends(friends_id));
 
 -- Permissions
 

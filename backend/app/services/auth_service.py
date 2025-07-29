@@ -73,7 +73,33 @@ class AuthService:
             ).first()
             
             if user_info:
-                print(f"Existing user found: {user_info.user_id}, nickname: {user_info.nickname}")
+                print(f"Existing user found: {user_info.user_id}, nickname: {user_info.nickname}, status: {user_info.status}")
+                
+                # INACTIVE 사용자 복구 체크
+                if user_info.status == "INACTIVE":
+                    from datetime import datetime, timezone, timedelta
+                    
+                    # 1년 이내인지 확인
+                    if user_info.deleted_at:
+                        one_year_ago = datetime.now(timezone.utc) - timedelta(days=365)
+                        if user_info.deleted_at > one_year_ago:
+                            # 1년 이내면 복구
+                            user_info.status = "ACTIVE"
+                            user_info.deleted_at = None
+                            db.commit()
+                            db.refresh(user_info)
+                            print(f"User reactivated: {user_info.user_id}")
+                        else:
+                            # 1년 초과면 로그인 거부
+                            print(f"User account expired: {user_info.user_id}")
+                            return None, False
+                    else:
+                        # deleted_at이 없는 INACTIVE 사용자도 복구 (기존 데이터 호환성)
+                        user_info.status = "ACTIVE"
+                        db.commit()
+                        db.refresh(user_info)
+                        print(f"User reactivated (no deleted_at): {user_info.user_id}")
+                
                 # temp_user_로 시작하는 닉네임이면 신규 사용자로 판단
                 is_new_user = user_info.nickname.startswith('temp_user_')
                 print(f"Is new user check: {is_new_user} (nickname: {user_info.nickname})")

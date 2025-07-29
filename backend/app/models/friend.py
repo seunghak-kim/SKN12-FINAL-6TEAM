@@ -18,3 +18,4 @@ class Friend(Base):
     # 관계 정의
     chat_sessions = relationship("ChatSession", back_populates="friend")
     drawing_test_results = relationship("DrawingTestResult", back_populates="friend")
+    ratings = relationship("Rating", back_populates="friend")
