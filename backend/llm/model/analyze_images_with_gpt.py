@@ -9,87 +9,81 @@ from openai import OpenAI
 import re
 
 sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../opensearch_modules'))
+
+from opensearch_client import OpenSearchEmbeddingClient
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-DOCS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../rag'))
-IMAGE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../detection_results/images'))
-RESULT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../detection_results/results'))
+IMAGE_DIR = os.path.join(os.path.dirname(__file__), '../detection_results/images')
+RESULT_DIR = os.path.join(os.path.dirname(__file__), '../detection_results/results')
 
-# RAG 문서 불러오기
-RAG_FILES = [
-    os.path.join(DOCS_DIR, "rag_doc_house.md"),
-    os.path.join(DOCS_DIR, "rag_doc_tree.md"),
-    os.path.join(DOCS_DIR, "rag_doc_person.md"),
-]
-def extract_image_paths_from_md(md_content):
-    """마크다운 텍스트에서 이미지 경로를 추출"""
-    image_paths = []
-    # "- 관련 이미지 예시: img/..." 패턴 찾기
-    pattern = r'- 관련 이미지 예시:\s*(img/[^\s]+\.png)'
-    matches = re.findall(pattern, md_content)
-    for match in matches:
-        image_paths.append(match)
-    return image_paths
+# OpenSearch RAG 시스템 초기화
+try:
+    opensearch_client = OpenSearchEmbeddingClient()
+    RAG_INDEX_NAME = "psychology_analysis"
+    print("OpenSearch RAG 시스템 초기화 완료")
+except Exception as e:
+    print(f"OpenSearch 초기화 실패: {e}")
+    opensearch_client = None
+def extract_psychological_elements(analysis_text):
+    """
+    GPT 분석 결과에서 심리 분석 요소들을 추출
+    """
+    elements = []
+    
+    # 1단계: 심리 분석 요소 식별 부분 추출
+    element_section = re.search(r'1\. \*\*심리 분석 요소 식별\*\*(.*?)(?=2\.|$)', analysis_text, re.DOTALL)
+    if element_section:
+        element_text = element_section.group(1).strip()
+        # 각 요소를 개별적으로 추출
+        lines = element_text.split('\n')
+        for line in lines:
+            line = line.strip()
+            if line and not line.startswith('#') and len(line) > 5:
+                # 불필요한 문자 제거 후 요소 추가
+                clean_element = re.sub(r'^[-•*]\s*', '', line)
+                if clean_element:
+                    elements.append(clean_element)
+    
+    return elements
 
-def encode_image_to_base64(image_path):
-    """이미지 파일을 base64로 인코딩"""
+def search_rag_documents(query_elements):
+    """
+    OpenSearch를 사용하여 관련 RAG 문서 검색
+    """
+    if not opensearch_client or not query_elements:
+        return []
+    
     try:
-        with open(image_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode('utf-8')
+        # 모든 요소를 하나의 쿼리로 합침
+        combined_query = ' '.join(query_elements)
+        
+        # 하이브리드 검색 수행
+        search_results = opensearch_client.hybrid_search(
+            index_name=RAG_INDEX_NAME,
+            query_text=combined_query,
+            k=10,
+            use_reranker=True
+        )
+        
+        # Reranker 기준 1번째 결과 반환
+        if search_results:
+            top_result = search_results[0]
+            return {
+                'text': top_result['text'],
+                'metadata': top_result.get('metadata', {}),
+                'document': top_result.get('document', ''),
+                'element': top_result.get('element', ''),
+                'score': top_result.get('rerank_score', top_result.get('score', 0))
+            }  
     except Exception as e:
-        print(f"이미지 인코딩 실패: {image_path}, 에러: {e}")
-        return None
-
-def load_rag_docs():
-    docs = []
-    rag_images = []
+        print(f"RAG 검색 실패: {e}")
     
-    print(f"RAG 문서 로드 시작. DOCS_DIR: {DOCS_DIR}")
-    
-    for fname in RAG_FILES:
-        print(f"RAG 파일 로드 시도: {fname}")
-        if not os.path.exists(fname):
-            print(f"RAG 파일이 존재하지 않습니다: {fname}")
-            continue
-            
-        try:
-            with open(fname, encoding="utf-8") as f:
-                doc_content = f.read()
-                docs.append(doc_content)
-                print(f"RAG 파일 로드 성공: {fname}")
-                
-                # 이미지 경로 추출
-                image_paths = extract_image_paths_from_md(doc_content)
-                for img_path in image_paths:
-                    # 상대 경로를 절대 경로로 변환
-                    full_img_path = os.path.join(DOCS_DIR, img_path)
-                    if os.path.exists(full_img_path):
-                        img_base64 = encode_image_to_base64(full_img_path)
-                        if img_base64:
-                            rag_images.append({
-                                "path": img_path,
-                                "base64": img_base64
-                            })
-        except Exception as e:
-            print(f"RAG 파일 로드 실패: {fname}, 오류: {e}")
-            continue
-    
-    print(f"RAG 문서 로드 완료. 총 문서: {len(docs)}개, 이미지: {len(rag_images)}개")
-    return "\n\n".join(docs), rag_images
+    return None
 
-# RAG 문서는 필요할 때 로드하도록 변경
-RAG_GUIDE = None
-RAG_IMAGES = None
-
-def get_rag_data():
-    global RAG_GUIDE, RAG_IMAGES
-    if RAG_GUIDE is None or RAG_IMAGES is None:
-        RAG_GUIDE, RAG_IMAGES = load_rag_docs()
-    return RAG_GUIDE, RAG_IMAGES
-
-PROMPT_TEMPLATE = '''
+PROMPT = '''
 모든 답변은 반드시 한글로 작성해 주세요.
 주어진 그림은 실제 장소나 인물이 아닌, 심리 검사를 위해 직접 손으로 그린 그림입니다. 
 분석은 전문가처럼 자세하고 상세히 제시해야 하며, 모든 답변은 ~입니다 체로 적습니다.
@@ -97,29 +91,23 @@ PROMPT_TEMPLATE = '''
 아래의 세 단계로 분석을 수행해 주세요:
 
 1. **심리 분석 요소 식별**  
-   - 그림에서 보이는 시각적 특징들을 가능한 한 많이 구체적으로 식별해 주세요.  
-   - 심리적 해석 없이 관찰 가능한 요소만 나열해 주세요.
+    - 그림에서 보이는 시각적 특징들을 가능한 한 많이 구체적으로 식별해 주세요.  
+    - 심리적 해석 없이 관찰 가능한 요소만 나열해 주세요.
 
 2. **요소별 심층 분석**  
-   - 집, 나무, 사람 순서로 분석합니다.  
-   - 각 요소에 대해 그 특징이 시사하는 심리적 해석을 구체적으로 제시해 주세요.
-   - 참고용 예시 이미지들과 비교하여 유사한 특징이 있는지 확인해 주세요.
+    - 집, 나무, 사람 순서로 분석합니다.  
+    - 각 요소에 대해 그 특징이 시사하는 심리적 해석을 구체적으로 제시해 주세요.
 
 3. **주요 감정 키워드**  
-   - 아래와 같이 요소, 조건 없이 감정 키워드만 한 줄씩 나열해 주세요.  
-   - 최소 3개 이상의 키워드를 반드시 포함해 주세요.  
-   - 예시:
-     불안, 안정, 자기표현, 갈등
-
-아래의 해석 기준을 반드시 참고하여 분석을 수행하세요.
-또한 함께 제공된 참고용 예시 이미지들을 비교 분석 자료로 활용하여 더 정확한 해석을 제공해 주세요:
-
-{RAG_GUIDE}
+    - 아래와 같이 요소, 조건 없이 감정 키워드만 한 줄씩 나열해 주세요.  
+    - 최소 3개 이상의 키워드를 반드시 포함해 주세요.  
+    - 예시:
+    불안, 안정, 자기표현, 갈등
 '''
 
 openai.api_key = OPENAI_API_KEY
 
-def analyze_image_with_gpt(image_path, prompt, include_rag_images=False):
+def analyze_image_with_gpt(image_path, prompt, rag_context=None):
     with open(image_path, "rb") as img_file:
         img_bytes = img_file.read()
         img_base64 = base64.b64encode(img_bytes).decode("utf-8")
@@ -131,26 +119,15 @@ def analyze_image_with_gpt(image_path, prompt, include_rag_images=False):
             {"type": "image_url", "image_url": {"url": data_url}}
         ]
         
-        # RAG 이미지들을 포함하는 경우
-        if include_rag_images:
-            _, rag_images = get_rag_data()
-            if rag_images:
-                content.append({"type": "text", "text": "\n\n[참고용 예시 이미지들]"})
-                for rag_img in rag_images:
-                    rag_data_url = f"data:image/png;base64,{rag_img['base64']}"
-                    content.append({
-                        "type": "text", 
-                        "text": f"예시 이미지 경로: {rag_img['path']}"
-                })
-                content.append({
-                    "type": "image_url", 
-                    "image_url": {"url": rag_data_url}
-                })
+        # RAG 컨텍스트 추가
+        if rag_context:
+            rag_text = f"\n\n[참고 자료]\n문서: {rag_context['document']} - {rag_context['element']}\n내용: {rag_context['text']}"
+            content.append({"type": "text", "text": rag_text})
 
         response = openai.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "당신은 그림 검사 결과를 바탕으로 피검사자의 심리를 예측하는데 전문가입니다."},
+                {"role": "system", "content": "당신은 심리 분석가입니다. 제공된 참고 자료를 활용하여 더욱 정확하고 전문적인 분석을 제공하세요."},
                 {
                     "role": "user",
                     "content": content
@@ -160,52 +137,9 @@ def analyze_image_with_gpt(image_path, prompt, include_rag_images=False):
         )
     return response.choices[0].message.content.strip()
 
-# RAG 문서 파싱 함수 (요소/조건/감정키워드 추출)
-def parse_rag_md(md_path):
-    rag_items = []
-    with open(md_path, encoding="utf-8") as f:
-        block = {}
-        for line in f:
-            line = line.strip()
-            if line.startswith('- 요소:'):
-                block['element'] = line.replace('- 요소:', '').strip()
-            elif line.startswith('- 조건:'):
-                block['condition'] = line.replace('- 조건:', '').strip()
-            elif line.startswith('- 감정 키워드:'):
-                block['keywords'] = [k.strip() for k in line.replace('- 감정 키워드:', '').split(',') if k.strip()]
-            elif line == '' and block:
-                rag_items.append(block)
-                block = {}
-        if block:
-            rag_items.append(block)
-    return rag_items
-
-def parse_gpt_result_with_rag(raw_text, rag_md_paths):
-    # rag_doc_*.md에서 요소/조건/감정키워드 모두 모으기
-    rag_items = []
-    for md_path in rag_md_paths:
-        rag_items.extend(parse_rag_md(md_path))
-    
-    # raw_text에 등장하는 요소와 조건을 더 정확히 매칭
-    result = []
-    for item in rag_items:
-        element = item.get('element', '')
-        condition = item.get('condition', '')
-        keywords = item.get('keywords', [])
-        
-        # 요소가 텍스트에 포함되어 있는지 확인
-        if element in raw_text:
-            # 조건도 있다면 조건까지 매칭 확인
-            if condition and condition in raw_text:
-                result.append(item)
-            # 조건이 없거나 조건 매칭이 애매한 경우 키워드로 보완 확인
-            elif not condition or any(keyword in raw_text for keyword in keywords):
-                result.append(item)
-    
-    return result
 
 def analyze_image_gpt(image_base):
-    """GPT를 사용하여 이미지 분석을 수행하는 함수
+    """GPT와 OpenSearch RAG를 사용하여 이미지 분석을 수행하는 함수
     
     Args:
         image_base (str): 분석할 이미지의 기본 파일명 (예: test4)
@@ -229,29 +163,52 @@ def analyze_image_gpt(image_base):
 
     print(f"\n===== {target_filename} 심리 분석 결과 =====")
     try:
-        # RAG 데이터 로드
-        rag_guide, rag_images = get_rag_data()
+        # 1차 GPT 해석 (초기 분석)
+        print("1단계: 초기 심리 분석 수행 중...")
+        initial_analysis = analyze_image_with_gpt(image_path, PROMPT)
+        print("\n[초기 분석 결과]")
+        print(initial_analysis)
         
-        # 프롬프트 생성
-        prompt = PROMPT_TEMPLATE.format(RAG_GUIDE=rag_guide)
+        # 심리 분석 요소 추출
+        print("\n2단계: 심리 분석 요소 추출 중...")
+        psychological_elements = extract_psychological_elements(initial_analysis)
+        print(f"추출된 요소들: {psychological_elements}")
         
-        # 1차 GPT 해석 (RAG 이미지 제외 - 토큰 제한으로 인해)
-        result_text_gpt = analyze_image_with_gpt(image_path, prompt, include_rag_images=False)
-        print(result_text_gpt)  # 1차 해석 텍스트 바로 출력
-        # rag_doc_*.md 경로 리스트
-        rag_md_paths = RAG_FILES
-        # rag 기반 요소/조건/감정키워드 추출
-        gpt_items = parse_gpt_result_with_rag(result_text_gpt, rag_md_paths)
+        # OpenSearch RAG 검색
+        print("\n3단계: RAG 시스템을 통한 관련 자료 검색 중...")
+        rag_result = search_rag_documents(psychological_elements)
+        
+        if rag_result:
+            print(f"검색된 관련 자료: {rag_result['document']} - {rag_result['element']}")
+            print(f"관련도 점수: {rag_result['score']:.4f}")
+            
+            # RAG 컨텍스트를 포함한 최종 분석
+            print("\n4단계: RAG 컨텍스트를 활용한 최종 분석 수행 중...")
+            final_prompt = f"""
+아래는 심리 그림 검사의 초기 분석 결과입니다:
+
+{initial_analysis}
+
+위 분석 결과를 바탕으로, 제공된 참고 자료를 활용하여 더욱 정확하고 전문적인 최종 심리 분석을 제공해 주세요.
+특히 참고 자료의 전문적 해석을 반영하여 분석의 깊이를 더해주세요.
+반드시 ~입니다 체로 작성해 주세요.
+"""
+            result_text_gpt = analyze_image_with_gpt(image_path, final_prompt, rag_result)
+        else:
+            print("관련 RAG 자료를 찾을 수 없어 초기 분석 결과를 사용합니다.")
+            result_text_gpt = initial_analysis
+        
+        print("\n[최종 분석 결과]")
+        print(result_text_gpt)
+        
     except Exception as e:
         print(f"분석 실패: {e}")
         return None
 
-    # RAG 기반 추출 결과를 그대로 사용
-    enriched = gpt_items
-
-    # 사용자에게 제공할 종합 해석문(result_text) 생성용 프롬프트
+    # 요약 해석문 생성
+    print("\n5단계: 요약 해석문 생성 중...")
     SUMMARY_PROMPT = f"""
-아래의 그림 심리 분석 결과(1,2,3단계)를 참고하여,
+아래의 그림 심리 분석 결과를 참고하여,
 사용자가 이해하기 쉽도록 전체적인 심리 상태와 특징을 자연스럽게 요약·정리해주는 해석문을 작성해 주세요.
 반드시 ~입니다 체로 작성해 주세요.
 
@@ -264,16 +221,26 @@ def analyze_image_gpt(image_base):
         print(f"요약 해석문 생성 실패: {e}")
         result_text = "(요약 해석문 생성 실패)"
 
-    # 최종 해석본 json 저장 (raw_text, result_text, items)
+    # 감정 키워드 추출 (기존 방식 유지)
+    enriched = []
+    if rag_result:
+        enriched.append({
+            'element': rag_result['element'],
+            'condition': rag_result['text'][:100] + '...' if len(rag_result['text']) > 100 else rag_result['text'],
+            'keywords': rag_result['metadata'].get('keywords', [])
+        })
+
+    # 최종 해석본 json 저장
     result_json_path = os.path.join(RESULT_DIR, f"result_{image_base}.json")
     result = {
         "raw_text": result_text_gpt,
         "result_text": result_text,
-        "items": enriched  # 반드시 포함
+        "items": enriched,
+        "rag_context": rag_result  # RAG 컨텍스트 정보 추가
     }
     with open(result_json_path, 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
-    print(f"최종 해석본이 {result_json_path}에 저장되었습니다.")
+    print(f"\n최종 해석본이 {result_json_path}에 저장되었습니다.")
     
     return result
 
