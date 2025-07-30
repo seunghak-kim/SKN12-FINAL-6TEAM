@@ -21,22 +21,49 @@ RESULT_DIR = os.path.join(os.path.dirname(__file__), '../detection_results/resul
 
 # OpenSearch RAG 시스템 초기화
 try:
+    # 작업 디렉토리를 opensearch_modules로 변경하여 임베딩 파일 접근
+    original_cwd = os.getcwd()
+    opensearch_modules_dir = os.path.join(os.path.dirname(__file__), '../opensearch_modules')
+    os.chdir(opensearch_modules_dir)
+    
     opensearch_client = OpenSearchEmbeddingClient()
     RAG_INDEX_NAME = "psychology_analysis"
+    
+    # 작업 디렉토리 복구
+    os.chdir(original_cwd)
     print("OpenSearch RAG 시스템 초기화 완료")
 except Exception as e:
     print(f"OpenSearch 초기화 실패: {e}")
     opensearch_client = None
+    # 작업 디렉토리 복구 (에러 발생 시에도)
+    try:
+        os.chdir(original_cwd)
+    except:
+        pass
 def extract_psychological_elements(analysis_text):
     """
     GPT 분석 결과에서 심리 분석 요소들을 추출
     """
     elements = []
     
-    # 1단계: 심리 분석 요소 식별 부분 추출
-    element_section = re.search(r'1\. \*\*심리 분석 요소 식별\*\*(.*?)(?=2\.|$)', analysis_text, re.DOTALL)
+    # 다양한 형식의 1단계 섹션 패턴 시도
+    patterns = [
+        r'## 1\. 심리 분석 요소 식별(.*?)(?=## 2\.|$)',  # ## 형식
+        r'1\. \*\*심리 분석 요소 식별\*\*(.*?)(?=2\.|$)',  # ** 형식  
+        r'### 1\. \*\*심리 분석 요소 식별\*\*(.*?)(?=### 2\.|$)',  # ### 형식
+        r'1\. 심리 분석 요소 식별(.*?)(?=2\.|$)'  # 단순 형식
+    ]
+    
+    element_section = None
+    for pattern in patterns:
+        element_section = re.search(pattern, analysis_text, re.DOTALL)
+        if element_section:
+            break
+    
     if element_section:
         element_text = element_section.group(1).strip()
+        print(f"요소 섹션 추출 성공: {element_text[:100]}...")
+        
         # 각 요소를 개별적으로 추출
         lines = element_text.split('\n')
         for line in lines:
@@ -46,6 +73,15 @@ def extract_psychological_elements(analysis_text):
                 clean_element = re.sub(r'^[-•*]\s*', '', line)
                 if clean_element:
                     elements.append(clean_element)
+    else:
+        print("요소 섹션을 찾을 수 없습니다. 전체 텍스트에서 키워드 추출 시도...")
+        # 대안: 집, 나무, 사람 관련 키워드 직접 추출
+        if '집' in analysis_text:
+            elements.append('집')
+        if '나무' in analysis_text:
+            elements.append('나무')  
+        if '사람' in analysis_text:
+            elements.append('사람')
     
     return elements
 

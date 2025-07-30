@@ -1,0 +1,118 @@
+{
+  "구조": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "줄기": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "수관": {
+    "count": 15,
+    "embedding_dim": 1024
+  },
+  "가지": {
+    "count": 11,
+    "embedding_dim": 1024
+  },
+  "작은 나무": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "기둥": {
+    "count": 11,
+    "embedding_dim": 1024
+  },
+  "새집": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "크기": {
+    "count": 4,
+    "embedding_dim": 1024
+  },
+  "집 그림에 있는 부수적으로 그린 나무": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "열매": {
+    "count": 5,
+    "embedding_dim": 1024
+  },
+  "나무": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "옹이": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "모양": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "잎의 완성도": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "대칭성": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "전체 그림의 평가": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "위치": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "방향": {
+    "count": 2,
+    "embedding_dim": 1024
+  },
+  "뿌리": {
+    "count": 8,
+    "embedding_dim": 1024
+  },
+  "잎": {
+    "count": 5,
+    "embedding_dim": 1024
+  },
+  "둥지": {
+    "count": 2,
+    "embedding_dim": 1024
+  },
+  "지면선": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "기타": {
+    "count": 5,
+    "embedding_dim": 1024
+  },
+  "나뭇잎": {
+    "count": 2,
+    "embedding_dim": 1024
+  },
+  "나뭇가지": {
+    "count": 6,
+    "embedding_dim": 1024
+  },
+  "과일나무": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "버드나무": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "꽃": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "화초": {
+    "count": 1,
+    "embedding_dim": 1024
+  }
+}

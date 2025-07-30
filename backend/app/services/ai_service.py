@@ -110,16 +110,37 @@ class AIService:
             
             return error_response
     
-    def get_initial_greeting(self, persona_type: str = "내면형") -> str:
-        """페르소나별 초기 인사 메시지 반환 (test_chat의 st.write와 동일)"""
-        greetings = {
-            "내면형": "안녕... 나는 내면이야. 말보다 느낌이 먼저일 때, 조용한 마음으로 함께 있을 수 있다면 좋겠어. 지금... 너와 함께해도 될까..?",
+    def get_initial_greeting(self, persona_type: str = "내면형", user_analysis_result: dict = None) -> str:
+        """페르소나별 초기 인사 메시지 반환 (그림 분석 결과 반영)"""
+        # 기본 인사말
+        base_greetings = {
+            "내면형": "안녕... 나는 내면이야. 말보다 느낌이 먼저일 때, 조용한 마음으로 함께 있을 수 있다면 좋겠어.",
             "추진형": "저는 당신의 고민을 함께 해결해갈 추진이에요. 지금부터 가장 중요한 얘기를 해볼까요?",
             "관계형": "저는 당신의 고민을 함께 해결해갈 관계이에요. 지금부터 마음 속 고민을 얘기해볼까요?",
             "안정형": "저는 당신을 안정시켜드릴 안정이에요. 지금부터 마음 속 고민을 얘기해볼까요?",
             "쾌락형": "저는 당신의 고민을 함께 해결해갈 쾌락이에요. 지금부터 재밌는 얘기를 해볼까요?"
         }
-        return greetings.get(persona_type, greetings["내면형"])
+        
+        base_greeting = base_greetings.get(persona_type, base_greetings["내면형"])
+        
+        # 그림 분석 결과가 있으면 반영
+        if user_analysis_result and 'keyword_personality_analysis' in user_analysis_result:
+            analysis_type = user_analysis_result['keyword_personality_analysis']['predicted_personality']
+            print(f"그림 분석 결과 반영: {analysis_type}")
+            
+            # 분석 결과에 따른 추가 메시지
+            analysis_additions = {
+                "추진형": " 그림에서 보니 당신은 목표를 향해 나아가는 힘이 있어 보이네요.",
+                "관계형": " 그림에서 보니 당신은 사람들과의 관계를 소중히 여기는 것 같아요.",
+                "안정형": " 그림에서 보니 당신은 안정적이고 차분한 성향을 가지고 계시네요.",
+                "내면형": " 그림에서 보니 당신만의 깊은 내면세계가 느껴져요.",
+                "쾌락형": " 그림에서 보니 당신은 즐거움과 활력이 넘치는 분이네요."
+            }
+            
+            if analysis_type in analysis_additions:
+                base_greeting += analysis_additions[analysis_type]
+        
+        return base_greeting
     
     def get_available_personas(self) -> list:
         """사용 가능한 페르소나 목록 반환"""

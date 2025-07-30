@@ -343,7 +343,16 @@ async def get_initial_greeting(
         
         # AI 서비스에서 페르소나별 인사 메시지 가져오기
         ai_service = AIService(db)
-        greeting = ai_service.get_initial_greeting(persona_type)
+        
+        # 그림 분석 결과 로드
+        try:
+            from prompt_chaining import load_latest_analysis_result
+            user_analysis_result = load_latest_analysis_result()
+        except Exception as e:
+            print(f"그림 분석 결과 로드 실패: {e}")
+            user_analysis_result = None
+        
+        greeting = ai_service.get_initial_greeting(persona_type, user_analysis_result)
         
         return {
             "persona_type": persona_type,
