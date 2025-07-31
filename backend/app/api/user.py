@@ -370,7 +370,7 @@ async def get_user_test_results(
         interpretation = "분석 중..."
         
         if test.result and test.result.friend:
-            character_match = test.result.friend.friends_name
+            character_match = test.result.friend.name
             interpretation = test.result.summary_text or "분석 결과가 없습니다."
         
         results.append({

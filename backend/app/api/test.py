@@ -140,7 +140,7 @@ from typing import Optional
 
 class TestResultCreate(BaseModel):
     test_id: int
-    friends_type: int
+    persona_type: int
     summary_text: Optional[str] = None
 
 @router.post("/drawing-test-results", status_code=status.HTTP_201_CREATED)
@@ -169,7 +169,7 @@ async def create_test_result(
     
     if existing_result:
         # 기존 결과 업데이트
-        existing_result.friends_type = result_data.friends_type
+        existing_result.persona_type = result_data.persona_type
         # summary_text가 제공된 경우에만 업데이트 (파이프라인 결과 보존)
         if result_data.summary_text:
             existing_result.summary_text = result_data.summary_text
@@ -179,7 +179,7 @@ async def create_test_result(
         return {
             "result_id": existing_result.result_id,
             "test_id": existing_result.test_id,
-            "friends_type": existing_result.friends_type,
+            "persona_type": existing_result.persona_type,
             "summary_text": existing_result.summary_text,
             "created_at": existing_result.created_at,
             "message": "테스트 결과가 성공적으로 업데이트되었습니다."
@@ -188,7 +188,7 @@ async def create_test_result(
         # 새 결과 생성
         new_result = DrawingTestResult(
             test_id=result_data.test_id,
-            friends_type=result_data.friends_type,
+            persona_type=result_data.persona_type,
             summary_text=result_data.summary_text or "분석 결과가 생성되지 않았습니다."
         )
         
@@ -199,7 +199,7 @@ async def create_test_result(
         return {
             "result_id": new_result.result_id,
             "test_id": new_result.test_id,
-            "friends_type": new_result.friends_type,
+            "persona_type": new_result.persona_type,
             "summary_text": new_result.summary_text,
             "created_at": new_result.created_at,
             "message": "테스트 결과가 성공적으로 생성되었습니다."
@@ -233,7 +233,7 @@ async def get_my_test_results(
         if test.result:
             test_data["result"] = {
                 "result_id": test.result.result_id,
-                "friends_type": test.result.friends_type,
+                "persona_type": test.result.persona_type,
                 "summary_text": test.result.summary_text,
                 "created_at": test.result.created_at,
                 "friend_info": None
@@ -242,11 +242,9 @@ async def get_my_test_results(
             # 친구 정보도 포함
             if test.result.friend:
                 test_data["result"]["friend_info"] = {
-                    "friends_id": test.result.friend.friends_id,
-                    "friends_name": test.result.friend.friends_name,
-                    "friends_description": test.result.friend.friends_description,
-                    "tts_audio_url": test.result.friend.tts_audio_url,
-                    "tts_voice_type": test.result.friend.tts_voice_type
+                    "persona_id": test.result.friend.persona_id,
+                    "name": test.result.friend.name,
+                    "description": test.result.friend.description
                 }
         
         response_data.append(test_data)
@@ -263,14 +261,14 @@ async def get_latest_matched_persona(
     # 사용자의 가장 최근 테스트 결과 조회
     latest_result = db.query(DrawingTestResult).join(DrawingTest).filter(
         DrawingTest.user_id == current_user["user_id"],
-        DrawingTestResult.friends_type.isnot(None)
+        DrawingTestResult.persona_type.isnot(None)
     ).order_by(DrawingTestResult.created_at.desc()).first()
     
     if not latest_result:
         return {"matched_persona_id": None}
     
     return {
-        "matched_persona_id": latest_result.friends_type,
+        "matched_persona_id": latest_result.persona_type,
         "matched_at": latest_result.created_at
     }
 
@@ -294,7 +292,7 @@ async def debug_table_status(db: Session = Depends(get_db)):
             recent_data.append({
                 "result_id": result.result_id,
                 "test_id": result.test_id,
-                "friends_type": result.friends_type,
+                "persona_type": result.persona_type,
                 "created_at": result.created_at
             })
         
@@ -323,7 +321,7 @@ async def get_test_result(result_id: int, db: Session = Depends(get_db)):
     return {
         "result_id": result.result_id,
         "test_id": result.test_id,
-        "friends_type": result.friends_type,
+        "persona_type": result.persona_type,
         "summary_text": result.summary_text,
         "created_at": result.created_at
     }

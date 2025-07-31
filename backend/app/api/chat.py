@@ -15,18 +15,18 @@ from ..schemas.chat import (
 )
 from ..models.chat import ChatSession, ChatMessage
 from ..models.user import UserInformation
-from ..models.friend import Friend
+from ..models.persona import Persona
 
 router = APIRouter()
 
-def get_persona_type_from_friends_id(friends_id: int, db: Session = None) -> str:
-    """friends_id를 페르소나 타입으로 매핑 (DB 동적 조회 + 기본값)"""
-    # DB에서 실제 friends 데이터 조회 시도
+def get_persona_type_from_persona_id(persona_id: int, db: Session = None) -> str:
+    """persona_id를 페르소나 타입으로 매핑 (DB 동적 조회 + 기본값)"""
+    # DB에서 실제 persona 데이터 조회 시도
     if db:
         try:
-            friend = db.query(Friend).filter(Friend.friends_id == friends_id).first()
-            if friend and friend.friends_name:
-                return friend.friends_name
+            friend = db.query(Persona).filter(Persona.persona_id == persona_id).first()
+            if friend and friend.name:
+                return friend.name
         except Exception as e:
             print(f"DB 조회 실패, 기본값 사용: {e}")
     
@@ -38,7 +38,7 @@ def get_persona_type_from_friends_id(friends_id: int, db: Session = None) -> str
         4: "쾌락형",  # 쾌락이
         5: "안정형"   # 안정이
     }
-    return default_mapping.get(friends_id, "내면형")
+    return default_mapping.get(persona_id, "내면형")
 
 @router.post("/sessions", response_model=ChatSessionResponse)
 async def create_chat_session(
@@ -56,7 +56,7 @@ async def create_chat_session(
             )
         
         # 친구 존재 확인
-        friend = db.query(Friend).filter(Friend.friends_id == session_data.friends_id).first()
+        friend = db.query(Persona).filter(Persona.persona_id == session_data.persona_id).first()
         if not friend:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -66,7 +66,7 @@ async def create_chat_session(
         # 새 세션 생성
         new_session = ChatSession(
             user_id=session_data.user_id,
-            friends_id=session_data.friends_id,
+            persona_id=session_data.persona_id,
             session_name=session_data.session_name or f"{user.nickname}와 {friend.friends_name}의 대화",
             is_active=True
         )
@@ -78,7 +78,7 @@ async def create_chat_session(
         return ChatSessionResponse(
             chat_sessions_id=new_session.chat_sessions_id,
             user_id=new_session.user_id,
-            friends_id=new_session.friends_id,
+            persona_id=new_session.persona_id,
             session_name=new_session.session_name,
             is_active=new_session.is_active,
             created_at=new_session.created_at,
@@ -110,7 +110,7 @@ async def get_user_sessions(
             ChatSessionResponse(
                 chat_sessions_id=session.chat_sessions_id,
                 user_id=session.user_id,
-                friends_id=session.friends_id,
+                persona_id=session.persona_id,
                 session_name=session.session_name,
                 is_active=session.is_active,
                 created_at=session.created_at,
@@ -161,7 +161,7 @@ async def get_session_detail(
         return ChatSessionDetailResponse(
             chat_sessions_id=session.chat_sessions_id,
             user_id=session.user_id,
-            friends_id=session.friends_id,
+            persona_id=session.persona_id,
             session_name=session.session_name,
             is_active=session.is_active,
             created_at=session.created_at,
@@ -202,8 +202,8 @@ async def send_message(
                 detail="비활성화된 세션입니다."
             )
         
-        # friends_id를 페르소나 타입으로 매핑
-        persona_type = get_persona_type_from_friends_id(session.friends_id, db)
+        # persona_id를 페르소나 타입으로 매핑
+        persona_type = get_persona_type_from_persona_id(session.persona_id, db)
         
         # AI 서비스를 통한 메시지 처리 (페르소나 타입 포함)
         ai_service = AIService(db)
@@ -338,8 +338,8 @@ async def get_initial_greeting(
                 detail="세션을 찾을 수 없습니다."
             )
         
-        # friends_id를 페르소나 타입으로 매핑
-        persona_type = get_persona_type_from_friends_id(session.friends_id, db)
+        # persona_id를 페르소나 타입으로 매핑
+        persona_type = get_persona_type_from_persona_id(session.persona_id, db)
         
         # AI 서비스에서 페르소나별 인사 메시지 가져오기
         ai_service = AIService(db)
@@ -356,7 +356,7 @@ async def get_initial_greeting(
         
         return {
             "persona_type": persona_type,
-            "friends_id": session.friends_id,
+            "persona_id": session.persona_id,
             "greeting": greeting
         }
         

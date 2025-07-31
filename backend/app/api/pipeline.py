@@ -269,7 +269,7 @@ def run_analysis_pipeline(
         try:
             error_result = DrawingTestResult(
                 test_id=test_id,
-                friends_type=None,
+                persona_type=None,
                 summary_text=f"분석 중 오류가 발생했습니다: {str(e)}",
                 created_at=datetime.now()
             )
@@ -312,7 +312,7 @@ def save_analysis_result_sync(
             "안정형": 5   # 안정이
         }
         
-        friends_type_id = None
+        persona_type_id = None
         summary_text = "분석을 완료할 수 없습니다."
         
         # 키워드 분석 결과 우선 처리
@@ -321,7 +321,7 @@ def save_analysis_result_sync(
             result.status == PipelineStatus.SUCCESS and 
             hasattr(result, 'personality_type') and 
             result.personality_type):
-            friends_type_id = personality_mapping.get(result.personality_type)
+            persona_type_id = personality_mapping.get(result.personality_type)
             
             # result 파일에서 키워드 분석 결과 확인
             result_file_path = pipeline.config.detection_results_dir / "results" / f"result_{result.image_base}.json"
@@ -337,7 +337,7 @@ def save_analysis_result_sync(
                     if keyword_analysis and keyword_analysis.get('predicted_personality'):
                         predicted_personality = keyword_analysis.get('predicted_personality')
                         confidence = keyword_analysis.get('confidence', 0.0)
-                        friends_type_id = personality_mapping.get(predicted_personality)
+                        persona_type_id = personality_mapping.get(predicted_personality)
                         
                         # 키워드 정보
                         current_keywords = keyword_analysis.get('current_image_keywords', [])
@@ -375,7 +375,7 @@ def save_analysis_result_sync(
                     # 2. 키워드 분석 실패시 pipeline result 직접 사용
                     if not keyword_analysis_success:
                         if hasattr(result, 'personality_type') and result.personality_type:
-                            friends_type_id = personality_mapping.get(result.personality_type)
+                            persona_type_id = personality_mapping.get(result.personality_type)
                             
                             if result.psychological_analysis and result.psychological_analysis.get('result_text'):
                                 summary_text = result.psychological_analysis['result_text']
@@ -390,7 +390,7 @@ def save_analysis_result_sync(
                     
                     # 파일 읽기 실패시 pipeline result 직접 사용
                     if hasattr(result, 'personality_type') and result.personality_type:
-                        friends_type_id = personality_mapping.get(result.personality_type)
+                        persona_type_id = personality_mapping.get(result.personality_type)
                         summary_text = f"성격 유형: {result.personality_type}"
         
         # 오류 처리
@@ -404,14 +404,14 @@ def save_analysis_result_sync(
         
         if existing_result:
             # 기존 결과 업데이트
-            existing_result.friends_type = friends_type_id
+            existing_result.persona_type = persona_type_id
             existing_result.summary_text = summary_text
             existing_result.created_at = datetime.now()
         else:
             # 새 결과 생성
             test_result = DrawingTestResult(
                 test_id=test_id,
-                friends_type=friends_type_id,
+                persona_type=persona_type_id,
                 summary_text=summary_text,
                 created_at=datetime.now()
             )
@@ -613,7 +613,7 @@ async def get_analysis_status(
             "completed_steps": 3,
             "total_steps": 3,
             "result": {
-                "friends_type": test_result.friends_type,
+                "persona_type": test_result.persona_type,
                 "summary_text": test_result.summary_text,
                 "result_text": result_text,
                 "predicted_personality": predicted_personality,

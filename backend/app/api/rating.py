@@ -28,7 +28,7 @@ async def create_rating(
     
     # 모든 사용자의 의견 수용을 위해 중복 평가 허용 (모든 평가 데이터 보존)
     
-    # 세션 정보에서 friends_id 가져오기
+    # 세션 정보에서 persona_id 가져오기
     from app.models.chat import ChatSession
     session = db.query(ChatSession).filter(ChatSession.chat_sessions_id == rating_data.session_id).first()
     if not session:
@@ -40,7 +40,7 @@ async def create_rating(
     new_rating = Rating(
         user_id=rating_data.user_id,
         session_id=rating_data.session_id,
-        friends_id=session.friends_id,  # 세션에서 friends_id 자동 설정
+        persona_id=session.persona_id,  # 세션에서 persona_id 자동 설정
         rating=rating_data.rating,
         comment=rating_data.comment
     )
