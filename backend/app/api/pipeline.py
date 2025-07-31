@@ -53,9 +53,9 @@ except Exception as e:
 router = APIRouter()
 
 # 전역 파이프라인 인스턴스
-pipeline_instance: Optional[HTPAnalysisPipeline] = None
+pipeline_instance= None
 
-def get_pipeline() -> HTPAnalysisPipeline:
+def get_pipeline():
     """파이프라인 인스턴스 가져오기 (싱글톤 패턴)"""
     global pipeline_instance
     if pipeline_instance is None:
@@ -199,8 +199,7 @@ async def analyze_drawing_image(
             run_analysis_pipeline,
             unique_id,
             drawing_test.test_id,
-            description,
-            db
+            description
         )
         
         return JSONResponse(
@@ -223,11 +222,10 @@ async def analyze_drawing_image(
         )
 
 
-async def run_analysis_pipeline(
+def run_analysis_pipeline(
     unique_id: str,
     test_id: int,
-    description: Optional[str],
-    db: Session
+    description: Optional[str]
 ):
     """
     백그라운드에서 실행되는 HTP 분석 파이프라인
@@ -236,44 +234,64 @@ async def run_analysis_pipeline(
         unique_id: 고유 이미지 ID
         test_id: 데이터베이스 테스트 ID
         description: 사용자 설명
-        db: 데이터베이스 세션
     """
+    # 백그라운드 태스크용 새 DB 세션 생성 (HTTP 요청 세션과 독립적)
+    from ..database import SessionLocal
+    db = SessionLocal()
+    
     try:
+        print(f"🚀 백그라운드 분석 시작: {unique_id}")
+        
         # 파이프라인 실행
         pipeline = get_pipeline()
         result: PipelineResult = pipeline.analyze_image(unique_id)
         
-        # 결과를 데이터베이스에 저장
-        await save_analysis_result(result, test_id, description, db)
+        print(f"📊 파이프라인 실행 완료: {result.status}")
+        
+        # 결과를 데이터베이스에 저장 (동기 함수로 변경)
+        save_analysis_result_sync(result, test_id, description, db)
+        
+        print(f"✅ 분석 완료 및 저장: {unique_id}")
         
     except Exception as e:
+        print(f"❌ 백그라운드 분석 오류: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
         # 오류 발생 시 데이터베이스에 오류 상태 저장
         try:
             pipeline = get_pipeline()
             pipeline.logger.error(f"백그라운드 분석 오류: {str(e)}")
         except:
-            print(f"백그라운드 분석 오류: {str(e)}")
+            print(f"파이프라인 로거 사용 불가: {str(e)}")
         
         # 빈 결과로 오류 상태 저장
-        error_result = DrawingTestResult(
-            test_id=test_id,
-            friends_type=None,
-            summary_text=f"분석 중 오류가 발생했습니다: {str(e)}",
-            created_at=datetime.now()
-        )
-        
-        db.add(error_result)
-        db.commit()
+        try:
+            error_result = DrawingTestResult(
+                test_id=test_id,
+                friends_type=None,
+                summary_text=f"분석 중 오류가 발생했습니다: {str(e)}",
+                created_at=datetime.now()
+            )
+            
+            db.add(error_result)
+            db.commit()
+            print(f"오류 상태 저장 완료: {test_id}")
+        except Exception as db_error:
+            print(f"오류 상태 저장 실패: {db_error}")
+    finally:
+        db.close()
 
 
-async def save_analysis_result(
+
+def save_analysis_result_sync(
     result: Any,  # PipelineResult가 None일 수 있으므로 Any 사용
     test_id: int,
     description: Optional[str],
     db: Session
 ):
     """
-    분석 결과를 데이터베이스에 저장
+    분석 결과를 데이터베이스에 저장 (동기 버전)
     
     Args:
         result: 파이프라인 분석 결과
@@ -298,12 +316,12 @@ async def save_analysis_result(
         summary_text = "분석을 완료할 수 없습니다."
         
         # 키워드 분석 결과 우선 처리
-        keyword_analysis_success = False
-        
         if (PipelineStatus is not None and 
             hasattr(result, 'status') and 
             result.status == PipelineStatus.SUCCESS and 
-            hasattr(result, 'image_base')):
+            hasattr(result, 'personality_type') and 
+            result.personality_type):
+            friends_type_id = personality_mapping.get(result.personality_type)
             
             # result 파일에서 키워드 분석 결과 확인
             result_file_path = pipeline.config.detection_results_dir / "results" / f"result_{result.image_base}.json"

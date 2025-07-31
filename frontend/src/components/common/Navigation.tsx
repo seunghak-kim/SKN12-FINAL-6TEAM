@@ -1,14 +1,26 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
+import { testService } from '../../services/testService';
 
 interface NavigationProps {
   activeTab?: string;
   onNavigate?: (screen: string) => void;
+  onSetCharacterFromTest?: (testResult: any) => void;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ activeTab, onNavigate }) => {
+const Navigation: React.FC<NavigationProps> = ({ activeTab, onNavigate, onSetCharacterFromTest }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  const navItems = [
+    { name: "메인", screen: "main", route: "/main" },
+    { name: "그림검사", screen: "test", route: "/test" },
+    { name: "페르소나 소개 ", screen: "characters", route: "/characters" },
+    { name: "챗봇", screen: "chat", route: "/chat" },
+    { name: "마이페이지", screen: "mypage", route: "/mypage" },
+    { name: "로그아웃", screen: "logout", route: "/", isLogout: true },
+  ];
   
   // URL 기반으로 활성 탭 결정
   const getActiveTab = () => {
@@ -24,6 +36,8 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onNavigate }) => {
         return 'results';
       case '/chat':
         return 'chat';
+      case '/characters':
+        return 'characters'; 
       case '/mypage':
         return 'mypage';
       default:
@@ -49,59 +63,73 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onNavigate }) => {
     }
   };
 
+  // onNavigate prop이 있으면 사용하고, 없으면 React Router 사용
+  const handleNavigation = (screen: string, route: string) => {
+    if (onNavigate) {
+      onNavigate(screen);
+    } else {
+      navigate(route);
+    }
+  };
+
+  // 챗봇 클릭 시 테스트 상태 확인
+  const handleChatClick = async () => {
+    try {
+      console.log('🔍 챗봇 클릭 - 테스트 상태 확인 중...');
+      const testStatus = await testService.getUserTestStatus();
+      
+      if (!testStatus.hasTests) {
+        console.log('📝 테스트 기록 없음 - BeforeTest 페이지로 이동');
+        handleNavigation('before-test', '/before-test');
+      } else {
+        console.log('✅ 테스트 기록 있음 - 챗봇 페이지로 이동');
+        console.log('최신 테스트 결과:', testStatus.latestResult);
+        
+        // 최신 테스트 결과에 따라 캐릭터 설정
+        if (testStatus.latestResult && onSetCharacterFromTest) {
+          onSetCharacterFromTest(testStatus.latestResult);
+        }
+        
+        handleNavigation('chat', '/chat');
+      }
+    } catch (error) {
+      console.error('❌ 테스트 상태 확인 실패:', error);
+      // 에러 발생 시 기본적으로 BeforeTest 페이지로 이동
+      handleNavigation('before-test', '/before-test');
+    }
+  };
+
+  // 네비게이션 아이템 클릭 처리
+  const handleItemClick = (item: typeof navItems[0]) => {
+    if (item.isLogout) {
+      handleLogout();
+    } else if (item.screen === 'chat') {
+      handleChatClick();
+    } else if (item.route) {
+      handleNavigation(item.screen, item.route);
+    }
+  };
+
+
   return (
-    <nav className="bg-white py-4 shadow-md">
-      <div className="flex justify-center gap-10 max-w-6xl mx-auto">
-        <Link
-          to="/main"
-          className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
-            currentActiveTab === 'main' 
-              ? 'bg-blue-500 text-white' 
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-          }`}
-        >
-          메인
-        </Link>
-        <Link
-          to="/test"
-          className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
-            currentActiveTab === 'test' || currentActiveTab === 'results'
-              ? 'bg-blue-500 text-white' 
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-          }`}
-        >
-          그림검사
-        </Link>
-        <Link
-          to="/chat"
-          className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
-            currentActiveTab === 'chat' 
-              ? 'bg-blue-500 text-white' 
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-          }`}
-        >
-          챗봇
-        </Link>
-        <Link
-          to="/mypage"
-          className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
-            currentActiveTab === 'mypage' 
-              ? 'bg-blue-500 text-white' 
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-          }`}
-        >
-          마이페이지
-        </Link>
-        <button
-          onClick={handleLogout}
-          className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
-            currentActiveTab === 'logout' 
-              ? 'bg-blue-500 text-white' 
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-          }`}
-        >
-          로그아웃
-        </button>
+    <nav className="relative z-20 flex justify-center items-center py-6">
+      <div className="flex space-x-8">
+        {navItems.map((item) => (
+          <button
+            key={item.name}
+            onClick={() => handleItemClick(item)}
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+              currentActiveTab === item.screen || 
+              (item.screen === 'test' && currentActiveTab === 'results')
+                ? "bg-white text-gray-800 shadow-lg"
+                : item.isLogout
+                ? "text-white/70 hover:text-red-300 hover:bg-red-500/10"
+                : "text-white/70 hover:text-white hover:bg-white/10"
+            }`}
+          >
+            {item.name}
+          </button>
+        ))}
       </div>
     </nav>
   );

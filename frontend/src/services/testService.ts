@@ -18,22 +18,63 @@ class TestService {
   }
 
   /**
+   * 사용자의 테스트 기록 여부 확인 및 최신 결과 반환
+   */
+  async getUserTestStatus(): Promise<{ hasTests: boolean; latestResult?: DrawingTest }> {
+    try {
+      const testResults = await this.getMyTestResults();
+      
+      if (testResults.length === 0) {
+        return { hasTests: false };
+      }
+
+      // 최신 테스트 결과 반환 (submitted_at 기준 정렬)
+      const sortedResults = testResults.sort((a, b) => 
+        new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
+      );
+      
+      return { 
+        hasTests: true, 
+        latestResult: sortedResults[0] 
+      };
+    } catch (error) {
+      console.error('Failed to check user test status:', error);
+      return { hasTests: false };
+    }
+  }
+
+  /**
    * 그림 이미지 업로드 및 파이프라인 분석 시작
    */
   async analyzeImage(file: File, description?: string): Promise<PipelineAnalysisResponse> {
     try {
+      console.log('🔍 analyzeImage 호출됨:', { 
+        fileName: file.name, 
+        fileSize: file.size, 
+        fileType: file.type,
+        description 
+      });
+
       const formData = new FormData();
       formData.append('file', file);
       if (description) {
         formData.append('description', description);
       }
 
-      // FormData를 사용할 때는 Content-Type을 자동으로 설정되도록 해야 함
-      // AbortController로 타임아웃 제어 (3분)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 180000); // 3분
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      const endpoint = `${apiUrl}${this.PIPELINE_PATH}/analyze-image`;
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${this.PIPELINE_PATH}/analyze-image`, {
+      console.log('📡 API 요청 시작:', endpoint);
+
+      // FormData를 사용할 때는 Content-Type을 자동으로 설정되도록 해야 함
+      // AbortController로 타임아웃 제어 (5분으로 증가)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.log('⏰ 요청 타임아웃');
+        controller.abort();
+      }, 300000); // 5분
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -44,13 +85,29 @@ class TestService {
       
       clearTimeout(timeoutId);
 
+      console.log('📨 응답 수신:', { 
+        status: response.status, 
+        statusText: response.statusText,
+        ok: response.ok 
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to start image analysis');
+        const errorData = await response.text();
+        console.error('❌ API 오류 응답:', errorData);
+        throw new Error(`API 요청 실패: ${response.status} - ${errorData}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ 분석 시작 성공:', result);
+      return result;
     } catch (error) {
-      console.error('Failed to analyze image:', error);
+      console.error('❌ 이미지 분석 요청 실패:', error);
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('요청 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.');
+        }
+        throw new Error(`분석 요청 실패: ${error.message}`);
+      }
       throw error;
     }
   }

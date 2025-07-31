@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import ConsentModal from '../common/ConsentModal';
+import AnalysisModal from '../common/AnalysisModal';
 import { testService } from '../../services/testService';
 import { PipelineStatusResponse } from '../../types';
 import { agreementService } from '../../services/agreementService';
+import { Button } from "../../components/ui/button";
 
 interface TestPageProps {
-  onStartAnalysis: (imageFile: File | null, description: string) => Promise<void>;
+  onNext?: () => void;
+  onStartAnalysis?: (imageFile: File | null, description: string) => Promise<void>;
   onNavigate?: (screen: string) => void;
 }
 
@@ -15,7 +18,6 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [description, setDescription] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showDescription] = useState(true);
@@ -23,6 +25,8 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const [hasAgreed, setHasAgreed] = useState(false);
   const [analysisStatus, setAnalysisStatus] = useState<PipelineStatusResponse | null>(null);
   const [currentTestId, setCurrentTestId] = useState<string | null>(null);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
 
   // 컴포넌트 마운트 시 동의 상태 확인
   useEffect(() => {
@@ -101,35 +105,44 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const handleAnalysis = async () => {
     if (!selectedImage) return;
 
-    try {
-      setIsAnalyzing(true);
-      setAnalysisStatus(null);
+    console.log('🔍 분석 시작 - 모달 표시');
+    setIsAnalyzing(true);
+    setShowAnalysisModal(true);
+    setAnalysisStatus(null);
 
+    console.log('📊 showAnalysisModal 상태:', true);
+
+    try {
       // 이미지 분석 시작
-      const analysisResponse = await testService.analyzeImage(selectedImage, description);
+      const analysisResponse = await testService.analyzeImage(selectedImage, '');
       setCurrentTestId(analysisResponse.test_id);
 
       // 분석 상태 폴링 시작
       const finalStatus = await testService.pollAnalysisStatus(
         analysisResponse.test_id,
         (status) => {
+          console.log('📈 분석 상태 업데이트:', status);
           setAnalysisStatus(status);
         }
       );
 
       if (finalStatus.status === 'completed') {
-        // 분석 완료 시 결과 페이지로 이동
-        setIsAnalyzing(false);
-        navigate('/results');
+        // 분석 완료 시 - AnalysisModal의 onComplete에서 처리하도록 함
+        console.log('✅ 분석 완료 - AnalysisModal에서 결과 페이지로 이동 처리');
+        // setIsAnalyzing(false);
+        // setShowAnalysisModal(false);
+        // navigate는 AnalysisModal의 onComplete에서 처리
       } else if (finalStatus.status === 'failed') {
         // 분석 실패 시 에러 처리
-        console.error('Analysis failed:', finalStatus.error);
+        console.error('❌ 분석 실패:', finalStatus.error);
         setIsAnalyzing(false);
+        setShowAnalysisModal(false);
         alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      console.error('Failed to start analysis:', error);
+      console.error('❌ 분석 시작 실패:', error);
       setIsAnalyzing(false);
+      setShowAnalysisModal(false);
       alert('분석을 시작하는 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -142,187 +155,184 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
 
   const canAnalyze = selectedImage !== null && !isAnalyzing;
 
-  if (showDescription) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation onNavigate={onNavigate} />
-        
-        <div className="container mx-auto px-5 py-8 max-w-4xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-3 text-gray-800">HTP 심리검사</h1>
-            <p className="text-gray-600">그림을 통해 당신의 심리 상태를 알아보세요</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-bold text-gray-800">검사 순서</h2>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4">
-                <div className="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
-                  01
-                </div>
-                <div>
-                  {/* <h3 className="text-lg font-semibold text-gray-800 mb-1">집검사</h3> */}
-                  <h3 className="text-lg font-semibold text-gray-800 mb-1 text-left">집검사</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">총 3가지 항목의 검사가 있습니다. 집검사부터 시작하여 나무, 사람 순서로 진행됩니다.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
-                  02
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-1 text-left">나무, 사람</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">집검사 이후 나무 사람의 항목의 차례에 따라 그림을 그리고 검사가 완료됩니다.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
-                  03
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-1 text-left">그림 완성</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">안내에 따라 각 그림 요소를 선택하여 그리기 그리고 검사 결과를 확인합니다.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center">
-            <div className="flex justify-center gap-3 mb-6">
-              <span className="text-4xl font-bold text-yellow-500">?</span>
-              <span className="text-4xl font-bold text-blue-500">?</span>
-              <span className="text-4xl font-bold text-green-500">?</span>
-            </div>
-            <h3 className="text-xl font-bold mb-3 text-gray-800 leading-relaxed">
-              아직 한 번도 그림검사를 진행하지 않으셨나요?
-            </h3>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              그림 검사를 진행하고 나에게 맞는 페르소나를<br/>
-              찾으세요!
-            </p>
-            <button 
-              className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-semibold cursor-pointer hover:transform hover:-translate-y-1 transition-all duration-300 shadow-lg"
-              onClick={handleStartTest}
-            >
-              그림검사 하러 가기
-            </button>
-          </div>
-        </div>
-        
-        <ConsentModal 
-          isOpen={showConsentModal}
-          onClose={handleConsentClose}
-          onAgree={handleConsentAgree}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="test-screen">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
       <Navigation onNavigate={onNavigate} />
-      
-      <div className="test-container">
-        <div className="test-header">
-          <h1>HTP 심리검사</h1>
-          <p>그림을 업로드하고 설명을 작성해주세요</p>
-        </div>
 
-        <div className="test-content">
-          {/* 그림 업로드 섹션 */}
-          <div className="upload-section">
-            <div className="section-header">
-              <span className="section-icon">🖼️</span>
-              <h2>그림 업로드</h2>
+      {/* Decorative elements */}
+      <div className="absolute top-1/4 left-1/4 w-24 h-24 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full opacity-40 blur-lg"></div>
+      <div className="absolute bottom-1/3 right-1/4 w-32 h-32 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full opacity-30 blur-xl"></div>
+
+      {/* Orbital rings */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-[500px] h-[500px] border border-cyan-400/10 rounded-full"></div>
+        <div className="absolute w-[600px] h-[600px] border border-purple-400/10 rounded-full"></div>
+      </div>
+
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-8">
+        <div className="max-w-md mx-auto">
+          {/* Main container */}
+          <div className="bg-slate-600/40 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+            <h1 className="text-white text-xl font-bold text-center mb-8">그림 업로드</h1>
+
+            {/* Instructions */}
+            <div className="bg-slate-500/50 rounded-2xl p-6 mb-8">
+              <h2 className="text-white font-bold mb-4">필독사항</h2>
+              <div className="text-white/90 text-sm space-y-2">
+                <p>• 메모장, 흰종이 노트 등을 활용해 집, 나무, 사람 각 요소를 분리해서 그려주세요</p>
+                <p>• 3가지 요소를 모두 그려야 정상적인 검사가 가능합니다</p>
+                <p>• 파일 업로드는 JPG 및 PNG로만 가능합니다</p>
+              </div>
             </div>
-            
+
+            {/* Upload area */}
             <div 
-              className={`upload-area ${isDragOver ? 'drag-over' : ''} ${selectedImage ? 'has-image' : ''}`}
+              className={`border-2 border-dashed rounded-2xl p-8 mb-6 text-center transition-colors ${
+                isDragOver ? 'border-white/50 bg-white/10' : 'border-white/30'
+              }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
               {imagePreview ? (
-                <div className="image-preview">
-                  <img src={imagePreview} alt="업로드된 그림" />
-                  <div className="image-overlay">
-                    <button 
-                      className="change-image-btn"
-                      onClick={() => document.getElementById('file-input')?.click()}
-                    >
-                      이미지 변경
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="upload-placeholder">
-                  <div className="upload-icon">☁️</div>
-                  <p>또는 여기에 파일을 드래그해서 놓으세요</p>
-                  <button 
-                    className="upload-btn"
-                    onClick={() => document.getElementById('file-input')?.click()}
+                <div className="space-y-4">
+                  <img 
+                    src={imagePreview} 
+                    alt="선택한 이미지" 
+                    className="max-w-full h-32 object-contain mx-auto rounded-lg"
+                  />
+                  <p className="text-white/90 text-sm">선택된 파일: {selectedImage?.name}</p>
+                  <button
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setImagePreview(null);
+                    }}
+                    className="text-white/70 hover:text-white text-sm underline"
                   >
-                    📁 파일 선택하기
+                    다른 파일 선택
                   </button>
                 </div>
+              ) : (
+                <>
+                  <p className="text-white/70 mb-4">파일을 드래그해서 놓거나, 클릭하여 불러오세요</p>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleFileInput}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label 
+                    htmlFor="file-upload"
+                    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-8 py-3 rounded-full cursor-pointer inline-block font-medium transition-all duration-300"
+                  >
+                    파일 선택하기
+                  </label>
+                </>
               )}
-              
-              <input
-                id="file-input"
-                type="file"
-                accept="image/*"
-                onChange={handleFileInput}
-                style={{ display: 'none' }}
-              />
             </div>
-          </div>
 
-          {/* 그림 설명 섹션 */}
-          <div className="description-section">
-            <div className="section-header">
-              <span className="section-icon">✏️</span>
-              <h2>그림 설명</h2>
-            </div>
-            
-            <div className="description-area">
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="그림에 대한 설명을 입력하세요. 예: 어떤 기분으로 그렸는지, 특별한 의미가 있는지 등..."
-                className="description-input"
-                rows={6}
-              />
-              <div className="description-info">
-                <span className="optional-label">선택사항</span>
-                <span className="char-count">{description.length}/500</span>
+            {/* 분석 시작 버튼 */}
+            {selectedImage && (
+              <Button
+                onClick={handleAnalysis}
+                disabled={isAnalyzing}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium disabled:opacity-50 mb-6"
+              >
+                {isAnalyzing ? '분석 중...' : '분석 시작하기'}
+              </Button>
+            )}
+
+            {/* Example images */}
+            <div className="bg-slate-500/50 rounded-2xl p-6">
+              <h3 className="text-white font-bold mb-4 text-center">예시</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                  <img 
+                    src="/assets/image_ex1.jpg" 
+                    alt="예시그림 1" 
+                    className="w-full h-full object-cover rounded" 
+                    onClick={() => setEnlargedImage("/assets/image_ex1.jpg")}
+                  />
+                </div>
+                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                  <img 
+                    src="/assets/image_ex2.jpg" 
+                    alt="예시그림 2" 
+                    className="w-full h-full object-cover rounded" 
+                    onClick={() => setEnlargedImage("/assets/image_ex2.jpg")}
+                  />
+                </div>
+                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                  <img 
+                    src="/assets/image_ex3.jpg" 
+                    alt="예시그림 3" 
+                    className="w-full h-full object-cover rounded" 
+                    onClick={() => setEnlargedImage("/assets/image_ex3.jpg")}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* 분석 시작 버튼 */}
-          <div className="analysis-section">
-            <button 
-              className={`analysis-btn ${canAnalyze ? 'enabled' : 'disabled'}`}
-              onClick={handleAnalysis}
-              disabled={!canAnalyze}
-            >
-              {isAnalyzing ? '분석 중...' : canAnalyze ? '🔍 분석 시작하기' : '이미지를 업로드해주세요'}
-            </button>
-            
-            {canAnalyze && !isAnalyzing && (
-              <p className="analysis-notice">
-                업로드된 이미지를 분석하여 심리 상태를 파악합니다
-              </p>
-            )}
           </div>
         </div>
       </div>
 
+            
+
+      {/* ConsentModal */}
+      <ConsentModal 
+        isOpen={showConsentModal}
+        onClose={handleConsentClose}
+        onAgree={handleConsentAgree}
+      />
+
+      {/* AnalysisModal */}
+      {(() => {
+        console.log('🎭 AnalysisModal 렌더링 체크:', { showAnalysisModal, isAnalyzing });
+        return null;
+      })()}
+      <AnalysisModal 
+        isOpen={showAnalysisModal}
+        analysisStatus={analysisStatus}
+        onComplete={() => {
+          console.log('🎉 AnalysisModal onComplete 호출됨 - 결과 페이지로 이동');
+          setIsAnalyzing(false);
+          setShowAnalysisModal(false);
+          if (currentTestId) {
+            navigate('/results', { 
+              state: { 
+                testId: parseInt(currentTestId),
+                fromPipeline: true
+              } 
+            });
+          }
+        }}
+      />
+
+      {/* Image Enlargement Modal */}
+      {enlargedImage && (
+        <div 
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-8"
+          onClick={() => setEnlargedImage(null)}
+        >
+          <div className="relative w-full h-full flex items-center justify-center">
+            <img 
+              src={enlargedImage} 
+              alt="확대된 예시 이미지" 
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setEnlargedImage(null)}
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-colors z-10"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

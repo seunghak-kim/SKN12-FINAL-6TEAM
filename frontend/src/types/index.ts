@@ -89,6 +89,13 @@ export interface TestResult {
   date: string;
   description: string;
   images?: string[];
+  personalityScores?: {
+    추진이: number;
+    내면이: number;
+    관계이: number;
+    쾌락이: number;
+    안정이: number;
+  };
 }
 
 // 백엔드 API - 친구 정보
@@ -107,6 +114,13 @@ export interface DrawingTestResult {
   summary_text?: string;
   created_at: string;
   friend_info?: FriendInfo;
+  personality_scores?: {
+    추진이: number;
+    내면이: number;
+    관계이: number;
+    쾌락이: number;
+    안정이: number;
+  };
 }
 
 // 백엔드 API - 그림 테스트
@@ -123,6 +137,7 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  profileImageUrl?: string;
   joinDate: string;
   totalTests: number;
   totalChats: number;

@@ -1,9 +1,13 @@
 """
 사용자 관리 API 라우터
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from typing import List
+import os
+import uuid
+from pathlib import Path
 
 from app.schemas.user import (
     UserCreate, UserUpdate, UserResponse, UserLogin, UserListResponse,
@@ -11,8 +15,14 @@ from app.schemas.user import (
 )
 from app.models.user import User, UserInformation, SocialUser
 from app.database import get_db
+from app.services.auth_service import AuthService
+from app.api.auth import get_current_user
 
 router = APIRouter()
+
+# OAuth2 스키마 설정 (user.py 전용)
+oauth2_scheme = HTTPBearer()
+auth_service = AuthService()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
@@ -260,6 +270,7 @@ async def get_user_profile(user_id: int, db: Session = Depends(get_db)):
         "name": user_info.nickname,
         "nickname": user_info.nickname,
         "email": None,  # 추후 이메일 필드 추가시 수정
+        "profile_image_url": user_info.profile_image_url,
         "user_type": user_type,
         "status": user_info.status,
         "join_date": user_info.created_at.isoformat() if hasattr(user_info, 'created_at') else None,
@@ -411,3 +422,89 @@ async def check_nickname_availability(
         return {"available": False, "message": "이미 사용 중인 닉네임입니다."}
     
     return {"available": True, "message": "사용 가능한 닉네임입니다."}
+
+@router.post("/users/{user_id}/upload-profile-image")
+async def upload_profile_image(
+    user_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """프로필 이미지 업로드"""
+    # 권한 확인
+    if current_user["user_id"] != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="본인의 프로필 이미지만 변경할 수 있습니다."
+        )
+    
+    # 사용자 확인
+    user_info = db.query(UserInformation).filter(
+        UserInformation.user_id == user_id
+    ).first()
+    
+    if not user_info:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="사용자를 찾을 수 없습니다."
+        )
+    
+    # 파일 형식 검증
+    allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="JPG, PNG, GIF 형식의 이미지 파일만 업로드 가능합니다."
+        )
+    
+    # 파일 크기 제한 (5MB)
+    max_size = 5 * 1024 * 1024
+    if file.size and file.size > max_size:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="이미지 파일은 5MB 이하여야 합니다."
+        )
+    
+    try:
+        # 업로드 디렉토리 생성
+        upload_dir = Path("uploads/profile_images")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 파일 확장자 추출
+        file_extension = file.filename.split('.')[-1] if file.filename else 'jpg'
+        
+        # 고유한 파일명 생성
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        file_path = upload_dir / unique_filename
+        
+        # 파일 저장
+        contents = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(contents)
+        
+        # 데이터베이스에 이미지 URL 저장
+        image_url = f"/uploads/profile_images/{unique_filename}"
+        
+        # 기존 이미지 파일 삭제
+        if user_info.profile_image_url:
+            old_file_path = Path(f".{user_info.profile_image_url}")
+            if old_file_path.exists():
+                try:
+                    old_file_path.unlink()
+                except Exception:
+                    pass
+        
+        user_info.profile_image_url = image_url
+        db.commit()
+        
+        return {
+            "message": "프로필 이미지가 성공적으로 업로드되었습니다.",
+            "profile_image_url": image_url
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"이미지 업로드 중 오류가 발생했습니다: {str(e)}"
+        )
