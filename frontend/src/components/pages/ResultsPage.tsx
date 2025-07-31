@@ -289,7 +289,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const getMainProbability = () => {
     if (!probabilities) return 82;
     const prob = probabilities[actualPersonalityType];
-    return prob ? Math.round(prob * 100) : 82;
+    return prob ? Math.round(prob) : 82;
   };
 
   // 다른 성격 유형들의 확률 정렬된 배열 가져오기
@@ -305,7 +305,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
 
     return Object.entries(probabilities)
       .filter(([type]) => type !== actualPersonalityType)
-      .map(([type, prob]) => ({ type, probability: Math.round(prob * 100) }))
+      .map(([type, prob]) => ({ type, probability: Math.round(prob) }))
       .sort((a, b) => b.probability - a.probability);
   };
 
