@@ -383,7 +383,7 @@ useEffect(() => {
         <Navigation onNavigate={onNavigate} />
       </div>
       
-      <style jsx>{`
+      <style>{`
         @keyframes natural-movement {
           0% {
             transform: translateX(0px) translateY(0px);

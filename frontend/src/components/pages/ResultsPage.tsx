@@ -444,7 +444,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           </div>
         </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fade-in {
           from {
             opacity: 0;
