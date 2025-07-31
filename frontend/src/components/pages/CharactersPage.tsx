@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import { SearchResult } from '../../types';
 import { Button } from "../../components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { testService } from '../../services/testService';
 
 // 확장된 캐릭터 타입 (UI용 추가 필드 포함)
 interface ExtendedCharacter extends SearchResult {
@@ -31,6 +32,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [hasTestRecords, setHasTestRecords] = useState<boolean>(true); // 기본값은 true로 설정하여 로딩 중에는 버튼이 활성화되도록
 
   // 기본 캐릭터 데이터 (props로 전달되지 않은 경우 사용)
   const defaultCharacters: ExtendedCharacter[] = [
@@ -115,6 +117,24 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
       score: Math.random() * 0.3 + 0.7 // 0.7~1.0 사이 랜덤 점수
     };
   };
+
+  // 컴포넌트 마운트 시 테스트 기록 확인
+  useEffect(() => {
+    const checkTestStatus = async () => {
+      try {
+        console.log('🔍 캐릭터 페이지 - 테스트 상태 확인 중...');
+        const testStatus = await testService.getUserTestStatus();
+        console.log('테스트 상태:', testStatus);
+        setHasTestRecords(testStatus.hasTests);
+      } catch (error) {
+        console.error('❌ 테스트 상태 확인 실패:', error);
+        // 에러 발생 시 안전하게 false로 설정
+        setHasTestRecords(false);
+      }
+    };
+
+    checkTestStatus();
+  }, []);
 
   // props에서 받은 캐릭터 데이터가 있으면 변환해서 사용, 없으면 기본 데이터 사용
   const characters = propCharacters 
@@ -288,9 +308,17 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
 
                 <Button
                   onClick={() => handleCharacterClick(character)}
-                  className={`bg-gradient-to-r ${character.color} hover:opacity-90 text-white px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap`}
+                  disabled={!hasTestRecords}
+                  className={`
+                    ${hasTestRecords 
+                      ? `bg-gradient-to-r ${character.color} hover:opacity-90 text-white` 
+                      : 'bg-gray-500/50 text-gray-300 cursor-not-allowed'
+                    } 
+                    px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap
+                    ${!hasTestRecords ? 'opacity-50' : ''}
+                  `}
                 >
-                  {character.buttonText}
+                  {hasTestRecords ? character.buttonText : '그림검사 후 이용 가능'}
                 </Button>
               </div>
             </div>
