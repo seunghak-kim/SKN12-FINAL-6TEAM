@@ -152,19 +152,19 @@ class ChatService:
     
     def create_session(self, session_data: ChatSessionCreate) -> ChatSession:
         """새 채팅 세션 생성"""
-        print(f"새 세션 생성 시도: user_id={session_data.user_id}, friends_id={session_data.friends_id}")
+        print(f"새 세션 생성 시도: user_id={session_data.user_id}, persona_id={session_data.persona_id}")
         
         # 간단한 존재 확인 (관계 없이 직접 확인)
         from ..models.user import User
-        from ..models.chat import Friend
+        from ..models.persona import Persona
         user_exists = self.db.query(User).filter(User.user_id == session_data.user_id).first() is not None
-        friend_exists = self.db.query(Friend).filter(Friend.friends_id == session_data.friends_id).first() is not None
+        friend_exists = self.db.query(Persona).filter(Persona.persona_id == session_data.persona_id).first() is not None
         
         print(f"사용자 존재: {user_exists}, 친구 존재: {friend_exists}")
         
         db_session = ChatSession(
             user_id=session_data.user_id,
-            friends_id=session_data.friends_id,
+            persona_id=session_data.persona_id,
             session_name=session_data.session_name
         )
         

@@ -5,7 +5,7 @@ import os
 import re
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
-from ..models.friend import Friend
+from ..models.persona import Persona
 import logging
 
 logger = logging.getLogger(__name__)
@@ -94,8 +94,8 @@ class PersonaSyncService:
             if os.path.exists(file_path):
                 info = self.extract_persona_info(file_path)
                 persona_data.append({
-                    "friends_name": persona_type,
-                    "friends_description": info["description"],
+                    "name": persona_type,
+                    "description": info["description"],
                     "is_active": True
                 })
                 logger.info(f"페르소나 정보 추출 성공: {persona_type}")
@@ -111,8 +111,8 @@ class PersonaSyncService:
                 }
                 
                 persona_data.append({
-                    "friends_name": persona_type,
-                    "friends_description": default_descriptions.get(persona_type, f"{persona_type} 성향의 전문 심리 상담 챗봇 (체이닝 시스템 적용)"),
+                    "name": persona_type,
+                    "description": default_descriptions.get(persona_type, f"{persona_type} 성향의 전문 심리 상담 챗봇 (체이닝 시스템 적용)"),
                     "is_active": True
                 })
                 logger.warning(f"프롬프트 파일 없음, 특화된 기본값 사용: {filename}")
@@ -126,25 +126,25 @@ class PersonaSyncService:
             persona_data = self.get_all_persona_data()
             
             for data in persona_data:
-                # 기존 friends 레코드 확인
-                existing_friend = db.query(Friend).filter(
-                    Friend.friends_name == data["friends_name"]
+                # 기존 personas 레코드 확인
+                existing_friend = db.query(Persona).filter(
+                    Persona.name == data["name"]
                 ).first()
                 
                 if existing_friend:
                     # 기존 레코드 업데이트
-                    existing_friend.friends_description = data["friends_description"]
+                    existing_friend.description = data["description"]
                     existing_friend.is_active = data["is_active"]
-                    logger.info(f"페르소나 업데이트: {data['friends_name']}")
+                    logger.info(f"페르소나 업데이트: {data['name']}")
                 else:
                     # 새 레코드 생성
-                    new_friend = Friend(
-                        friends_name=data["friends_name"],
-                        friends_description=data["friends_description"],
+                    new_friend = Persona(
+                        name=data["name"],
+                        description=data["description"],
                         is_active=data["is_active"]
                     )
                     db.add(new_friend)
-                    logger.info(f"페르소나 생성: {data['friends_name']}")
+                    logger.info(f"페르소나 생성: {data['name']}")
             
             db.commit()
             logger.info("페르소나 동기화 완료")
