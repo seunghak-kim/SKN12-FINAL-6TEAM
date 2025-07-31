@@ -39,29 +39,6 @@ const BeforeTest: React.FC<BeforeTestProps> = ({ onNavigate }) => {
             </p>
           </div>
 
-          {/* 안내 카드 */}
-          {/* <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-8">
-            <div className="flex justify-center mb-6">
-            <h3 className="text-xl font-semibold text-white mb-6">
-              왜 그림 검사가 필요한가요?
-            </h3></div>
-            <div className="space-y-4 text-white/90 text-left">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full mt-2 flex-shrink-0"></div>
-                <p>그림을 통해 당신의 성격과 심리 상태를 분석합니다</p>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full mt-2 flex-shrink-0"></div>
-                <p>분석 결과를 바탕으로 당신에게 가장 적합한 페르소나 챗봇을 매칭해드립니다</p>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full mt-2 flex-shrink-0"></div>
-                <p>5가지로 유형화된 챗봇을 통해 개인 맞춤형 상담과 조언을 받을 수 있습니다</p>
-              </div>
-            </div>
-          </div> */}
-
-
           {/* 프로세스 안내 */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8">
             <h3 className="text-xl font-semibold text-white mb-6">검사 진행 과정</h3>
