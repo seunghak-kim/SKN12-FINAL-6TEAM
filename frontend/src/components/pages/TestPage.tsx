@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import ConsentModal from '../common/ConsentModal';
+import AnalysisModal from '../common/AnalysisModal';
 import { testService } from '../../services/testService';
 import { PipelineStatusResponse } from '../../types';
 import { agreementService } from '../../services/agreementService';
@@ -17,7 +18,6 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [description, setDescription] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showDescription] = useState(true);
@@ -25,6 +25,8 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const [hasAgreed, setHasAgreed] = useState(false);
   const [analysisStatus, setAnalysisStatus] = useState<PipelineStatusResponse | null>(null);
   const [currentTestId, setCurrentTestId] = useState<string | null>(null);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
 
   // 컴포넌트 마운트 시 동의 상태 확인
   useEffect(() => {
@@ -103,35 +105,44 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const handleAnalysis = async () => {
     if (!selectedImage) return;
 
-    try {
-      setIsAnalyzing(true);
-      setAnalysisStatus(null);
+    console.log('🔍 분석 시작 - 모달 표시');
+    setIsAnalyzing(true);
+    setShowAnalysisModal(true);
+    setAnalysisStatus(null);
 
+    console.log('📊 showAnalysisModal 상태:', true);
+
+    try {
       // 이미지 분석 시작
-      const analysisResponse = await testService.analyzeImage(selectedImage, description);
+      const analysisResponse = await testService.analyzeImage(selectedImage, '');
       setCurrentTestId(analysisResponse.test_id);
 
       // 분석 상태 폴링 시작
       const finalStatus = await testService.pollAnalysisStatus(
         analysisResponse.test_id,
         (status) => {
+          console.log('📈 분석 상태 업데이트:', status);
           setAnalysisStatus(status);
         }
       );
 
       if (finalStatus.status === 'completed') {
-        // 분석 완료 시 결과 페이지로 이동
-        setIsAnalyzing(false);
-        navigate('/results');
+        // 분석 완료 시 - AnalysisModal의 onComplete에서 처리하도록 함
+        console.log('✅ 분석 완료 - AnalysisModal에서 결과 페이지로 이동 처리');
+        // setIsAnalyzing(false);
+        // setShowAnalysisModal(false);
+        // navigate는 AnalysisModal의 onComplete에서 처리
       } else if (finalStatus.status === 'failed') {
         // 분석 실패 시 에러 처리
-        console.error('Analysis failed:', finalStatus.error);
+        console.error('❌ 분석 실패:', finalStatus.error);
         setIsAnalyzing(false);
+        setShowAnalysisModal(false);
         alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      console.error('Failed to start analysis:', error);
+      console.error('❌ 분석 시작 실패:', error);
       setIsAnalyzing(false);
+      setShowAnalysisModal(false);
       alert('분석을 시작하는 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -211,66 +222,62 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
                     className="hidden"
                     id="file-upload"
                   />
-                  <label htmlFor="file-upload">
-                    <Button
-                      type="button"
-                      className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-8 py-3 rounded-full cursor-pointer"
-                    >
-                      파일 선택하기
-                    </Button>
+                  <label 
+                    htmlFor="file-upload"
+                    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-8 py-3 rounded-full cursor-pointer inline-block font-medium transition-all duration-300"
+                  >
+                    파일 선택하기
                   </label>
                 </>
               )}
             </div>
-
-            {/* Example images */}
-            <div className="bg-slate-500/50 rounded-2xl p-6 mb-6">
-              <h3 className="text-white font-bold mb-4 text-center">예시</h3>
-              <div className="grid grid-cols-4 gap-3">
-                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center">
-                  <span className="text-xs text-gray-600">집 그림</span>
-                </div>
-                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center">
-                  <span className="text-xs text-gray-600">나무 그림</span>
-                </div>
-                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center">
-                  <span className="text-xs text-gray-600">사람 그림</span>
-                </div>
-                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center">
-                  <span className="text-xs text-gray-600">전체 그림</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 설명 입력 */}
-            {selectedImage && (
-              <div className="mb-6">
-                <label className="block text-white font-bold mb-2">
-                  그림에 대한 설명 (선택사항)
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="그림에 대해 간단히 설명해주세요..."
-                  className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 resize-none"
-                  rows={3}
-                />
-              </div>
-            )}
 
             {/* 분석 시작 버튼 */}
             {selectedImage && (
               <Button
                 onClick={handleAnalysis}
                 disabled={isAnalyzing}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium disabled:opacity-50 mb-6"
               >
                 {isAnalyzing ? '분석 중...' : '분석 시작하기'}
               </Button>
             )}
+
+            {/* Example images */}
+            <div className="bg-slate-500/50 rounded-2xl p-6">
+              <h3 className="text-white font-bold mb-4 text-center">예시</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                  <img 
+                    src="/assets/image_ex1.jpg" 
+                    alt="예시그림 1" 
+                    className="w-full h-full object-cover rounded" 
+                    onClick={() => setEnlargedImage("/assets/image_ex1.jpg")}
+                  />
+                </div>
+                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                  <img 
+                    src="/assets/image_ex2.jpg" 
+                    alt="예시그림 2" 
+                    className="w-full h-full object-cover rounded" 
+                    onClick={() => setEnlargedImage("/assets/image_ex2.jpg")}
+                  />
+                </div>
+                <div className="bg-white rounded-lg p-2 aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                  <img 
+                    src="/assets/image_ex3.jpg" 
+                    alt="예시그림 3" 
+                    className="w-full h-full object-cover rounded" 
+                    onClick={() => setEnlargedImage("/assets/image_ex3.jpg")}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+            
 
       {/* ConsentModal */}
       <ConsentModal 
@@ -278,6 +285,54 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
         onClose={handleConsentClose}
         onAgree={handleConsentAgree}
       />
+
+      {/* AnalysisModal */}
+      {(() => {
+        console.log('🎭 AnalysisModal 렌더링 체크:', { showAnalysisModal, isAnalyzing });
+        return null;
+      })()}
+      <AnalysisModal 
+        isOpen={showAnalysisModal}
+        analysisStatus={analysisStatus}
+        onComplete={() => {
+          console.log('🎉 AnalysisModal onComplete 호출됨 - 결과 페이지로 이동');
+          setIsAnalyzing(false);
+          setShowAnalysisModal(false);
+          if (currentTestId) {
+            navigate('/results', { 
+              state: { 
+                testId: parseInt(currentTestId),
+                fromPipeline: true
+              } 
+            });
+          }
+        }}
+      />
+
+      {/* Image Enlargement Modal */}
+      {enlargedImage && (
+        <div 
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-8"
+          onClick={() => setEnlargedImage(null)}
+        >
+          <div className="relative w-full h-full flex items-center justify-center">
+            <img 
+              src={enlargedImage} 
+              alt="확대된 예시 이미지" 
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setEnlargedImage(null)}
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-colors z-10"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
