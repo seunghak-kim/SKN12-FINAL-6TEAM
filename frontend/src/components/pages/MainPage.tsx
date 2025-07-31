@@ -39,20 +39,73 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
       <Navigation onNavigate={onNavigate} />
 
-      {/* Decorative orbs */}
-      <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full opacity-40 blur-xl"></div>
-      <div className="absolute top-40 right-32 w-24 h-24 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full opacity-50 blur-lg"></div>
-      <div className="absolute bottom-32 left-1/4 w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full opacity-60 blur-sm"></div>
-      <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-full opacity-20 blur-2xl"></div>
+      {/* Starfield background */}
+      <div
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `url('/images/starfield-particles.png')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      ></div>
 
-      {/* Orbital rings */}
+      {/* Cosmic spheres */}
+      <div
+        className="absolute top-1/4 right-1/4 w-96 h-64 opacity-40"
+        style={{
+          backgroundImage: `url('/images/cosmic-spheres.png')`,
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      ></div>
+
+      {/* Glowing orb */}
+      <div
+        className="absolute bottom-20 left-20 w-32 h-32 opacity-60"
+        style={{
+          backgroundImage: `url('/images/glowing-orb.png')`,
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      ></div>
+
+      {/* Enhanced decorative orbs */}
+      <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 rounded-full opacity-40 blur-xl animate-pulse"></div>
+      <div
+        className="absolute top-40 right-32 w-24 h-24 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-full opacity-50 blur-lg animate-pulse"
+        style={{ animationDelay: "1s" }}
+      ></div>
+      <div
+        className="absolute bottom-32 left-1/4 w-20 h-20 bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 rounded-full opacity-60 blur-sm animate-pulse"
+        style={{ animationDelay: "2s" }}
+      ></div>
+      <div
+        className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 rounded-full opacity-20 blur-2xl animate-pulse"
+        style={{ animationDelay: "0.5s" }}
+      ></div>
+
+      {/* Mystical orbital rings */}
       <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="w-96 h-96 border border-cyan-400/10 rounded-full"></div>
-        <div className="absolute inset-0 w-[500px] h-[500px] border border-purple-400/10 rounded-full -translate-x-12 -translate-y-12"></div>
+        <div
+          className="w-96 h-96 border border-cyan-400/20 rounded-full animate-spin"
+          style={{ animationDuration: "20s" }}
+        ></div>
+        <div
+          className="absolute inset-0 w-[500px] h-[500px] border border-purple-400/15 rounded-full -translate-x-12 -translate-y-12 animate-spin"
+          style={{ animationDuration: "30s" }}
+        ></div>
+        <div
+          className="absolute inset-0 w-[600px] h-[600px] border border-pink-400/10 rounded-full -translate-x-24 -translate-y-24 animate-spin"
+          style={{ animationDuration: "40s" }}
+        ></div>
       </div>
 
       <div className="relative z-10 container mx-auto px-8 py-16">
-        {/* Hero Section */}
+
+      {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-full mr-4 opacity-80"></div>
@@ -75,7 +128,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
           </div>
 
           <Button
-            onClick={() => navigate('/test')}
+            onClick={() => navigate('/test-instruction')}
             className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-8 py-3 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
           >
             그림검사 시작하기
@@ -88,9 +141,9 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {/* Service Card 1 */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <span className="text-2xl">🎨</span>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl">
+              <div className="w-48 h-48 mx-auto mb-6 flex items-center justify-center">
+                <img src="/assets/frame1.png" alt="심리 상태 분석" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-xl font-bold text-white mb-4">심리 상태 분석</h3>
               <p className="text-white/70 text-sm">
@@ -101,9 +154,9 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Service Card 2 */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-cyan-500 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <span className="text-2xl">🎯</span>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl">
+              <div className="w-48 h-48 mx-auto mb-6 flex items-center justify-center">
+                <img src="/assets/frame2.png" alt="전문적 분석" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-xl font-bold text-white mb-4">전문적 분석</h3>
               <p className="text-white/70 text-sm">
@@ -114,9 +167,9 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Service Card 3 */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-              <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <span className="text-2xl">💡</span>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl">
+              <div className="w-48 h-48 mx-auto mb-6 flex items-center justify-center">
+                <img src="/assets/frame3.png" alt="맞춤형 상담" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-xl font-bold text-white mb-4">맞춤형 상담</h3>
               <p className="text-white/70 text-sm">
