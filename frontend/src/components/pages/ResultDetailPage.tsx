@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navigation from '../common/Navigation';
-import { ArrowLeft, Loader } from 'lucide-react';
+import { ArrowLeft, Loader, ChevronLeft } from 'lucide-react';
 import { TestResult } from '../../types';
 import { testService } from '../../services/testService';
 import { Button } from "../../components/ui/button";
+
+interface PersonalityType {
+  name: string;
+  percentage: number;
+  color: string;
+}
 
 interface ResultDetailPageProps {
   testResults: TestResult[];
@@ -22,6 +28,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [personalityTypes, setPersonalityTypes] = useState<PersonalityType[]>([]);
 
   useEffect(() => {
     const loadTestResult = async () => {
@@ -49,6 +56,17 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
             }
           };
 
+          // 분류 모델에서 나온 5유형 확률 데이터 설정
+          const personalityData: PersonalityType[] = [
+            { name: "추진이", percentage: foundResult.result?.personality_scores?.추진이 || 0, color: "from-orange-500 to-red-600" },
+            { name: "내면이", percentage: foundResult.result?.personality_scores?.내면이 || 0, color: "from-gray-500 to-gray-700" },
+            { name: "관계이", percentage: foundResult.result?.personality_scores?.관계이 || 0, color: "from-purple-500 to-pink-600" },
+            { name: "쾌락이", percentage: foundResult.result?.personality_scores?.쾌락이 || 0, color: "from-yellow-500 to-orange-600" },
+            { name: "안정이", percentage: foundResult.result?.personality_scores?.안정이 || 0, color: "from-blue-500 to-purple-600" },
+          ];
+
+          setPersonalityTypes(personalityData);
+
           const formattedResult: TestResult = {
             id: foundResult.test_id.toString(),
             testType: 'Drawing' as const,
@@ -56,7 +74,14 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
             characterMatch: getCharacterName(foundResult.result?.friends_type),
             date: foundResult.submitted_at,
             description: foundResult.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
-            images: [foundResult.image_url]
+            images: [foundResult.image_url],
+            personalityScores: foundResult.result?.personality_scores || {
+              추진이: 0,
+              내면이: 0,
+              관계이: 0,
+              쾌락이: 0,
+              안정이: 0
+            }
           };
           setTestResult(formattedResult);
         } else {
@@ -110,7 +135,6 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
     navigate('/mypage');
   };
 
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR', {
@@ -120,15 +144,15 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
     });
   };
 
-  const getCharacterEmoji = (characterName: string) => {
-    const emojiMap: { [key: string]: string } = {
-      '추진이': '🦊',
-      '내면이': '🐰',
-      '관계이': '🦝',
-      '쾌락이': '🐱',
-      '안정이': '🐼'
+  const getCharacterImage = (characterName: string) => {
+    const imageMap: { [key: string]: string } = {
+      '추진이': '/assets/persona/추진이.png',
+      '내면이': '/assets/persona/내면이.png',
+      '관계이': '/assets/persona/관계이.png',
+      '쾌락이': '/assets/persona/쾌락이.png',
+      '안정이': '/assets/persona/안정이.png'
     };
-    return emojiMap[characterName] || '🤖';
+    return imageMap[characterName] || '/assets/persona/내면이.png';
   };
 
   const getCharacterColor = (characterName: string) => {
@@ -196,34 +220,35 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#0F103F] via-[#1a1b4a] to-[#2a2b5a] relative overflow-hidden">
       <Navigation onNavigate={onNavigate} />
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Back Button */}
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={handleBackToMyPage}
-              className="flex items-center space-x-2 text-gray-600 hover:text-indigo-600 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>마이페이지로 돌아가기</span>
-            </button>
-          </div>
+      {/* Decorative elements */}
+      <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-full opacity-20 blur-2xl"></div>
 
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">검사 결과 상세</h1>
-            <p className="text-gray-600">검사 일시: {formatDate(testResult.date)}</p>
-          </div>
+      {/* Back button */}
+      <button
+        onClick={() => navigate("/mypage")}
+        className="absolute top-24 left-8 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full px-4 py-2 text-white text-sm font-medium transition-colors flex items-center"
+      >
+        <ChevronLeft size={16} className="mr-1" />
+        마이페이지로 돌아가기
+      </button>
 
-          {/* Test Result Card */}
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-800 text-center mb-8">검사 결과</h2>
+      {/* Header */}
+      <div className="relative z-10 container mx-auto px-8 py-24">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">검사 결과 상세</h1>
+          <p className="text-white/80">검사 일시: {formatDate(testResult.date)}</p>
+        </div>
 
-            <div className="bg-gray-50 rounded-2xl p-8 mb-8">
-              <p className="text-gray-700 text-sm leading-relaxed mb-6">
+        {/* Test Result Card */}
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+            <h2 className="text-2xl font-bold text-white text-center mb-8">검사 결과</h2>
+
+            <div className="bg-slate-600/50 rounded-2xl p-8 mb-8">
+              <p className="text-white/90 text-sm leading-relaxed mb-6">
                 {testResult.description}
               </p>
 
@@ -237,9 +262,9 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
                     <img
                       src={testService.getImageUrl(testResult.images[0])}
                       alt="분석된 그림"
-                      className="w-32 h-32 object-cover rounded-2xl shadow-md group-hover:shadow-lg transition-shadow duration-200"
+                      className="w-32 h-32 object-cover rounded-2xl"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-2xl transition-opacity duration-200 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-2xl flex items-center justify-center transition-all duration-200">
                       <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium transition-opacity duration-200">
                         클릭하여 확대
                       </span>
@@ -248,37 +273,55 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
                 </div>
               )}
 
-              <p className="text-gray-500 text-center text-sm mt-4">그림을 클릭하여 더 자세히 볼 수 있습니다</p>
+              <p className="text-white/70 text-center text-sm mt-4">그림을 클릭하여 더 자세히 볼 수 있습니다</p>
             </div>
           </div>
 
           {/* Character Profile Card */}
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-200 p-8">
-            <h1 className="text-2xl font-bold text-gray-800 text-center mb-8">당신의 성격 유형</h1>
+          <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl p-8 border border-white/20 mt-8">
+            <h1 className="text-2xl font-bold text-white text-center mb-8">당신의 성격 유형</h1>
 
             <div className="grid md:grid-cols-2 gap-8 items-center">
               {/* Character Display */}
               <div className="text-center">
-                <div className="w-48 h-48 bg-gray-100 rounded-3xl flex flex-col items-center justify-center mx-auto mb-6">
-                  <div className={`w-24 h-24 bg-gradient-to-br ${getCharacterColor(testResult.characterMatch)} rounded-full flex items-center justify-center mb-4`}>
-                    <span className="text-4xl">{getCharacterEmoji(testResult.characterMatch)}</span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">{testResult.characterMatch}</h2>
+                <div className="flex flex-col items-center justify-center mx-auto mb-6">
+                  <img
+                    src={getCharacterImage(testResult.characterMatch)}
+                    alt={testResult.characterMatch}
+                    className="w-40 h-40 object-contain"
+                  />
+                  <h2 className="text-2xl font-bold text-white mt-4">{testResult.characterMatch}</h2>
                 </div>
               </div>
 
-              {/* Character Description */}
+              {/* Personality Bars */}
               <div className="space-y-4">
-                <p className="text-gray-700 text-lg italic">"{getCharacterDescription(testResult.characterMatch)}"</p>
+                {personalityTypes.map((item, index) => (
+                  <div key={index} className="flex items-center space-x-4">
+                    <div className="w-16 text-white text-sm font-medium">{item.name}</div>
+                    <div className="flex-1 bg-slate-600/50 rounded-full h-3 overflow-hidden">
+                      <div
+                        className={`h-full bg-gradient-to-r ${item.color} transition-all duration-1000`}
+                        style={{ width: `${item.percentage}%` }}
+                      ></div>
+                    </div>
+                    <div className="w-12 text-white text-sm font-medium text-right">{item.percentage.toFixed(1)}%</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Character Description */}
+            <div className="mt-8">
+              <div className="bg-slate-600/50 rounded-2xl p-6 mb-8">
+                <p className="text-white/90 text-lg italic mb-4">"{getCharacterDescription(testResult.characterMatch)}"</p>
                 
-                <div className="bg-gray-50 rounded-2xl p-6">
-                  <h3 className="text-gray-800 font-bold mb-4">{testResult.characterMatch}의 특징</h3>
-                  <ul className="text-gray-700 text-sm space-y-2">
-                    {getCharacterFeatures(testResult.characterMatch).map((feature, index) => (
-                      <li key={index}>• {feature}</li>
-                    ))}
-                  </ul>
-                </div>
+                <h3 className="text-white font-bold mb-4">{testResult.characterMatch}의 특징</h3>
+                <ul className="text-white/90 text-sm space-y-2 text-left max-w-md mx-auto">
+                  {getCharacterFeatures(testResult.characterMatch).map((feature, index) => (
+                    <li key={index}>• {feature}</li>
+                  ))}
+                </ul>
               </div>
             </div>
 
@@ -292,7 +335,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Image Modal */}
       {selectedImageIndex !== null && testResult && testResult.images && (
