@@ -41,8 +41,13 @@ app.add_middleware(
 import os
 if not os.path.exists("result/images"):
     os.makedirs("result/images")
+
+# uploads/profile_images 디렉토리가 없으면 생성  
+if not os.path.exists("uploads/profile_images"):
+    os.makedirs("uploads/profile_images")
     
 app.mount("/images", StaticFiles(directory="result/images"), name="images")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # 라우터 등록
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
