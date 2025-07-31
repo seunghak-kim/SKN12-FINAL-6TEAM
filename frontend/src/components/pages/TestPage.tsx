@@ -307,6 +307,12 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
             });
           }
         }}
+        onClose={() => {
+          console.log('❌ AnalysisModal 강제 종료됨');
+          setIsAnalyzing(false);
+          setShowAnalysisModal(false);
+          // 분석 중지 로직이 필요하면 여기에 추가
+        }}
       />
 
       {/* Image Enlargement Modal */}
