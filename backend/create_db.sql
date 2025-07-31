@@ -140,6 +140,8 @@ GRANT ALL ON TABLE public.drawing_test_results TO postgres;
 -- personality_scores 컬럼 추가
 ALTER TABLE drawing_test_results ADD COLUMN personality_scores JSON;
 
+ALTER TABLE public.user_informations ADD COLUMN profile_image_url varchar(500);
+
 -- INSERT INTO friends (friends_name,friends_description,tts_audio_url,tts_voice_type,is_active,created_at) VALUES
 --	 ('추진형','목표 지향적이고 도전적인 성격의 친구입니다. 항상 앞으로 나아가려 하고, 문제 해결을 위해 적극적으로 행동합니다.',NULL,NULL,true,'2025-07-17 17:23:42.919576'),
 --	 ('내면형','깊이 있는 사고와 성찰을 좋아하는 친구입니다. 조용하고 차분하며, 내적 성장과 자기 이해를 중요시합니다.',NULL,NULL,true,'2025-07-17 17:24:29.849924'),
