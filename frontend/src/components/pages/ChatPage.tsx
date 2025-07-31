@@ -2,10 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import Modal from '../common/Modal';
-import StarRating from '../common/StarRating';
+import StarRating, { SatisfactionModal } from '../common/StarRating';
 import { FrontendChatMessage, SearchResult } from '../../types';
 import { useChatSession } from '../../hooks/useChatSession';
 import { authService } from '../../services/authService';
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+
 
 interface ChatPageProps {
   selectedCharacter: SearchResult | null;
@@ -14,6 +18,7 @@ interface ChatPageProps {
   onCloseRatingModal: () => void;
   onNavigate?: (screen: string) => void;
   onInitializeChat?: () => void;
+  onShowSatisfaction?: () => void;
   // 새로 추가된 props
   userId?: number;
   friendsId?: number;
@@ -32,7 +37,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
   console.log('ChatPage - 받은 selectedCharacter:', selectedCharacter);
   const [inputMessage, setInputMessage] = useState('');
   const [currentRating, setCurrentRating] = useState(3);
-  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [isChatEnded, setIsChatEnded] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,6 +44,28 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const sidebarMessagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const [showChatPanel, setShowChatPanel] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [showSatisfactionModal, setShowSatisfactionModal] = useState(false);
+
+const toggleChatPanel = () => {
+  if (showChatPanel) {
+    setShowChatPanel(false);
+    setTimeout(() => setIsVisible(false), 500); // 닫힘 애니메이션 후 DOM 제거
+  } else {
+    setIsVisible(true);
+    setTimeout(() => setShowChatPanel(true), 10); // 살짝 지연 후 애니메이션 실행
+  }
+};
+
+
+useEffect(() => {
+  setHasMounted(true);
+}, []);
+useEffect(() => {
+  setShowChatPanel(false);
+}, []);
 
   // FastAPI 연동을 위한 훅 사용 (Hook들은 early return 이전에 호출되어야 함)
   const {
@@ -292,12 +318,10 @@ const ChatPage: React.FC<ChatPageProps> = ({
     setCurrentRating(rating);
   };
 
-  const toggleSidebar = () => {
-    setSidebarVisible(!sidebarVisible);
-  };
 
   const handleEndChat = async () => {
     setIsChatEnded(true);
+    setShowSatisfactionModal(true);
     
     // 필요한 경우 세션 통계 로드
     if (session) {
@@ -310,220 +334,307 @@ const ChatPage: React.FC<ChatPageProps> = ({
     }
   };
 
+  const handleSatisfactionSubmit = (rating: number, feedback: string) => {
+    console.log('만족도 평가:', { rating, feedback });
+    // 여기에 만족도 평가 데이터를 서버로 전송하는 로직 추가
+    setShowSatisfactionModal(false);
+    
+    // 만족도 조사 완료 후 다른 캐릭터 페이지로 이동
+    if (onNavigate) {
+      onNavigate('characters');
+    } else {
+      // 현재 세션 ID를 포함하여 이동
+      const currentSessionId = session?.chat_sessions_id;
+      const currentCharacterId = selectedCharacter?.id;
+      
+      console.log('ChatPage - 다른 캐릭터 버튼 클릭:', {
+        currentSessionId,
+        currentCharacterId,
+        session: session
+      });
+      
+      const searchParams = new URLSearchParams();
+      if (currentSessionId) {
+        searchParams.set('returnSessionId', currentSessionId.toString());
+      }
+      if (currentCharacterId) {
+        searchParams.set('returnCharacterId', currentCharacterId);
+      }
+      
+      const targetUrl = `/characters?${searchParams.toString()}`;
+      console.log('ChatPage - 이동할 URL:', targetUrl);
+      
+      navigate(targetUrl);
+    }
+  };
+
+  const handleSatisfactionClose = () => {
+    setShowSatisfactionModal(false);
+  };
+
   const getLastBotMessage = () => {
     const botMessages = chatMessages.filter(msg => msg.type !== 'user');
     return botMessages.length > 0 ? botMessages[botMessages.length - 1] : null;
   };
 
-
-
-  const lastBotMessage = getLastBotMessage();
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation onNavigate={onNavigate} />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
+      <div className="relative z-50">
+        <Navigation onNavigate={onNavigate} />
+      </div>
+      
+      <style jsx>{`
+        @keyframes natural-movement {
+          0% {
+            transform: translateX(0px) translateY(0px);
+          }
+          25% {
+            transform: translateX(-8px) translateY(-12px);
+          }
+          50% {
+            transform: translateX(5px) translateY(-8px);
+          }
+          75% {
+            transform: translateX(-3px) translateY(-15px);
+          }
+          100% {
+            transform: translateX(0px) translateY(0px);
+          }
+        }
+        
+        .natural-movement {
+          animation: natural-movement 3s ease-in-out infinite;
+        }
+      `}</style>
 
-      <div className="flex max-w-7xl mx-auto relative">
-        {/* Toggle Button - Bookmark Style */}
-        <button
-          onClick={toggleSidebar}
-          className={`fixed top-24 z-50 bg-blue-500 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-blue-600 ${
-            sidebarVisible ? 'right-80' : 'right-0'
-          }`}
-          style={{
-            width: '60px',
-            height: '80px',
-            borderRadius: sidebarVisible ? '8px 0 0 8px' : '0 8px 8px 0',
-            clipPath: sidebarVisible ? 'none' : 'polygon(15% 0, 100% 0, 100% 100%, 15% 100%, 0% 50%)'
-          }}
-        >
-          <div className="flex flex-col items-center justify-center h-full">
-            {sidebarVisible ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            ) : (
-              <>
-                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <span className="text-xs font-medium">채팅</span>
-              </>
-            )}
-          </div>
-        </button>
+      {/* Modern flowing background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900">
+        {/* Flowing wave patterns */}
+        <div className="absolute inset-0">
+          {/* Top flowing lines */}
+          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-transparent via-purple-400/20 to-transparent transform -skew-y-12"></div>
+          <div className="absolute top-8 left-0 w-full h-24 bg-gradient-to-r from-transparent via-pink-400/15 to-transparent transform -skew-y-12"></div>
+          <div className="absolute top-16 left-0 w-full h-16 bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent transform -skew-y-12"></div>
+         </div>
 
-        {/* Main Content */}
-        <div className={`flex-1 p-8 transition-all duration-300 ${sidebarVisible ? 'mr-80' : ''}`}>
-          <div className="max-w-2xl mx-auto">
-            {/* Character */}
-            <div className="flex justify-center mb-8">
-              <div className="w-64 h-64 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
-                <img 
-                  src="/assets/character.png" 
-                  alt={selectedCharacter?.name || '안정이'}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+        {/* Floating orbs */}
+        <div className="absolute top-20 right-1/4 w-24 h-24 bg-gradient-to-br from-purple-400/40 to-pink-500/40 rounded-full blur-sm"></div>
+        <div className="absolute top-32 left-1/3 w-16 h-16 bg-gradient-to-br from-cyan-400/50 to-blue-500/50 rounded-full blur-sm"></div>
+        <div className="absolute bottom-1/3 right-1/6 w-32 h-32 bg-gradient-to-br from-pink-400/30 to-purple-500/30 rounded-full blur-md"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-to-br from-blue-400/40 to-cyan-500/40 rounded-full blur-sm"></div>
+        <div className="absolute top-1/2 right-1/3 w-28 h-28 bg-gradient-to-br from-purple-500/35 to-pink-400/35 rounded-full blur-md"></div>
 
-            {/* Last Bot Message Display */}
-            {(lastBotMessage || chatMessages.length === 0) && (
-              <div className="bg-gray-300 rounded-2xl p-6 mb-8 text-center">
-                <p className="text-gray-800 text-lg font-medium break-words word-wrap overflow-wrap">
-                  {lastBotMessage?.content || greeting || initialMessage}
-                </p>
-              </div>
-            )}
+        {/* Large background orbs */}
+        <div className="absolute top-1/4 left-1/6 w-48 h-48 bg-gradient-to-br from-cyan-400/20 to-blue-500/20 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-1/4 right-1/6 w-56 h-56 bg-gradient-to-br from-pink-400/15 to-purple-500/15 rounded-full blur-3xl"></div>
 
-            {/* Input Area */}
-            <div className="flex gap-3">
-              <input
-                ref={inputRef}
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder={isChatEnded ? '대화가 종료되었습니다' : `${selectedCharacter?.name || '안정이'}에게 고민이나 질문을 물어보세요`}
-                className="flex-1 rounded-full border-gray-300 px-6 py-3 text-base border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onKeyDown={handleKeyPress}
-                autoFocus
-                disabled={isSending || isChatEnded}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={isSending || inputMessage.trim() === '' || isChatEnded}
-                className="rounded-full px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isChatEnded ? '종료됨' : isSending ? '전송 중...' : '전송'}
-              </button>
-            </div>
-          </div>
+        {/* Mystical planet-like orb (bottom right) */}
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-br from-orange-400/60 via-purple-500/60 to-blue-500/60 rounded-full blur-sm opacity-80">
+          <div className="absolute inset-2 bg-gradient-to-br from-yellow-400/40 via-pink-500/40 to-cyan-500/40 rounded-full"></div>
+          <div className="absolute inset-4 bg-gradient-to-br from-orange-300/30 via-purple-400/30 to-blue-400/30 rounded-full"></div>
         </div>
-
-        {/* Chat History Sidebar */}
-        {sidebarVisible && (
-          <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-2xl z-40 transition-transform duration-300 transform translate-x-0 border-l border-gray-200">
-            <div className="p-6 pt-20 h-full flex flex-col">
-              {/* Header */}
-              <div className="mb-6 pb-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  채팅 내역
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">{selectedCharacter?.name || '안정이'}와의 대화</p>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto space-y-6 mb-6">
-                {chatMessages.length === 0 ? (
-                  <div className="text-center text-gray-400 py-8">
-                    <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    <p className="text-sm">아직 대화가 없습니다</p>
-                    <p className="text-xs text-gray-400 mt-1">메시지를 보내서 대화를 시작해보세요</p>
-                  </div>
-                ) : (
-                  chatMessages.map((message) => (
-                    <div key={message.id} className={`flex ${message.type === 'user' ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[85%] ${message.type === 'user' ? '' : ''}`}>
-                        <div
-                          className={`rounded-2xl px-4 py-2 shadow-sm ${
-                            message.type === 'user' 
-                              ? "bg-blue-500 text-white" 
-                              : "bg-gray-100 text-gray-800 border border-gray-200"
-                          }`}
-                        >
-                          <p className="text-sm leading-relaxed word-wrap">{message.content}</p>
-                        </div>
-                        <p className={`text-xs mt-1 ${
-                          message.type === 'user' ? "text-right text-blue-200" : "text-left text-gray-400"
-                        }`}>
-                          {(() => {
-                            try {
-                              const timestamp = message.timestamp || new Date().toISOString();
-                              const date = new Date(timestamp);
-                              
-                              if (isNaN(date.getTime())) {
-                                return new Date().toLocaleTimeString("ko-KR", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: true,
-                                });
-                              }
-                              
-                              return date.toLocaleTimeString("ko-KR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              });
-                            } catch (error) {
-                              return new Date().toLocaleTimeString("ko-KR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              });
-                            }
-                          })()}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-                <div ref={sidebarMessagesEndRef} />
-              </div>
-              
-              {/* Actions */}
-              <div className="border-t border-gray-200 pt-4 space-y-3">
-                <button 
-                  onClick={onShowRating}
-                  className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-3 px-4 rounded-xl transition-colors flex items-center justify-center font-medium"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                  다른 캐릭터와 대화하기
-                </button>
-                <button 
-                  onClick={handleEndChat}
-                  className="w-full bg-red-50 hover:bg-red-100 text-red-600 py-2 px-4 rounded-lg transition-colors text-sm"
-                  disabled={isChatEnded}
-                >
-                  {isChatEnded ? '대화가 종료됨' : '대화 종료'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
-      <Modal isOpen={showRatingModal} onClose={onCloseRatingModal} className="rating-modal">
-        <h3>만족도 조사</h3>
-        <div className="rating-section">
-          <StarRating 
-            initialRating={3}
-            onRatingChange={handleRatingChange}
-            centered={true}
-          />
-          <p className="rating-text">
-            {currentRating > 0 && `${currentRating}점을 선택하셨습니다.`}
-          </p>
+      {/* Bookmark-shaped chat toggle button */}
+<button
+  onClick={toggleChatPanel}
+  className={`absolute top-1/2 transform -translate-y-1/2 z-20 transition-all duration-300 ${
+    showChatPanel ? "right-80" : "right-0"
+  }`}
+>
+        <div className="relative">
+          {/* Bookmark shape with rounded corners and custom gradient */}
+          <div className="w-16 h-20 bg-gradient-to-br from-[#FF6948]/50 to-[#FF0051]/50 hover:from-[#FF6948]/60 hover:to-[#FF0051]/60 transition-colors shadow-lg relative rounded-l-2xl backdrop-blur-sm border border-white/10">
+          </div>
+
+          {/* Arrow icon */}
+          <div className="absolute inset-0 flex items-center justify-center text-white">
+            {showChatPanel ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </div>
         </div>
-        <div className="rating-feedback">
-          <h4>기타 의견(선택)</h4>
-          <textarea placeholder="이 캐릭터는 제 취향 돋구었어요, 저에게 딱 맞는 해결책을 제시해줬어요 등 챗봇에 대한 의견을 자유롭게 적어주세요"></textarea>
-          <button 
-            className="submit-btn"
-            onClick={() => {
-              onCloseRatingModal();
-              navigate('/characters');
-            }}
-          >
-            다른 캐릭터랑도 대화해보기
-          </button>
+      </button>
+
+      {/* Main chat interface - Compact layout optimized for viewport */}
+      <div className={`relative z-10 transition-all duration-300 ${
+          showChatPanel ? "mr-80" : ""
+        }`} style={{ height: 'calc(100vh - 100px)', paddingTop: '20px', paddingBottom: '20px' }}>
+        
+        <div className="h-full flex flex-col justify-center items-center px-4 space-y-4">
+          {/* Character */}
+          <div className="flex justify-center items-center">
+            <img 
+              src={selectedCharacter?.avatar ? `/assets/persona/${selectedCharacter.name}.png` : '/assets/persona/내면이.png'}
+              alt={selectedCharacter?.name || '기본 캐릭터'}
+              className="w-40 h-40 object-contain"
+            />
+          </div>
+
+          {/* Latest bot message */}
+          <div className="flex items-center justify-center w-full max-w-2xl">
+            {(() => {
+              const lastBotMessage = chatMessages.filter(msg => msg.type !== 'user').pop();
+              return lastBotMessage ? (
+                <div className="w-full">
+                  <div className="bg-white/20 backdrop-blur-md rounded-3xl px-6 py-4 text-center shadow-2xl relative border border-white/10">
+                    <p className="text-white text-base leading-relaxed">
+                      {lastBotMessage.content}
+                    </p>
+                    {/* Speech bubble tail */}
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
+                      <div className="w-0 h-0 border-l-6 border-r-6 border-t-12 border-transparent border-t-white/20"></div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full">
+                  <div className="bg-white/20 backdrop-blur-md rounded-3xl px-6 py-4 text-center shadow-2xl relative border border-white/10">
+                    <h2 className="text-white font-bold text-lg mb-2">안녕! 반가워, 어떻게 지내?</h2>
+                    <p className="text-white/90 text-sm leading-relaxed">
+                      무슨 일이 있는지, 어떤 생각들이 있는지 나에게 말해줘. 듣고 싶어!
+                      <span className="ml-1">😊</span>
+                    </p>
+                    {/* Speech bubble tail */}
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
+                      <div className="w-0 h-0 border-l-6 border-r-6 border-t-12 border-transparent border-t-white/20"></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Input */}
+          <div className="w-full max-w-2xl">
+            <div className="flex space-x-4">
+              <Input
+                ref={inputRef}
+                type="text"
+                placeholder={`${selectedCharacter?.name || '챗봇'}에게 고민을 이야기해보세요`}
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                className="flex-1 px-5 py-3 rounded-full bg-white/80 backdrop-blur-sm border-0 text-gray-800 placeholder-gray-500 text-sm shadow-lg focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                disabled={isSending}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={isSending || inputMessage.trim() === ''}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-full font-medium text-sm"
+              >
+                {isSending ? '전송 중...' : '전송'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 사이드 채팅 내역 패널 */}
+{isVisible && (
+  <div
+    className={`absolute top-0 right-0 w-80 h-full border-l border-white/20 z-30 shadow-2xl transform transition-all duration-500 ease-out
+      ${showChatPanel 
+        ? 'translate-x-0 opacity-100 bg-black/20 backdrop-blur-xl'
+        : 'translate-x-full opacity-0 bg-transparent'}
+    `}
+  >
+    <div className="h-full flex flex-col">
+      {/* 헤더 */}
+      <div className="p-4 flex justify-between items-center border-b border-white/30 flex-shrink-0">
+        <h3 className="text-white font-bold text-lg">채팅 기록</h3>
+      </div>
+
+      {/* 채팅 메시지 영역 */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {chatMessages.length > 0 ? (
+          chatMessages.map((message, index) => (
+            <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className="flex flex-col max-w-[70%]">
+                <div className={`px-4 py-3 rounded-2xl ${
+                  message.type === 'user' 
+                    ? 'bg-blue-500/90 text-white rounded-br-md shadow-lg' 
+                    : 'bg-white/90 text-gray-800 rounded-bl-md shadow-lg'
+                }`}>
+                  {message.content}
+                </div>
+                <div className={`text-xs text-white/70 mt-1 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
+                  {new Date(message.timestamp).toLocaleTimeString()}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-white/70 py-8">
+            <div className="text-white/50 text-6xl mb-4">💬</div>
+            <p className="text-lg font-medium">대화를 시작해보세요</p>
+            <p className="text-sm mt-2">첫 메시지를 보내보세요!</p>
+          </div>
+        )}
+        <div ref={sidebarMessagesEndRef} />
+      </div>
+
+      {/* 하단 버튼 */}
+      <div className="px-4 py-4 border-t border-white/30 flex-shrink-0 space-y-2">
+        <Button
+          onClick={() => {
+            // 만족도 조사 모달 표시
+            setShowSatisfactionModal(true);
+          }}
+          className="w-full bg-gradient-to-r from-blue-500/80 to-purple-600/80 hover:from-blue-600/90 hover:to-purple-700/90 text-white py-3 rounded-full font-medium transition-all duration-200 backdrop-blur-sm shadow-lg"
+        >
+          다른 캐릭터와 대화하기
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
+    {/* 만족도 모달 */}
+      <Modal isOpen={showRatingModal} onClose={onCloseRatingModal}>
+        <div className="p-6 text-center">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">채팅 만족도 평가</h2>
+          <p className="text-gray-600 mb-6">
+            {selectedCharacter?.name || '챗봇'}과의 대화는 어떠셨나요?
+          </p>
+          
+          <div className="mb-6">
+            <StarRating 
+              initialRating={currentRating} 
+              onRatingChange={handleRatingChange}
+              centered={true}
+            />
+          </div>
+          
+          <div className="flex space-x-4 justify-center">
+            <Button
+              onClick={onCloseRatingModal}
+              className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg"
+            >
+              나중에
+            </Button>
+            <Button
+              onClick={() => {
+                console.log(`만족도 평점: ${currentRating}점`);
+                onCloseRatingModal();
+                // 여기에 평점 저장 로직 추가 가능
+              }}
+              className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+            >
+              평가 완료
+            </Button>
+          </div>
         </div>
       </Modal>
+
+    {/* Satisfaction Modal */}
+    {showSatisfactionModal && (
+      <SatisfactionModal
+        onClose={handleSatisfactionClose}
+        onSubmit={handleSatisfactionSubmit}
+      />
+    )}
     </div>
   );
 };

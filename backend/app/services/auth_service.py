@@ -10,27 +10,42 @@ from typing import Optional, Dict, Any
 
 class AuthService:
     def __init__(self):
-        self.google_client_id = os.getenv("GOOGLE_CLIENT_ID")
-        self.secret_key = os.getenv("SECRET_KEY")
+        self.google_client_id = os.getenv("GOOGLE_CLIENT_ID", "689738363605-i65c3ar97vnts2jeh648dj3v9b23njq4.apps.googleusercontent.com")
+        self.secret_key = os.getenv("SECRET_KEY", "fallback_secret_key_for_development")
         self.algorithm = "HS256"
         self.access_token_expire_minutes = 30 * 24 * 60  # 30 days
+        
+        print(f"🔧 AuthService 초기화:")
+        print(f"  - Google Client ID: {self.google_client_id[:30]}...")
+        print(f"  - Secret Key 설정됨: {'예' if self.secret_key else '아니오'}")
 
     def verify_google_token(self, token: str) -> Optional[Dict[str, Any]]:
         """Google ID 토큰을 검증하고 사용자 정보를 반환합니다."""
         try:
+            print(f"🔍 Google 토큰 검증 시작 - 토큰: {token[:50]}...")
+            print(f"🔑 사용할 Client ID: {self.google_client_id}")
+            
             # Google 토큰 검증
             idinfo = id_token.verify_oauth2_token(
                 token, requests.Request(), self.google_client_id
             )
             
+            print(f"✅ 토큰 검증 성공 - 사용자 정보: {idinfo}")
+            
             # 발급자 확인
             if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                print(f"❌ 잘못된 발급자: {idinfo['iss']}")
                 raise ValueError('Wrong issuer.')
                 
             return idinfo
             
         except ValueError as e:
-            print(f"Token verification failed: {e}")
+            print(f"❌ Token verification failed: {e}")
+            return None
+        except Exception as e:
+            print(f"❌ Token verification error: {e}")
+            import traceback
+            print(f"❌ Full traceback: {traceback.format_exc()}")
             return None
 
     def create_access_token(self, data: dict) -> str:
@@ -45,13 +60,19 @@ class AuthService:
     def verify_token(self, token: str) -> Optional[Dict[str, Any]]:
         """JWT 토큰을 검증하고 페이로드를 반환합니다."""
         try:
+            # 바이트 타입이면 문자열로 변환
+            if isinstance(token, bytes):
+                token = token.decode('utf-8')
+            
             print(f"Verifying token: {token[:20]}...")
-            print(f"Secret key: {self.secret_key[:20]}...")
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             print(f"Token verification successful: {payload}")
             return payload
         except jwt.PyJWTError as e:
             print(f"Token verification failed: {e}")
+            return None
+        except Exception as e:
+            print(f"Unexpected token verification error: {e}")
             return None
 
     def get_or_create_user(self, db: Session, google_user_info: Dict[str, Any]) -> tuple[UserInformation, bool]:
@@ -228,11 +249,6 @@ class AuthService:
             }
             
             user_info, is_new_user = self.get_or_create_user(db, google_user_info)
-            
-            # JWT 토큰 생성
-            jwt_token = self.create_access_token(
-                data={"sub": str(user_info.user_id), "email": google_user_info.get('email')}
-            )
             
             # 응답 생성
             return SocialLoginResponse(

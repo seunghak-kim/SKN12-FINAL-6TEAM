@@ -6,6 +6,7 @@ export interface UserProfileResponse {
   name: string;
   nickname: string;
   email: string | null;
+  profile_image_url?: string;
   user_type: string;
   status: string;
   join_date: string;
@@ -68,6 +69,11 @@ class UserService {
       id: response.user_id.toString(),
       name: response.name,
       email: response.email || '',
+      profileImageUrl: response.profile_image_url ? 
+        (response.profile_image_url.startsWith('http') ? 
+          response.profile_image_url : 
+          `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${response.profile_image_url}`
+        ) : undefined,
       joinDate: response.join_date,
       totalTests: response.total_tests,
       totalChats: response.total_chats
@@ -135,6 +141,57 @@ class UserService {
     this.profileCache.delete(userId);
     
     return result;
+  }
+
+  // 프로필 이미지 업로드
+  async uploadProfileImage(userId: number, file: File): Promise<{ message: string; profile_image_url: string }> {
+    try {
+      console.log('🖼️ 프로필 이미지 업로드 시작 - 사용자 ID:', userId);
+      console.log('📁 파일 정보:', { name: file.name, size: file.size, type: file.type });
+      
+      // 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+      }
+      console.log('🔑 토큰 확인 완료:', token.substring(0, 20) + '...');
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      console.log('📤 업로드 요청 전송...');
+      const result = await apiClient.postFormData<{ message: string; profile_image_url: string }>(
+        `/users/users/${userId}/upload-profile-image`,
+        formData
+      );
+      
+      console.log('✅ 업로드 성공:', result);
+      
+      // 업로드 후 캐시 무효화
+      this.profileCache.delete(userId);
+      
+      // URL을 절대 경로로 변환하여 반환
+      const absoluteUrl = result.profile_image_url.startsWith('http') ? 
+        result.profile_image_url : 
+        `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${result.profile_image_url}`;
+      
+      return {
+        ...result,
+        profile_image_url: absoluteUrl
+      };
+    } catch (error: any) {
+      console.error('❌ 프로필 이미지 업로드 실패:', error);
+      
+      // 401 에러 처리
+      if (error.response?.status === 401) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_info');
+        throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+      }
+      
+      // 기타 에러
+      throw new Error(error.response?.data?.detail || error.message || '이미지 업로드 중 오류가 발생했습니다.');
+    }
   }
 
   // 캐시 수동 무효화 (필요시)

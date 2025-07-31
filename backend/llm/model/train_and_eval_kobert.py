@@ -318,11 +318,8 @@ def predict_persona_probabilities(text, model_dir=None):
         # softmax를 사용하여 확률 계산
         probabilities = torch.softmax(outputs.logits, dim=1).squeeze()
     
-<<<<<<< HEAD
-    id2label = {0: "추진형", 1: "내면형", 2: "안정형", 3: "관계형", 4: "쾌락형"}
-=======
+
     id2label = {0: "추진형", 1: "내면형", 2: "관계형", 3: "쾌락형", 4: "안정형"}
->>>>>>> origin/uiheon
     
     # 각 유형별 확률을 딕셔너리로 반환 (백분율)
     result = {}

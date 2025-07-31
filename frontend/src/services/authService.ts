@@ -77,25 +77,27 @@ class AuthService {
 
   private async handleCredentialResponse(response: any) {
     try {
-      console.log('Google credential response received:', response);
+      console.log('🔍 Google credential response received:', response);
       
       const loginResponse = await this.authenticateWithBackend(response.credential);
       if (loginResponse) {
-        console.log('Backend authentication successful:', loginResponse);
+        console.log('✅ Backend authentication successful:', loginResponse);
         
         // 로그인 성공 후 리디렉션 처리
         if (loginResponse.is_first_login) {
-          console.log('First time user, redirecting to nickname page');
+          console.log('🆕 First time user, redirecting to nickname page');
           window.location.href = '/nickname';
         } else {
-          console.log('Existing user, redirecting to main page');
+          console.log('👤 Existing user, redirecting to main page');
           window.location.href = '/main';
         }
       } else {
-        console.error('Backend authentication failed');
+        console.error('❌ Backend authentication failed');
+        alert('로그인에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      console.error('Authentication failed:', error);
+      console.error('❌ Authentication failed:', error);
+      alert('로그인 중 오류가 발생했습니다: ' + error);
     }
   }
 
@@ -141,6 +143,7 @@ class AuthService {
 
   async authenticateWithBackend(idToken: string): Promise<LoginResponse | null> {
     try {
+      console.log('🔄 백엔드 인증 시작...');
       const response = await fetch(`${this.baseUrl}/auth/google`, {
         method: 'POST',
         headers: {
@@ -151,19 +154,25 @@ class AuthService {
         }),
       });
 
+      console.log('📥 백엔드 응답 상태:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Backend authentication failed');
+        const errorText = await response.text();
+        console.error('❌ 백엔드 인증 실패:', errorText);
+        throw new Error(`Backend authentication failed: ${response.status} - ${errorText}`);
       }
 
       const loginResponse: LoginResponse = await response.json();
+      console.log('✅ 로그인 응답:', loginResponse);
       
       // 토큰을 로컬 스토리지에 저장
       this.setAccessToken(loginResponse.access_token);
       this.setUserInfo(loginResponse.user);
+      console.log('💾 토큰 및 사용자 정보 저장 완료');
 
       return loginResponse;
     } catch (error) {
-      console.error('Backend authentication failed:', error);
+      console.error('❌ Backend authentication failed:', error);
       return null;
     }
   }

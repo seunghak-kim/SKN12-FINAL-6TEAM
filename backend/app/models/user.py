@@ -39,6 +39,7 @@ class UserInformation(Base):
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     # email = Column(String(255), unique=True) 추후 사용시 씀 
     nickname = Column(String(20), nullable=False)
+    profile_image_url = Column(String(500), nullable=True)  # 프로필 이미지 URL
     status = Column(String(10), nullable=False, default='ACTIVE') # ACTIVE, INACTIVE, DELETE 
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     deleted_at = Column(DateTime)

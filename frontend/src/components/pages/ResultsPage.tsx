@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '../common/Navigation';
-import CharacterCard from '../common/CharacterCard';
-import ProbabilityChart from '../common/ProbabilityChart';
 import { SearchResult } from '../../types';
 import { testService } from '../../services/testService';
+import { Button } from "../../components/ui/button";
+import { ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface ResultsPageProps {
   characters: SearchResult[];
@@ -34,7 +34,8 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [showImageModal, setShowImageModal] = useState(false);
   const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
   const [actualPersonalityType, setActualPersonalityType] = useState<string>('내면형');
-
+  const [satisfaction, setSatisfaction] = useState<"like" | "dislike" | null>(null);
+  
   // 성격 유형별 데이터 매핑
   const personalityData: { [key: string]: { friendsType: number; emoji: string; message: string; keywords: string[]; color: string; } } = {
     '추진형': {
@@ -94,6 +95,30 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       '안정형': '안정이'
     };
     return typeToCharacter[personalityType] || '내면이';
+  };
+
+  // 확률 값에 따른 색상 가져오기
+  const getColorForType = (type: string) => {
+    const colorMap: { [key: string]: string } = {
+      '추진형': 'from-orange-400 to-red-500',
+      '내면형': 'from-pink-200 to-brown-300',
+      '관계형': 'from-gray-600 to-gray-800',
+      '쾌락형': 'from-yellow-400 to-orange-500',
+      '안정형': 'from-gray-100 to-gray-300'
+    };
+    return colorMap[type] || 'from-pink-200 to-brown-300';
+  };
+
+  // 확률 값에 따른 캐릭터 이미지 가져오기
+  const getCharacterImageForType = (type: string) => {
+    const imageMap: { [key: string]: string } = {
+      '추진형': '../../assets/persona/추진이.png',
+      '내면형': '../../assets/persona/내면이.png',
+      '관계형': '../../assets/persona/관계이.png',
+      '쾌락형': '../../assets/persona/쾌락이.png',
+      '안정형': '../../assets/persona/안정이.png'
+    };
+    return imageMap[type] || '/assets/persona/내면이.png';
   };
 
   // TestInstructionPage에서 전달받은 데이터 처리
@@ -157,6 +182,14 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           if (data.result.result_text) {
             setAnalysisResult(data.result.result_text);
           }
+          
+          // 이미지 URL 업데이트 (API 응답에 image_url이 있는 경우)
+          if (data.result.image_url || data.image_url) {
+            setTestData((prev: any) => ({
+              ...prev,
+              imageUrl: data.result.image_url || data.image_url
+            }));
+          }
         }
       }
     } catch (error) {
@@ -210,147 +243,247 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     onStartChat();
     navigate('/chat');
   };
+
+  const handlePersonalityClick = (personalityType: string) => {
+    // 성격 유형을 SearchResult 형태로 변환
+    const character: SearchResult = {
+      id: personalityData[personalityType]?.friendsType.toString() || "2",
+      name: getCharacterName(personalityType),
+      description: personalityData[personalityType]?.message || "",
+      avatar: getCharacterImageForType(personalityType)
+    };
+    
+    onCharacterSelect(character);
+    onStartChat();
+    navigate('/chat');
+  };
+
+  // 주 성격 유형의 확률 값 가져오기
+  const getMainProbability = () => {
+    if (!probabilities) return 82;
+    const prob = probabilities[actualPersonalityType];
+    return prob ? Math.round(prob * 100) : 82;
+  };
+
+  // 다른 성격 유형들의 확률 정렬된 배열 가져오기
+  const getOtherPersonalities = () => {
+    if (!probabilities) {
+      return [
+        { type: '추진형', probability: 60 },
+        { type: '관계형', probability: 40 },
+        { type: '쾌락형', probability: 20 },
+        { type: '안정형', probability: 10 }
+      ];
+    }
+
+    return Object.entries(probabilities)
+      .filter(([type]) => type !== actualPersonalityType)
+      .map(([type, prob]) => ({ type, probability: Math.round(prob * 100) }))
+      .sort((a, b) => b.probability - a.probability);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#0F103F] via-[#1a1b4a] to-[#2a2b5a] relative overflow-hidden">
       <Navigation onNavigate={onNavigate} />
 
-      <div className="container mx-auto px-4 py-4 max-w-4xl">
-        <div className="text-center mb-4">
-          <div className="flex justify-center items-center gap-3 mb-4">
-            <div className="text-4xl">{personalityData[actualPersonalityType]?.emoji || '😖'}</div>
-            <div className="bg-white rounded-xl p-3 shadow-md relative">
-              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2">
-                <div className="w-3 h-3 bg-white rotate-45 shadow-md"></div>
-              </div>
-              <p className="text-gray-700 font-medium text-sm">
-                {personalityData[actualPersonalityType]?.message || '아무도 내 기분을 제대로 이해하지 못할 거야... 괜찮아, 혼자인 게 더 편하니까. 내 세상 안에서 나는 완전하거든.'}
-              </p>
-            </div>
-          </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-1">
-            당신의 페르소나는 <span className={`text-${personalityData[actualPersonalityType]?.color || 'blue'}-600`}>{actualPersonalityType}</span> 입니다
-          </h2>
-        </div>
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-20 w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-60 blur-lg"></div>
+      <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full opacity-30 blur-2xl"></div>
 
-        <div className="bg-white rounded-xl shadow-md p-4 mb-4">
-          <div className="text-center">
-            <div className="flex justify-center items-center mb-4">
-              <div className="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm">
-                01
-              </div>
-            </div>
-            <div className="w-full">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">검사 결과 요약</h4>
-              {isCreatingResult ? (
-                <div className="flex justify-center items-center space-x-2 py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <span className="text-gray-600">AI가 그림을 분석하고 있습니다...</span>
+      <div className="relative z-10 container mx-auto px-8 py-8">
+      
+        {/* Main result card */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+            <h1 className="text-white text-xl font-bold text-left mb-8">그림 심리 분석 결과</h1>
+
+            <div className="bg-slate-600/50 rounded-2xl p-8">
+              <div className="flex items-center justify-center space-x-8 mb-6">
+                {/* 왼쪽: 캐릭터 */}
+                <div className={`w-32 h-32 ${getColorForType(actualPersonalityType)} flex items-center justify-center flex-shrink-0 overflow-hidden`}>
+                  <img 
+                    src={getCharacterImageForType(actualPersonalityType)} 
+                    alt={getCharacterName(actualPersonalityType)}
+                    className="w-40 h-40 object-cover rounded-full"
+                  />
                 </div>
-              ) : analysisResult ? (
-                <>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4 text-center max-w-2xl mx-auto">
-                    {analysisResult}
-                  </p>
-                  <div className="flex justify-center flex-wrap gap-2">
-                    {(personalityData[actualPersonalityType]?.keywords || ['감정적 깊이', '내성적 성향', '공감 능력']).map((keyword, index) => (
-                      <span key={index} className={`bg-${personalityData[actualPersonalityType]?.color || 'blue'}-100 text-${personalityData[actualPersonalityType]?.color || 'blue'}-800 px-3 py-1 rounded-full text-sm font-medium`}>
-                        {keyword}
-                      </span>
-                    ))}
+
+                {/* 가운데: 페르소나 정보 */}
+                <div className="flex-1 text-center">
+                  <h2 className="text-white text-2xl font-bold mb-2 text-left">
+                    당신의 페르소나는 <span className="text-pink-400">{getCharacterName(actualPersonalityType)}</span> 입니다
+                  </h2>
+
+                  <div className="w-full bg-gray-300 rounded-full h-3 mb-4">
+                    <div
+                      className="bg-gradient-to-r from-pink-500 to-purple-600 h-3 rounded-full"
+                      style={{ width: `${getMainProbability()}%` }}
+                    ></div>
                   </div>
-                </>
-              ) : (
-                <p className="text-gray-600 text-sm leading-relaxed mb-4 text-center max-w-2xl mx-auto">
-                  당신의 그림에서 나타난 심리적 특성을 분석한 결과, 현재 내면의 슬픔과 고민이 깊어 보입니다. 이러한 감정을 이해하고 함께 극복해나가는 것이 중요합니다.
-                </p>
-              )}
-              
-              {testData?.imageUrl && (
-                <div className="mt-4 flex flex-col items-center">
-                  <h5 className="text-sm font-medium text-gray-700 mb-2">분석한 그림</h5>
-                  <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
-                    <img 
-                      src={testService.getImageUrl(testData.imageUrl)} 
-                      alt="분석된 그림" 
-                      className="w-32 h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-lg transition-opacity duration-200 flex items-center justify-center">
-                      <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium transition-opacity duration-200">
-                        클릭하여 확대
-                      </span>
+
+                  <div className="text-white/90 text-sm mb-4 text-left">나와 {getMainProbability()}%만큼 가까워요!</div>
+                </div>
+
+                {/* 오른쪽: 업로드된 이미지 */}
+                <div className="flex-shrink-0">
+                  {testData?.imageUrl ? (
+                    <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
+                      <img 
+                        src={testService.getImageUrl(testData.imageUrl)} 
+                        alt="분석된 그림" 
+                        className="w-32 h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-opacity duration-200 flex items-center justify-center">
+                        <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium transition-opacity duration-200">
+                          클릭하여 확대
+                        </span>
+                      </div>
                     </div>
+                  ) : (
+                    <div className="w-32 h-32 bg-slate-500/50 rounded-lg flex items-center justify-center">
+                      <span className="text-white/50 text-xs text-center">이미지 없음</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-500/50 rounded-xl p-6 mb-6">
+                <p className="text-white/90 text-sm leading-relaxed">
+                  {isCreatingResult ? (
+                    <span className="flex items-center">
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                      분석 결과를 생성하고 있습니다...
+                    </span>
+                  ) : (
+                    analysisResult || personalityData[actualPersonalityType]?.message || 
+                    "그림을 통해 당신의 심리 상태를 분석했습니다. 현재 감정 상태를 잘 표현하고 있으며, 이를 통해 더 나은 대화를 나눌 수 있을 것입니다."
+                  )}
+                </p>
+              </div>
+
+              <Button
+                onClick={() => handlePersonalityClick(actualPersonalityType)}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium"
+              >
+                {getCharacterName(actualPersonalityType)}와 대화하기
+              </Button>
+            </div>
+
+            {/* 수정(따봉/붐따) */}
+            <div className="max-w-4xl mx-auto mb-8">
+              <div className="bg-slate-700/60 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-2xl">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white text-lg font-bold">나와 매칭된 결과가 마음에 드시나요?</h3>
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => setSatisfaction("like")}
+                      className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
+                        satisfaction === "like"
+                          ? "bg-green-500 text-white shadow-lg scale-110"
+                          : "bg-white/20 text-white/70 hover:bg-white/30 hover:scale-105"
+                      }`}
+                    >
+                      <ThumbsUp size={20} />
+                    </button>
+                    <button
+                      onClick={() => setSatisfaction("dislike")}
+                      className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
+                        satisfaction === "dislike"
+                          ? "bg-red-500 text-white shadow-lg scale-110"
+                          : "bg-white/20 text-white/70 hover:bg-white/30 hover:scale-105"
+                      }`}
+                    >
+                      <ThumbsDown size={20} />
+                    </button>
                   </div>
                 </div>
-              )}
+                {satisfaction && (
+                  <div className="mt-3 text-center">
+                    <p className="text-white/80 text-sm animate-fade-in">
+                      {satisfaction === "like" ? "좋은 평가 감사합니다! 😊" : "더 나은 결과를 위해 노력하겠습니다 🙏"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             </div>
           </div>
-        </div>
 
-
-        {/* 확률 차트 컴포넌트 - 항상 표시 */}
-        <ProbabilityChart 
-          probabilities={probabilities || {
-            '추진형': 0,
-            '내면형': 0,
-            '관계형': 0,
-            '쾌락형': 0,
-            '안정형': 0
-          }} 
-        />
-        <div className="bg-white rounded-xl shadow-md p-4">
-          <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">
-            결과 유형 보기
-          </h3>
-          <div className="flex justify-center">
-            <div className="w-full max-w-sm">
-            {characters
-              .filter(character => {
-                // 실제 분석된 성격 유형을 캐릭터 이름으로 변환해서 매칭
-                return character.name === getCharacterName(actualPersonalityType);
-              })
-              .map(character => (
-                <div key={character.id} className="text-center">
-                  <div className="mb-3">
-                    <CharacterCard
-                      character={character}
-                      onClick={handleCharacterClick}
+        {/* Other character options */}
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-slate-700/60 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <h2 className="text-white text-xl font-bold text-center mb-8">다른 페르소나 결과</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {getOtherPersonalities().map((personality) => (
+                <div
+                  key={personality.type}
+                  className="bg-slate-600/60 rounded-2xl p-6 text-center backdrop-blur-sm border border-white/10 hover:bg-slate-600/70 transition-all duration-300"
+                >
+                  <div
+                    className={`w-24 h-24 ${getColorForType(personality.type)} flex items-center justify-center mx-auto mb-4 overflow-hidden`}
+                  >
+                    <img 
+                      src={getCharacterImageForType(personality.type)} 
+                      alt={getCharacterName(personality.type)}
+                      className="w-26 h-26 object-cover rounded-full"
                     />
                   </div>
-                  <button 
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
-                    onClick={() => handleCharacterClick(character)}
+                  <h3 className="text-white font-bold mb-2">{getCharacterName(personality.type)}</h3>
+                  <p className="text-white/70 text-sm mb-1">나와 {personality.probability}%만큼</p>
+                  <p className="text-white/70 text-sm mb-4">가까워요!</p>
+                  <Button
+                    onClick={() => handlePersonalityClick(personality.type)}
+                    className={`w-full bg-gradient-to-r ${getColorForType(personality.type)} hover:opacity-90 text-white py-2 px-4 rounded-full text-sm font-medium shadow-lg transition-all duration-300`}
                   >
-                    {character.name}와 대화하기
-                  </button>
+                    {getCharacterName(personality.type)}와 대화하기
+                  </Button>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* 이미지 모달 */}
-      {showImageModal && testData?.imageUrl && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowImageModal(false)}
-        >
-          <div className="relative max-w-4xl max-h-full">
-            <button
-              onClick={() => setShowImageModal(false)}
-              className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-opacity duration-200 z-10"
-            >
-              ✕
-            </button>
-            <img 
-              src={testService.getImageUrl(testData.imageUrl)}
-              alt="분석된 그림 확대보기"
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+      `}</style>
+    
+
+        {/* 이미지 모달 */}
+        {showImageModal && testData?.imageUrl && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowImageModal(false)}
+          >
+            <div className="relative max-w-4xl max-h-full">
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-opacity duration-200 z-10"
+              >
+                ✕
+              </button>
+              <img 
+                src={testService.getImageUrl(testData.imageUrl)}
+                alt="분석된 그림 확대보기"
+                className="max-w-full max-h-full object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

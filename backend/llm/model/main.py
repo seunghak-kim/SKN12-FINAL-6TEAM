@@ -444,7 +444,7 @@ class HTPAnalysisPipeline:
         self.logger.info(f"파일 경로 확인:")
         self.logger.info(f"  탐지: {detection_path} (존재: {detection_path.exists()})")
         self.logger.info(f"  분석: {analysis_path} (존재: {analysis_path.exists()})")
-        self.logger.info(f"  분류: {kobert_path} (존재: {kobert_path.exists()})")
+        self.logger.info(f"  분류: KoBERT 결과가 analysis_path에 포함됨 (완료: {kobert_completed})")
         
         if analysis_path.exists():
             try:

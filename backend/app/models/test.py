@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, Integer, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .user import Base
@@ -25,6 +25,7 @@ class DrawingTestResult(Base):
     friends_type = Column(Integer, ForeignKey('friends.friends_id'))
     # score = Column(Integer) 스코어 제거 
     summary_text = Column(Text)
+    personality_scores = Column(JSON)  # 5유형 확률 저장
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     
     # 관계 정의
