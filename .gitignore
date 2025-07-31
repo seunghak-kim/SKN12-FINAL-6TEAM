@@ -61,7 +61,6 @@ __pycache__/
 *.pkl
 *.joblib
 
-<<<<<<< HEAD
 # 탐지 결과 및 테스트 파일들
 /backend/llm/detection_results/
 /backend/llm/test_images/
@@ -73,7 +72,7 @@ __pycache__/
 # *.jpeg
 # *.png
 # *.gif
-=======
-/backend/result*
-/backend/llm/detection_results*
->>>>>>> frontend
+
+node_modules/
+dist/
+build/

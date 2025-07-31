@@ -104,7 +104,7 @@ ALTER TABLE "user_informations" ADD CONSTRAINT "user_informations_social_user_id
 
 ALTER TABLE "agreements" ADD CONSTRAINT "agreements_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user_informations" ("user_id") ON DELETE CASCADE;
 
-ALTER TABLE "chat_sessions" ADD CONSTRAINT "chat_sessions_friends_id_fkey" FOREIGN KEY ("persona_id") REFERENCES "personas" ("persona_id");
+ALTER TABLE "chat_sessions" ADD CONSTRAINT "chat_sessions_persona_id_fkey" FOREIGN KEY ("persona_id") REFERENCES "personas" ("persona_id");
 
 ALTER TABLE "chat_sessions" ADD CONSTRAINT "chat_sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user_informations" ("user_id") ON DELETE CASCADE;
 
@@ -114,10 +114,10 @@ ALTER TABLE "ratings" ADD CONSTRAINT "ratings_session_id_fkey" FOREIGN KEY ("ses
 
 ALTER TABLE "ratings" ADD CONSTRAINT "ratings_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user_informations" ("user_id") ON DELETE CASCADE;
 
-ALTER TABLE "ratings" ADD CONSTRAINT "ratings_friends_id_fkey" FOREIGN KEY ("persona_id") REFERENCES "personas" ("persona_id");
+ALTER TABLE "ratings" ADD CONSTRAINT "ratings_persona_id_fkey" FOREIGN KEY ("persona_id") REFERENCES "personas" ("persona_id");
 
 ALTER TABLE "chat_messages" ADD CONSTRAINT "chat_messages_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "chat_sessions" ("chat_sessions_id") ON DELETE CASCADE;
 
-ALTER TABLE "drawing_test_results" ADD CONSTRAINT "drawing_test_results_friends_type_fkey" FOREIGN KEY ("persona_type") REFERENCES "personas" ("persona_id");
+ALTER TABLE "drawing_test_results" ADD CONSTRAINT "drawing_test_results_persona_type_fkey" FOREIGN KEY ("persona_type") REFERENCES "personas" ("persona_id");
 
 ALTER TABLE "drawing_test_results" ADD CONSTRAINT "drawing_test_results_test_id_fkey" FOREIGN KEY ("test_id") REFERENCES "drawing_tests" ("test_id") ON DELETE CASCADE;
