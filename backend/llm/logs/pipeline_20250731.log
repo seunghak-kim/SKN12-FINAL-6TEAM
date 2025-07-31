@@ -202,3 +202,1288 @@
 2025-07-31 10:21:09,512 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/merge/SKN12-FINAL-6TEAM/backend/llm/model/../detection_results/results/result_02b71b25-507e-41c9-82b5-08540b00ba1e.json
 2025-07-31 10:21:09,513 - htp_pipeline - INFO - [3/3] KoBERT 성격 유형 분류 시작...
 2025-07-31 10:21:09,513 - htp_pipeline - ERROR - 성격 유형 분류 단계 오류: Incorrect path_or_model_id: '/Users/jmlee/Desktop/merge/SKN12-FINAL-6TEAM/backend/llm/model/kobert_model'. Please provide either the path to a local folder or the repo_id of a model on the Hub.
+2025-07-31 17:36:51,066 - htp_pipeline - INFO - 환경 검증 시작...
+2025-07-31 17:36:51,066 - htp_pipeline - INFO - 디렉토리 생성/확인: /Users/jmlee/Desktop/final_test/backend/llm/model/../test_images
+2025-07-31 17:36:51,066 - htp_pipeline - INFO - 디렉토리 생성/확인: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images
+2025-07-31 17:36:51,066 - htp_pipeline - INFO - 디렉토리 생성/확인: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results
+2025-07-31 17:36:51,066 - htp_pipeline - INFO - 환경 검증 완료
+2025-07-31 17:36:51,243 - htp_pipeline - INFO - 이미지 분석 시작: c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26
+2025-07-31 17:36:51,243 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 17:36:51,251 - htp_pipeline - INFO - 상태 확인 - 탐지: False, 분석: False, 분류: False
+2025-07-31 17:36:51,251 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:36:51,251 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: False)
+2025-07-31 17:36:51,258 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:36:51,258 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:36:51,552 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg
+2025-07-31 17:36:51,552 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 17:36:53,276 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:36:53,276 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:36:53,276 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:36:53,276 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:36:53,276 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:36:55,291 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:36:55,291 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:36:55,291 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:36:55,291 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:36:55,291 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:36:57,301 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:36:57,302 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:36:57,302 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:36:57,302 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:36:57,302 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:36:59,317 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:36:59,317 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:36:59,317 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:36:59,317 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:36:59,317 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:01,340 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:01,340 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:01,340 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:01,341 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:01,341 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:03,394 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:03,394 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:03,395 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:03,395 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:03,395 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:05,404 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:05,404 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:05,404 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:05,404 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:05,404 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:07,412 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:07,413 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:07,413 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:07,413 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:07,413 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:09,421 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:09,422 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:09,422 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:09,422 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:09,422 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:11,433 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:11,433 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:11,433 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:11,433 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:11,433 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:13,445 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:13,446 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:13,446 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:13,446 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:13,446 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:15,457 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:15,457 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:15,457 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:15,457 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:15,457 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:17,474 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:17,474 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:17,475 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:17,475 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:17,475 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:19,505 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:19,505 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:19,505 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:19,506 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:19,506 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:21,571 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:21,698 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:21,698 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:21,699 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:21,699 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:23,829 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:23,829 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:23,829 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:23,829 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:23,829 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:25,946 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:25,946 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:25,947 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:25,947 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:25,947 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:28,094 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:28,095 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:28,095 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:28,095 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:28,095 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:30,246 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:30,246 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:30,246 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:30,246 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:30,246 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:32,364 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:32,365 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:32,365 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:32,365 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:32,365 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:34,482 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 17:37:34,482 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 17:37:34,482 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.jpg (존재: True)
+2025-07-31 17:37:34,482 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json (존재: False)
+2025-07-31 17:37:34,482 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 17:37:46,542 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26.json
+2025-07-31 17:37:46,543 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 17:37:47,905 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 관계형 (신뢰도: 0.493)
+2025-07-31 17:37:47,905 - htp_pipeline - INFO - 이미지 분석 완료: c66e5bbd-9626-49f7-ab8a-0cdad5b2cd26 -> 관계형
+2025-07-31 17:37:47,906 - htp_pipeline - INFO - 키워드 분석 결과 저장: 관계형 (신뢰도: 0.493)
+2025-07-31 17:37:53,755 - htp_pipeline - INFO - 키워드 분석 결과 반환: 관계형
+2025-07-31 17:37:55,007 - htp_pipeline - INFO - 키워드 분석 결과 반환: 관계형
+2025-07-31 17:37:55,014 - htp_pipeline - INFO - 키워드 분석 결과 반환: 관계형
+2025-07-31 19:01:43,697 - htp_pipeline - INFO - 이미지 분석 시작: be802e1a-4f2b-478b-bc97-bd9bbcd5db60
+2025-07-31 19:01:43,698 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 19:01:43,730 - htp_pipeline - INFO - 상태 확인 - 탐지: False, 분석: False, 분류: False
+2025-07-31 19:01:43,730 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:43,730 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: False)
+2025-07-31 19:01:43,730 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:43,730 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:01:44,079 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg
+2025-07-31 19:01:44,079 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 19:01:45,745 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:01:45,745 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:45,746 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:01:45,746 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:45,746 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:01:47,760 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:01:47,761 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:47,761 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:01:47,761 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:47,761 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:01:49,772 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:01:49,773 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:49,773 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:01:49,773 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:49,773 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:01:51,790 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:01:51,791 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:51,791 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:01:51,791 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:51,791 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:01:53,804 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:01:53,805 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:53,805 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:01:53,805 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:53,805 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:01:55,815 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:01:55,815 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:55,815 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:01:55,815 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:55,815 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:01:57,826 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:01:57,827 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:57,827 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:01:57,827 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:57,827 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:01:59,838 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:01:59,838 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:01:59,838 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:01:59,838 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:01:59,838 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:01,846 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:01,847 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:01,847 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:01,847 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:01,847 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:03,863 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:03,863 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:03,863 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:03,863 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:03,863 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:05,880 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:05,880 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:05,880 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:05,880 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:05,880 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:07,890 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:07,890 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:07,890 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:07,890 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:07,890 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:09,899 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:09,899 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:09,899 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:09,899 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:09,899 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:11,907 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:11,907 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:11,908 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:11,908 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:11,908 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:13,919 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:13,919 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:13,919 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:13,919 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:13,919 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:15,928 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:15,928 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:15,928 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:15,928 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:15,928 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:17,939 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:17,939 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:17,939 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:17,939 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:17,939 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:19,948 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:19,948 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:19,948 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:19,948 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:19,948 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:21,963 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:21,964 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:21,964 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:21,964 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:21,964 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:23,991 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:23,991 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:23,991 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:23,991 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:23,991 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:26,005 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:26,006 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:26,006 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:26,006 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:26,006 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:28,023 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:28,024 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:28,024 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:28,024 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:28,024 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:30,039 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:30,040 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:30,040 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:30,041 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:30,041 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:32,057 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:32,057 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:32,057 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:32,057 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:32,058 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:34,081 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:34,081 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:34,082 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:34,082 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:34,082 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:36,095 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:36,096 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:36,096 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:36,096 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:36,097 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:38,124 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:38,124 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:38,125 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:38,125 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:38,125 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:40,141 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:40,141 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:40,141 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:40,141 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:40,142 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:42,155 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:02:42,157 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:42,157 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:42,157 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: False)
+2025-07-31 19:02:42,158 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:43,781 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json
+2025-07-31 19:02:43,782 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 19:02:44,168 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: True, 분류: False
+2025-07-31 19:02:44,168 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:02:44,168 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.jpg (존재: True)
+2025-07-31 19:02:44,168 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_be802e1a-4f2b-478b-bc97-bd9bbcd5db60.json (존재: True)
+2025-07-31 19:02:44,168 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:02:45,333 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 쾌락형 (신뢰도: 0.361)
+2025-07-31 19:02:45,333 - htp_pipeline - INFO - 이미지 분석 완료: be802e1a-4f2b-478b-bc97-bd9bbcd5db60 -> 쾌락형
+2025-07-31 19:02:45,333 - htp_pipeline - INFO - 키워드 분석 결과 저장: 쾌락형 (신뢰도: 0.361)
+2025-07-31 19:02:46,181 - htp_pipeline - INFO - 키워드 분석 결과 반환: 쾌락형
+2025-07-31 19:02:47,262 - htp_pipeline - INFO - 키워드 분석 결과 반환: 쾌락형
+2025-07-31 19:02:47,273 - htp_pipeline - INFO - 키워드 분석 결과 반환: 쾌락형
+2025-07-31 19:04:53,951 - htp_pipeline - INFO - 키워드 분석 결과 반환: 쾌락형
+2025-07-31 19:04:53,971 - htp_pipeline - INFO - 키워드 분석 결과 반환: 쾌락형
+2025-07-31 19:45:17,729 - htp_pipeline - INFO - 이미지 분석 시작: 5165624e-b9b8-4655-b3b2-cbd820b65599
+2025-07-31 19:45:17,735 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 19:45:17,829 - htp_pipeline - INFO - 상태 확인 - 탐지: False, 분석: False, 분류: False
+2025-07-31 19:45:17,829 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:17,829 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: False)
+2025-07-31 19:45:17,830 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:17,830 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:18,178 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg
+2025-07-31 19:45:18,178 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 19:45:19,982 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:19,982 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:19,982 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:19,982 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:19,982 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:22,200 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:22,201 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:22,201 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:22,201 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:22,202 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:24,459 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:24,460 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:24,460 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:24,460 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:24,460 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:26,572 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:26,572 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:26,572 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:26,573 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:26,573 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:28,683 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:28,683 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:28,683 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:28,683 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:28,683 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:31,524 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:31,525 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:31,525 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:31,525 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:31,525 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:33,534 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:33,534 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:33,534 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:33,534 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:33,534 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:35,550 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:35,550 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:35,550 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:35,550 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:35,550 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:37,559 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:37,559 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:37,560 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:37,560 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:37,560 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:39,568 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:39,569 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:39,569 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:39,569 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:39,569 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:41,579 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:41,579 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:41,579 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:41,579 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:41,579 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:43,598 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:43,599 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:43,599 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:43,599 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:43,599 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:45,608 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:45,608 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:45,608 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:45,608 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:45,608 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:47,617 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:47,617 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:47,617 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:47,617 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:47,617 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:49,626 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:49,627 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:49,627 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:49,627 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:49,627 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:51,636 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:51,636 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:51,636 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:51,636 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:51,636 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:53,650 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:53,651 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:53,651 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:53,651 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:53,651 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:55,669 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:55,670 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:55,670 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:55,670 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:55,670 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:57,685 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:57,685 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:57,685 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:57,685 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:57,685 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:45:59,721 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:45:59,721 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:45:59,722 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:45:59,722 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:45:59,722 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:01,741 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:01,742 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:01,742 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:01,742 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:01,742 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:03,749 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:03,749 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:03,749 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:03,749 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:03,749 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:05,764 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:05,764 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:05,764 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:05,765 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:05,765 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:07,781 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:07,781 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:07,782 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:07,782 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:07,782 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:09,804 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:09,805 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:09,805 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:09,805 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:09,805 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:11,820 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:11,820 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:11,820 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:11,820 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:11,820 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:13,830 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:13,830 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:13,830 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:13,830 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:13,830 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:15,976 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:15,976 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:15,976 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:15,977 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:15,977 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:18,103 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 19:46:18,103 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:18,103 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:18,103 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: False)
+2025-07-31 19:46:18,103 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:19,757 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json
+2025-07-31 19:46:19,758 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 19:46:20,220 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: True, 분류: False
+2025-07-31 19:46:20,221 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 19:46:20,221 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_5165624e-b9b8-4655-b3b2-cbd820b65599.jpg (존재: True)
+2025-07-31 19:46:20,221 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_5165624e-b9b8-4655-b3b2-cbd820b65599.json (존재: True)
+2025-07-31 19:46:20,221 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 19:46:21,313 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 추진형 (신뢰도: 0.403)
+2025-07-31 19:46:21,313 - htp_pipeline - INFO - 이미지 분석 완료: 5165624e-b9b8-4655-b3b2-cbd820b65599 -> 추진형
+2025-07-31 19:46:21,315 - htp_pipeline - INFO - 키워드 분석 결과 저장: 추진형 (신뢰도: 0.403)
+2025-07-31 19:46:22,959 - htp_pipeline - INFO - 키워드 분석 결과 반환: 추진형
+2025-07-31 19:46:33,594 - htp_pipeline - INFO - 키워드 분석 결과 반환: 추진형
+2025-07-31 19:46:33,613 - htp_pipeline - INFO - 키워드 분석 결과 반환: 추진형
+2025-07-31 20:17:11,610 - htp_pipeline - INFO - 이미지 분석 시작: dc0029ef-f69e-4af7-8be1-ad36e529c86b
+2025-07-31 20:17:11,625 - htp_pipeline - INFO - 상태 확인 - 탐지: False, 분석: False, 분류: False
+2025-07-31 20:17:11,631 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:11,631 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 20:17:11,631 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: False)
+2025-07-31 20:17:11,641 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:11,646 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:12,240 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg
+2025-07-31 20:17:12,240 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 20:17:13,675 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:13,680 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:13,680 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:13,680 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:13,680 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:15,691 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:15,692 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:15,692 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:15,692 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:15,692 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:17,703 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:17,710 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:17,710 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:17,710 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:17,710 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:19,721 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:19,722 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:19,722 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:19,722 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:19,722 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:21,737 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:21,737 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:21,737 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:21,737 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:21,737 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:23,768 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:23,769 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:23,769 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:23,769 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:23,769 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:25,782 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:25,782 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:25,782 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:25,782 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:25,782 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:27,794 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:27,794 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:27,794 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:27,794 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:27,795 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:30,124 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:30,125 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:30,125 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:30,125 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:30,125 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:32,515 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:32,515 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:32,515 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:32,515 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:32,515 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:34,621 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:34,621 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:34,621 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:34,621 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:34,621 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:36,745 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:36,745 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:36,745 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:36,745 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:36,745 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:38,854 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:38,854 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:38,854 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:38,854 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:38,854 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:40,959 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:40,959 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:40,959 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:40,959 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:40,959 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:43,068 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:43,068 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:43,068 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:43,068 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:43,068 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:45,173 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:45,174 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:45,174 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:45,174 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:45,174 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:48,385 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:48,385 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:48,385 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:48,385 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:48,385 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:50,577 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:50,577 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:50,577 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:50,577 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:50,577 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:52,701 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:52,701 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:52,701 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:52,701 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:52,701 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:54,818 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:54,819 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:54,819 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:54,819 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:54,819 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:56,928 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:56,928 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:56,928 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:56,928 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:56,928 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:17:59,041 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:17:59,043 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:17:59,043 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:17:59,044 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:17:59,044 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:18:01,167 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:18:01,167 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:18:01,168 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:18:01,168 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:18:01,168 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:18:03,284 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:18:03,284 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:18:03,284 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:18:03,284 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:18:03,284 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:18:05,396 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:18:05,397 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:18:05,397 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:18:05,397 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:18:05,397 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:18:07,503 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:18:07,503 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:18:07,503 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:18:07,504 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: False)
+2025-07-31 20:18:07,504 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:18:08,592 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json
+2025-07-31 20:18:08,593 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 20:18:09,616 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: True, 분류: False
+2025-07-31 20:18:09,616 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:18:09,617 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.jpg (존재: True)
+2025-07-31 20:18:09,617 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_dc0029ef-f69e-4af7-8be1-ad36e529c86b.json (존재: True)
+2025-07-31 20:18:09,617 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:18:10,057 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 관계형 (신뢰도: 0.470)
+2025-07-31 20:18:10,057 - htp_pipeline - INFO - 이미지 분석 완료: dc0029ef-f69e-4af7-8be1-ad36e529c86b -> 관계형
+2025-07-31 20:18:10,058 - htp_pipeline - INFO - 키워드 분석 결과 저장: 관계형 (신뢰도: 0.470)
+2025-07-31 20:18:11,724 - htp_pipeline - INFO - 키워드 분석 결과 반환: 관계형
+2025-07-31 20:18:13,498 - htp_pipeline - INFO - 키워드 분석 결과 반환: 관계형
+2025-07-31 20:18:13,510 - htp_pipeline - INFO - 키워드 분석 결과 반환: 관계형
+2025-07-31 20:19:54,740 - htp_pipeline - INFO - 이미지 분석 시작: 4bf924f6-5e44-4f0d-9067-8a04b20c1fbd
+2025-07-31 20:19:54,741 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 20:19:54,769 - htp_pipeline - INFO - 상태 확인 - 탐지: False, 분석: False, 분류: False
+2025-07-31 20:19:54,769 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:19:54,769 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: False)
+2025-07-31 20:19:54,769 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:19:54,769 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:19:55,068 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg
+2025-07-31 20:19:55,069 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 20:19:56,799 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:19:56,799 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:19:56,800 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:19:56,800 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:19:56,800 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:19:57,485 - htp_pipeline - INFO - 이미지 분석 시작: 48e2f767-50a2-4687-9876-9425d8e4f26e
+2025-07-31 20:19:57,485 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 20:19:57,491 - htp_pipeline - INFO - 상태 확인 - 탐지: False, 분석: False, 분류: False
+2025-07-31 20:19:57,491 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:19:57,491 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: False)
+2025-07-31 20:19:57,491 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:19:57,491 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:19:57,612 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg
+2025-07-31 20:19:57,612 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 20:19:58,814 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:19:58,815 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:19:58,815 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:19:58,815 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:19:58,815 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:19:59,512 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:19:59,512 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:19:59,512 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:19:59,513 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:19:59,513 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:00,447 - htp_pipeline - INFO - 이미지 분석 시작: 20ac96cf-59cf-43b0-a54a-e1d974bdef4b
+2025-07-31 20:20:00,448 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 20:20:00,561 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg
+2025-07-31 20:20:00,561 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 20:20:00,630 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:00,630 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:00,630 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:00,630 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:00,630 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:00,824 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:00,824 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:00,824 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:00,824 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:00,824 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:01,522 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:01,522 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:01,522 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:01,522 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:01,522 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:02,639 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:02,639 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:02,639 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:02,639 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:02,639 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:02,838 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:02,838 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:02,838 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:02,838 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:02,838 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:03,155 - htp_pipeline - INFO - 이미지 분석 시작: 0ab3b679-9ec2-4719-8acb-28b05f732773
+2025-07-31 20:20:03,156 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 20:20:03,169 - htp_pipeline - INFO - 상태 확인 - 탐지: False, 분석: False, 분류: False
+2025-07-31 20:20:03,169 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:03,170 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: False)
+2025-07-31 20:20:03,170 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:03,170 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:03,273 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg
+2025-07-31 20:20:03,273 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 20:20:03,541 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:03,541 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:03,541 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:03,541 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:03,541 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:04,648 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:04,648 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:04,648 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:04,648 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:04,649 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:04,852 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:04,853 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:04,853 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:04,853 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:04,853 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:05,197 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:05,198 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:05,198 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:05,199 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:05,200 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:05,556 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:05,556 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:05,556 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:05,557 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:05,557 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:06,664 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:06,664 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:06,664 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:06,664 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:06,664 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:06,868 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:06,868 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:06,869 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:06,869 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:06,869 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:07,217 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:07,217 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:07,217 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:07,218 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:07,218 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:07,569 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:07,569 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:07,570 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:07,570 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:07,570 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:07,716 - htp_pipeline - INFO - 이미지 분석 시작: 9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e
+2025-07-31 20:20:07,716 - htp_pipeline - INFO - [1/3] YOLO 객체 탐지 및 크롭핑 시작...
+2025-07-31 20:20:07,728 - htp_pipeline - INFO - 상태 확인 - 탐지: False, 분석: False, 분류: False
+2025-07-31 20:20:07,728 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:07,728 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: False)
+2025-07-31 20:20:07,728 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:07,729 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:07,827 - htp_pipeline - INFO - 객체 탐지 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg
+2025-07-31 20:20:07,827 - htp_pipeline - INFO - [2/3] GPT-4 Vision 심리 분석 시작...
+2025-07-31 20:20:08,683 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:08,683 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:08,683 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:08,683 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:08,683 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:08,881 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:08,882 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:08,882 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:08,882 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:08,882 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:09,231 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:09,231 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:09,231 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:09,231 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:09,231 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:09,584 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:09,585 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:09,585 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:09,585 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:09,591 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:09,736 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:09,736 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:09,736 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:09,736 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:09,736 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:10,691 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:10,691 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:10,692 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:10,692 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:10,692 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:10,923 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:10,923 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:10,924 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:10,924 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:10,924 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:11,241 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:11,241 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:11,241 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:11,241 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:11,241 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:11,601 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:11,601 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:11,601 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:11,601 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:11,601 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:11,743 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:11,743 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:11,743 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:11,744 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:11,744 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:12,698 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:12,716 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:12,716 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:12,717 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:12,717 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:12,937 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:12,937 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:12,937 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:12,937 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:12,937 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:13,248 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:13,248 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:13,248 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:13,248 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:13,248 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:13,608 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:13,609 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:13,609 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:13,609 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:13,609 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:13,751 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:13,751 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:13,751 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:13,751 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:13,751 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:14,791 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:14,792 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:14,792 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:14,792 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:14,792 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:15,041 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:15,041 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:15,041 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:15,041 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:15,041 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:15,351 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:15,351 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:15,351 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:15,351 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:15,351 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:15,713 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:15,713 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:15,713 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:15,713 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:15,713 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:15,856 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:15,856 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:15,856 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:15,856 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:15,856 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:16,897 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:16,897 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:16,897 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:16,897 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:16,897 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:17,143 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:17,151 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:17,151 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:17,151 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:17,151 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:17,523 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:17,523 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:17,523 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:17,523 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:17,523 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:17,794 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:17,794 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:17,794 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:17,794 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:17,794 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:17,959 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:17,959 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:17,959 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:17,959 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:17,959 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:19,004 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:19,004 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:19,004 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:19,004 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:19,004 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:19,256 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:19,258 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:19,258 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:19,258 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:19,260 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:19,738 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:19,738 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:19,738 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:19,738 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:19,738 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:21,347 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:21,361 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:21,361 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:21,361 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:21,362 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:21,373 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:21,374 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:21,374 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:21,374 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:21,374 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:21,525 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:21,525 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:21,525 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:21,525 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:21,525 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:21,535 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:21,535 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:21,535 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:21,535 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:21,536 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:21,853 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:21,853 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:21,853 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:21,853 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:21,853 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:23,643 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:23,643 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:23,643 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:23,643 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:23,643 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:23,660 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:23,660 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:23,660 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:23,660 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:23,660 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:23,662 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:23,662 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:23,662 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:23,662 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:23,662 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:23,765 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:23,765 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:23,765 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:23,765 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:23,765 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:23,961 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:23,961 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:23,961 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:23,961 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:23,961 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:25,748 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:25,943 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:25,943 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:25,943 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:25,943 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:25,953 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:25,953 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:25,954 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:25,954 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:25,954 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:25,957 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:25,957 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:25,957 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:25,957 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:25,957 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:25,958 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:25,958 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:25,958 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:25,958 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:25,958 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:26,005 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:26,005 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:26,005 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:26,005 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:26,005 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:28,082 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:28,083 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:28,083 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:28,083 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:28,083 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:28,087 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:28,087 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:28,088 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:28,088 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:28,088 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:28,090 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:28,090 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:28,090 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:28,090 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:28,090 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:28,092 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:28,092 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:28,092 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:28,092 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:28,092 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:28,095 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:28,095 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:28,095 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:28,095 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:28,095 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:37,490 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:37,490 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:37,490 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:37,490 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:37,490 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:37,521 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:37,521 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:37,521 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:37,521 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:37,521 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:37,882 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:37,883 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:37,883 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:37,883 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:37,883 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:37,893 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:37,893 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:37,893 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:37,893 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:37,893 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:37,903 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:37,903 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:37,903 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:37,903 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:37,903 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:40,168 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:40,168 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:40,168 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:40,168 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:40,168 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:40,177 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:40,177 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:40,177 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:40,177 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:40,177 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:40,183 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:40,183 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:40,184 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:40,184 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:40,184 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:40,194 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:40,194 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:40,194 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:40,194 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:40,194 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:40,199 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:40,199 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:40,199 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:40,199 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:40,199 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:42,197 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:42,197 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:42,197 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:42,197 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:42,197 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:42,224 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:42,224 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:42,224 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:42,224 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:42,224 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:42,232 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:42,232 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:42,232 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:42,232 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:42,232 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:42,235 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:42,235 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:42,235 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:42,235 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:42,235 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:42,239 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:42,239 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:42,239 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:42,239 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:42,239 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:44,206 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:44,206 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:44,207 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:44,207 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:44,207 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:44,249 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:44,249 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:44,249 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:44,249 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:44,249 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:44,257 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:44,257 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:44,257 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:44,257 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:44,257 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:44,261 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:44,261 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:44,262 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:44,262 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:44,262 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:44,265 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:44,265 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:44,265 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:44,265 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:44,265 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:46,232 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:46,232 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:46,232 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:46,232 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:46,232 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:46,369 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:46,369 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:46,369 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:46,369 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:46,369 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:46,372 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:46,372 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:46,372 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:46,372 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:46,372 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:46,374 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:46,374 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:46,375 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:46,375 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:46,375 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:46,377 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:46,377 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:46,377 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:46,377 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:46,377 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:48,445 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:48,445 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:48,445 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:48,445 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:48,445 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:48,451 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:48,453 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:48,453 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:48,453 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:48,453 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:48,546 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:48,546 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:48,546 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:48,546 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:48,546 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:48,555 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:48,555 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:48,555 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:48,555 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:48,555 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:48,557 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:48,557 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:48,557 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:48,557 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:48,557 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:50,652 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:50,652 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:50,652 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:50,652 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:50,652 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:50,656 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:50,656 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:50,657 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:50,657 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:50,657 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:50,670 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:50,670 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:50,670 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:50,670 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:50,670 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:50,672 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:50,672 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:50,672 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:50,672 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:50,672 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:50,674 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:50,674 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:50,674 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:50,674 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: False)
+2025-07-31 20:20:50,674 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:51,695 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json
+2025-07-31 20:20:51,697 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 20:20:52,766 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:52,891 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:52,892 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:52,892 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:52,892 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:53,013 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:53,013 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:53,013 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:53,013 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:53,013 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:53,015 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:53,015 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:53,016 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:53,016 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:53,016 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:53,017 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:53,017 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:53,017 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:53,017 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:53,018 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:53,019 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: True, 분류: False
+2025-07-31 20:20:53,021 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:53,021 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_0ab3b679-9ec2-4719-8acb-28b05f732773.jpg (존재: True)
+2025-07-31 20:20:53,021 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_0ab3b679-9ec2-4719-8acb-28b05f732773.json (존재: True)
+2025-07-31 20:20:53,021 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:53,035 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 쾌락형 (신뢰도: 0.446)
+2025-07-31 20:20:53,035 - htp_pipeline - INFO - 이미지 분석 완료: 0ab3b679-9ec2-4719-8acb-28b05f732773 -> 쾌락형
+2025-07-31 20:20:53,036 - htp_pipeline - INFO - 키워드 분석 결과 저장: 쾌락형 (신뢰도: 0.446)
+2025-07-31 20:20:55,038 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:55,038 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:55,038 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:55,039 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:55,039 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:55,275 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:55,275 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:55,275 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:55,276 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:55,276 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:55,287 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:55,287 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:55,287 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:55,287 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:55,287 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:55,298 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:55,298 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:55,298 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:55,298 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:55,299 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:55,375 - htp_pipeline - INFO - 키워드 분석 결과 반환: 쾌락형
+2025-07-31 20:20:59,310 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:59,313 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:59,316 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_48e2f767-50a2-4687-9876-9425d8e4f26e.jpg (존재: True)
+2025-07-31 20:20:59,316 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json (존재: False)
+2025-07-31 20:20:59,316 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:59,323 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:59,323 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:59,323 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:20:59,323 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: False)
+2025-07-31 20:20:59,323 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:59,325 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:59,325 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:59,325 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:20:59,325 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:20:59,325 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:59,343 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:20:59,343 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:20:59,344 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:20:59,344 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:20:59,344 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:20:59,601 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_48e2f767-50a2-4687-9876-9425d8e4f26e.json
+2025-07-31 20:20:59,601 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 20:21:00,612 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 안정형 (신뢰도: 0.470)
+2025-07-31 20:21:00,612 - htp_pipeline - INFO - 이미지 분석 완료: 48e2f767-50a2-4687-9876-9425d8e4f26e -> 안정형
+2025-07-31 20:21:00,615 - htp_pipeline - INFO - 키워드 분석 결과 저장: 안정형 (신뢰도: 0.470)
+2025-07-31 20:21:00,734 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json
+2025-07-31 20:21:00,738 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 20:21:00,891 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: True, 분류: False
+2025-07-31 20:21:00,891 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:21:00,891 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:21:00,891 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: True)
+2025-07-31 20:21:00,891 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:21:00,893 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: True, 분류: False
+2025-07-31 20:21:00,894 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:21:00,894 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.jpg (존재: True)
+2025-07-31 20:21:00,894 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e.json (존재: True)
+2025-07-31 20:21:00,894 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:21:01,782 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 쾌락형 (신뢰도: 0.785)
+2025-07-31 20:21:01,782 - htp_pipeline - INFO - 이미지 분석 완료: 9c2b6dd8-e49f-40e0-bd79-21cb8108ee2e -> 쾌락형
+2025-07-31 20:21:01,782 - htp_pipeline - INFO - 키워드 분석 결과 저장: 쾌락형 (신뢰도: 0.785)
+2025-07-31 20:21:02,076 - htp_pipeline - INFO - 키워드 분석 결과 반환: 안정형
+2025-07-31 20:21:02,086 - htp_pipeline - INFO - 키워드 분석 결과 반환: 쾌락형
+2025-07-31 20:21:02,091 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:21:02,091 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:21:02,091 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:21:02,091 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:21:02,091 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:21:02,094 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:21:02,094 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:21:02,094 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:21:02,094 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:21:02,094 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:21:04,159 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:21:04,160 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:21:04,160 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.jpg (존재: True)
+2025-07-31 20:21:04,160 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json (존재: False)
+2025-07-31 20:21:04,160 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:21:04,164 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: False, 분류: False
+2025-07-31 20:21:04,164 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:21:04,164 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:21:04,164 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: False)
+2025-07-31 20:21:04,164 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:21:04,201 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_20ac96cf-59cf-43b0-a54a-e1d974bdef4b.json
+2025-07-31 20:21:04,201 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 20:21:05,300 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 쾌락형 (신뢰도: 0.268)
+2025-07-31 20:21:05,300 - htp_pipeline - INFO - 이미지 분석 완료: 20ac96cf-59cf-43b0-a54a-e1d974bdef4b -> 쾌락형
+2025-07-31 20:21:05,300 - htp_pipeline - INFO - 키워드 분석 결과 저장: 쾌락형 (신뢰도: 0.268)
+2025-07-31 20:21:06,089 - htp_pipeline - INFO - 심리 분석 완료: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json
+2025-07-31 20:21:06,089 - htp_pipeline - INFO - [3/3] 키워드 기반 성격 유형 분류 시작...
+2025-07-31 20:21:06,249 - htp_pipeline - INFO - 키워드 분석 결과 반환: 쾌락형
+2025-07-31 20:21:06,254 - htp_pipeline - INFO - 상태 확인 - 탐지: True, 분석: True, 분류: False
+2025-07-31 20:21:06,254 - htp_pipeline - INFO - 파일 경로 확인:
+2025-07-31 20:21:06,254 - htp_pipeline - INFO -   탐지: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/images/detection_result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.jpg (존재: True)
+2025-07-31 20:21:06,254 - htp_pipeline - INFO -   분석: /Users/jmlee/Desktop/final_test/backend/llm/model/../detection_results/results/result_4bf924f6-5e44-4f0d-9067-8a04b20c1fbd.json (존재: True)
+2025-07-31 20:21:06,255 - htp_pipeline - INFO -   분류: KoBERT 결과가 analysis_path에 포함됨 (완료: False)
+2025-07-31 20:21:07,068 - htp_pipeline - INFO - 키워드 기반 성격 유형 분류 완료: 안정형 (신뢰도: 0.563)
+2025-07-31 20:21:07,068 - htp_pipeline - INFO - 이미지 분석 완료: 4bf924f6-5e44-4f0d-9067-8a04b20c1fbd -> 안정형
+2025-07-31 20:21:07,068 - htp_pipeline - INFO - 키워드 분석 결과 저장: 안정형 (신뢰도: 0.563)
+2025-07-31 20:21:08,305 - htp_pipeline - INFO - 키워드 분석 결과 반환: 안정형
