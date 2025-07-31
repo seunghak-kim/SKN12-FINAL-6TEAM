@@ -7,6 +7,7 @@ import ResultsPage from './components/pages/ResultsPage';
 import ResultDetailPage from './components/pages/ResultDetailPage';
 import CharactersPage from './components/pages/CharactersPage';
 import ChatPage from './components/pages/ChatPage';
+import BeforeTest from './components/pages/BeforeTest';
 import MyPage from './components/pages/MyPage';
 import LandingPage from './components/pages/LandingPage';
 import NicknamePage from './components/pages/NicknamePage';
@@ -26,7 +27,6 @@ const AppContent: React.FC = () => {
     showRatingModal,
     currentTestResult,
     getAvailableCharacters,
-    handleGoogleLogin,
     handleStartDreamSearch,
     handleCharacterSelect,
     handleStartChat,
@@ -37,7 +37,8 @@ const AppContent: React.FC = () => {
     handleContinueChat,
     handleUpdateProfile,
     handleInitializeChat,
-    updateTestResult
+    updateTestResult,
+    setCharacterFromTestResult
   } = useAppState();
 
   // URL에서 토큰 처리 (보안 이슈 해결용 임시 처리)
@@ -97,7 +98,7 @@ const AppContent: React.FC = () => {
         navigate('/main');
         break;
       case 'test':
-        navigate('/test');
+        navigate('/test-instruction');
         break;
       case 'test-instruction':
         navigate('/test-instruction');
@@ -113,6 +114,9 @@ const AppContent: React.FC = () => {
         break;
       case 'chat':
         navigate('/chat');
+        break;
+      case 'before-test':
+        navigate('/before-test');
         break;
       case 'characters':
         navigate('/characters');
@@ -150,7 +154,7 @@ const AppContent: React.FC = () => {
   return (
     <div className="App font-sans min-h-screen bg-gray-100">
       <Routes>
-        <Route path="/" element={<LandingPage onGoogleLogin={handleGoogleLogin} />} />
+        <Route path="/" element={<LandingPage />} />
         <Route 
           path="/main" 
           element={
@@ -239,6 +243,14 @@ const AppContent: React.FC = () => {
               selectedCharacter={selectedCharacter}
               onCharacterSelect={handleCharacterSelect}
               onStartChat={handleStartChat}
+              onNavigate={handleNavigate}
+            />
+          } 
+        />
+        <Route 
+          path="/before-test" 
+          element={
+            <BeforeTest
               onNavigate={handleNavigate}
             />
           } 

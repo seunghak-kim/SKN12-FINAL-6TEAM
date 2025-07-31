@@ -64,6 +64,16 @@ class ApiClient {
     const response = await this.client.delete<T>(url);
     return response.data;
   }
+
+  // FormData POST 요청 (파일 업로드용)
+  async postFormData<T>(url: string, formData: FormData): Promise<T> {
+    const response = await this.client.post<T>(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();
