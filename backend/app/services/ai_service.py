@@ -9,6 +9,10 @@ from ..models.chat import ChatSession, ChatMessage
 from .prompt_manager import PersonaPromptManager
 from pydantic import SecretStr
 from dotenv import load_dotenv
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from prompt_chaining import ChainedPromptManager
 
 load_dotenv()
 # OPENAPIKEY 생성 
@@ -30,13 +34,14 @@ class AIService:
         
         # 프롬프트 매니저 초기화
         self.prompt_manager = PersonaPromptManager()
+        self.chained_prompt_manager = ChainedPromptManager()
     
     def get_persona_prompt(self, persona_type: str = "내면형", **context) -> str:
         """페르소나별 시스템 프롬프트 생성"""
         return self.prompt_manager.get_persona_prompt(persona_type, **context)
     
     def process_message(self, session_id: UUID, user_message: str, persona_type: str = "내면형", **context) -> str:
-        """페르소나 챗봇의 메시지 처리"""
+        """2단계 체이닝으로 페르소나 챗봇 메시지 처리"""
         try:
             # 세션 정보 가져오기
             session = self.db.query(ChatSession).filter(ChatSession.chat_sessions_id == session_id).first()
@@ -51,26 +56,27 @@ class AIService:
                 .all()
             )
             
-            # LLM에 보낼 메시지 구성
-            llm_messages = []
+            # 1단계: 공통 답변 생성
+            common_response, tokens_step1 = self._generate_common_response(messages, user_message, **context)
             
-            # 페르소나별 시스템 프롬프트 생성 및 추가
-            system_prompt = self.get_persona_prompt(persona_type, **context)
-            llm_messages.append(SystemMessage(content=system_prompt))
+            # 2단계: 페르소나별 변환
+            persona_response, tokens_step2 = self._transform_to_persona(common_response, persona_type, user_message, **context)
             
-            # 대화 히스토리 추가 (최근 10개만)
-            for msg in messages[-10:]:
-                if msg.sender_type == "user":
-                    llm_messages.append(HumanMessage(content=msg.content))
-                else:
-                    llm_messages.append(AIMessage(content=msg.content))
+            # 총 토큰 사용량 출력
+            total_tokens = {
+                'step1_input': tokens_step1['input'],
+                'step1_output': tokens_step1['output'], 
+                'step2_input': tokens_step2['input'],
+                'step2_output': tokens_step2['output'],
+                'total_input': tokens_step1['input'] + tokens_step2['input'],
+                'total_output': tokens_step1['output'] + tokens_step2['output'],
+                'grand_total': tokens_step1['input'] + tokens_step1['output'] + tokens_step2['input'] + tokens_step2['output']
+            }
             
-            # 현재 사용자 메시지 추가
-            llm_messages.append(HumanMessage(content=user_message))
-            
-            # OpenAI API 호출
-            response = self.llm.invoke(llm_messages)
-            ai_response = response.content
+            print(f"🔗 2단계 체이닝 토큰 사용량:")
+            print(f"   1단계(공통답변): 입력 {total_tokens['step1_input']}, 출력 {total_tokens['step1_output']}")
+            print(f"   2단계(페르소나): 입력 {total_tokens['step2_input']}, 출력 {total_tokens['step2_output']}")
+            print(f"   총합: 입력 {total_tokens['total_input']}, 출력 {total_tokens['total_output']}, 전체 {total_tokens['grand_total']}")
             
             # 사용자 메시지 저장
             user_msg = ChatMessage(
@@ -85,12 +91,12 @@ class AIService:
             assistant_msg = ChatMessage(
                 session_id=session_id,
                 sender_type="assistant",
-                content=ai_response
+                content=persona_response
             )
             self.db.add(assistant_msg)
             self.db.commit()
             
-            return ai_response
+            return persona_response
             
         except Exception as e:
             # 오류 발생 시 기본 응답
@@ -110,6 +116,116 @@ class AIService:
             
             return error_response
     
+    def _generate_common_response(self, messages: list, user_message: str, **context) -> Tuple[str, Dict[str, int]]:
+        """1단계: 공통 규칙으로 기본 답변 생성"""
+        try:
+            # 공통 규칙 프롬프트 로드
+            common_rules = self.chained_prompt_manager.load_common_rules()
+            
+            # LLM에 보낼 메시지 구성
+            llm_messages = []
+            llm_messages.append(SystemMessage(content=f"""# 거북이상담소 AI 상담사 - 공통 답변 생성
+
+{common_rules}
+
+위 규칙에 따라 사용자의 메시지에 대해 기본적이고 중립적인 상담 답변을 생성해주세요.
+이 답변은 나중에 각 페르소나의 특성에 맞게 변환될 예정입니다."""))
+            
+            # 대화 히스토리 추가 (최근 8개만)
+            for msg in messages[-8:]:
+                if msg.sender_type == "user":
+                    llm_messages.append(HumanMessage(content=msg.content))
+                else:
+                    llm_messages.append(AIMessage(content=msg.content))
+            
+            # 현재 사용자 메시지 추가
+            llm_messages.append(HumanMessage(content=user_message))
+            
+            # OpenAI API 호출
+            response = self.llm.invoke(llm_messages)
+            common_response = response.content
+            
+            # 토큰 사용량 계산
+            tokens = self._calculate_tokens(llm_messages, common_response, response)
+            
+            return common_response, tokens
+            
+        except Exception as e:
+            print(f"공통 답변 생성 오류: {e}")
+            fallback_response = "죄송합니다. 지금 답변을 생성하는데 어려움이 있어요. 조금 더 구체적으로 말씀해주시겠어요?"
+            return fallback_response, {'input': 0, 'output': 0}
+    
+    def _transform_to_persona(self, common_response: str, persona_type: str, user_message: str, **context) -> Tuple[str, Dict[str, int]]:
+        """2단계: 공통 답변을 페르소나 특성에 맞게 변환"""
+        try:
+            # 페르소나 매핑
+            persona_mapping = {
+                "내면형": "nemyeon",
+                "추진형": "chujin", 
+                "관계형": "gwangye",
+                "안정형": "anjeong",
+                "쾌락형": "querock"
+            }
+            
+            persona_key = persona_mapping.get(persona_type, "nemyeon")
+            persona_prompt = self.chained_prompt_manager.load_persona_prompt(persona_key)
+            
+            # 변환용 프롬프트 구성
+            transform_prompt = f"""# 페르소나 변환 시스템
+
+다음은 당신의 페르소나 특성입니다:
+
+{persona_prompt}
+
+## 변환 작업
+위의 페르소나 특성에 맞게 다음 기본 답변을 자연스럽게 변환해주세요:
+
+**기본 답변:**
+{common_response}
+
+**사용자 메시지:**
+{user_message}
+
+페르소나의 말투, 성격, 상담 스타일을 반영하여 답변을 변환해주세요. 
+답변의 핵심 내용과 의도는 유지하되, 표현 방식을 페르소나에 맞게 조정해주세요."""
+            
+            llm_messages = [
+                SystemMessage(content=transform_prompt),
+                HumanMessage(content="위 지침에 따라 답변을 변환해주세요.")
+            ]
+            
+            # OpenAI API 호출
+            response = self.llm.invoke(llm_messages)
+            persona_response = response.content
+            
+            # 토큰 사용량 계산
+            tokens = self._calculate_tokens(llm_messages, persona_response, response)
+            
+            return persona_response, tokens
+            
+        except Exception as e:
+            print(f"페르소나 변환 오류: {e}")
+            # 변환 실패 시 공통 답변 반환
+            return common_response, {'input': 0, 'output': 0}
+    
+    def _calculate_tokens(self, llm_messages: list, response_content: str, response_obj) -> Dict[str, int]:
+        """토큰 사용량 계산"""
+        if hasattr(response_obj, 'response_metadata') and 'token_usage' in response_obj.response_metadata:
+            token_usage = response_obj.response_metadata['token_usage']
+            return {
+                'input': token_usage.get('prompt_tokens', 0),
+                'output': token_usage.get('completion_tokens', 0)
+            }
+        else:
+            # 대략적인 토큰 계산 (1토큰 ≈ 4글자)
+            all_text = " ".join([msg.content for msg in llm_messages if hasattr(msg, 'content')])
+            estimated_input = len(all_text) // 4
+            estimated_output = len(response_content) // 4
+            return {
+                'input': estimated_input,
+                'output': estimated_output
+            }
+
     def get_initial_greeting(self, persona_type: str = "내면형", user_analysis_result: dict = None) -> str:
         """페르소나별 초기 인사 메시지 반환 (그림 분석 결과 반영)"""
         # 기본 인사말
