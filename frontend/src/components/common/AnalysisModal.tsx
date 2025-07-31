@@ -7,6 +7,7 @@ interface AnalysisModalProps {
   isOpen: boolean;
   analysisStatus?: PipelineStatusResponse | null;
   onComplete?: () => void;
+  onClose?: () => void;
 }
 
 interface Step {
@@ -16,7 +17,7 @@ interface Step {
   active: boolean;
 }
 
-const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, onComplete }) => {
+const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, onComplete, onClose }) => {
   const [steps, setSteps] = useState<Step[]>([
     { id: 1, name: '이미지 처리', completed: false, active: false },
     { id: 2, name: '패턴 분석', completed: false, active: false },
@@ -101,7 +102,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
   }, [analysisStatus, isOpen, onComplete]);
 
   return (
-    <Modal isOpen={isOpen} onClose={() => {}} className="relative">
+    <Modal isOpen={isOpen} onClose={onClose || (() => {})} className="relative">
       <div className="p-8 text-center">
         {/* 스피너 */}
         <div className="mb-6">
@@ -124,7 +125,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
                   : step.active 
                     ? 'bg-purple-600 text-white animate-pulse' 
                     : 'bg-gray-300 text-gray-600'
-              }`}>
+              }`} style={{ animationDuration: step.active ? '3s' : undefined }}>
                 {step.completed ? <Check className="w-4 h-4" /> : step.id}
               </div>
               <span className={`font-medium transition-colors duration-300 ${
