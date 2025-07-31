@@ -11,7 +11,7 @@ class ChatSession(Base):
     
     chat_sessions_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(Integer, ForeignKey('user_informations.user_id', ondelete='CASCADE'))
-    friends_id = Column(Integer, ForeignKey('friends.friends_id'))
+    persona_id = Column(Integer, ForeignKey('personas.persona_id'))
     session_name = Column(String(255))
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=func.now())
@@ -20,7 +20,7 @@ class ChatSession(Base):
     # 관계 정의
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
     user_information = relationship("UserInformation", back_populates="chat_sessions")
-    friend = relationship("Friend", back_populates="chat_sessions")
+    friend = relationship("Persona", back_populates="chat_sessions")
     rating = relationship("Rating", back_populates="session", uselist=False)
 
 class ChatMessage(Base):

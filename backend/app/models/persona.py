@@ -3,15 +3,13 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .user import Base
 
-class Friend(Base):
+class Persona(Base):
     """친구/캐릭터 모델"""
-    __tablename__ = "friends"
+    __tablename__ = "personas"
     
-    friends_id = Column(Integer, primary_key=True, autoincrement=True)
-    friends_name = Column(String(10), nullable=False)
-    friends_description = Column(Text, nullable=False)
-    tts_audio_url = Column(String(2048))
-    tts_voice_type = Column(Integer)
+    persona_id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(10), nullable=False)
+    description = Column(Text, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=func.now())
     
