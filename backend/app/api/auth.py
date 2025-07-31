@@ -14,22 +14,34 @@ oauth2_scheme = HTTPBearer()
 # JWT 토큰에서 현재 사용자 정보를 추출하는 의존성
 async def get_current_user(token = Depends(oauth2_scheme)) -> dict:
     """JWT 토큰에서 현재 사용자 정보를 추출합니다."""
+    print(f"🔍 토큰 검증 시작 - 토큰: {token.credentials[:20]}..." if token and token.credentials else "❌ 토큰 없음")
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     
+    if not token or not token.credentials:
+        print("❌ 토큰이 제공되지 않음")
+        raise credentials_exception
+    
     payload = auth_service.verify_token(token.credentials)
     if payload is None:
+        print("❌ 토큰 검증 실패")
         raise credentials_exception
         
     user_id = payload.get("sub")
     email = payload.get("email")
+    print(f"📋 토큰에서 추출된 정보 - user_id: {user_id}, email: {email}")
+    
     if user_id is None or email is None:
+        print("❌ 토큰에서 필수 정보 누락")
         raise credentials_exception
         
-    return {"user_id": int(user_id), "email": email}
+    result = {"user_id": int(user_id), "email": email}
+    print(f"✅ 토큰 검증 성공: {result}")
+    return result
 
 class GoogleCallbackRequest(BaseModel):
     code: str
@@ -43,11 +55,6 @@ class UpdateNicknameRequest(BaseModel):
 class GoogleTokenRequest(BaseModel):
     token: str
 
-class TestLoginRequest(BaseModel):
-    google_id: str
-    email: str
-    name: str
-
 @router.post("/google")
 async def google_login(
     request: GoogleTokenRequest,
@@ -55,19 +62,25 @@ async def google_login(
 ):
     """Google ID 토큰으로 로그인/회원가입"""
     try:
+        print(f"🔄 Google 로그인 API 호출 - 토큰: {request.token[:50]}...")
+        
         result = auth_service.google_login(db, request.token)
         if not result:
+            print("❌ auth_service.google_login returned None")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid Google token"
             )
         
+        print(f"✅ auth_service 결과: {result}")
+        
         # JWT 토큰 생성
         access_token = auth_service.create_access_token(
             data={"sub": str(result["user_id"]), "email": result.get("email", "unknown")}
         )
+        print(f"🔑 JWT 토큰 생성 완료: {access_token[:20]}...")
         
-        return {
+        response_data = {
             "user": {
                 "id": result["user_id"],
                 "email": result.get("email", "unknown"),
@@ -83,55 +96,18 @@ async def google_login(
             "is_first_login": result["is_new_user"]
         }
         
+        print(f"📤 API 응답 데이터: {response_data}")
+        return response_data
+        
+    except HTTPException:
+        raise
     except Exception as e:
+        print(f"❌ Google login API 오류: {e}")
+        import traceback
+        print(f"❌ Full traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Google login failed: {str(e)}"
-        )
-
-@router.post("/test-login")
-async def test_login(
-    request: TestLoginRequest,
-    db: Session = Depends(get_db)
-):
-    """테스트용 소셜 로그인 (실제 Google 토큰 검증 없이)"""
-    try:
-        # 테스트용 Google 사용자 정보 구성
-        google_user_info = {
-            'sub': request.google_id,
-            'email': request.email,
-            'name': request.name,
-            'picture': None
-        }
-        
-        # 사용자 조회/생성
-        user_info, is_new_user = auth_service.get_or_create_user(db, google_user_info)
-        
-        # JWT 토큰 생성
-        access_token = auth_service.create_access_token(
-            data={"sub": str(user_info.user_id), "email": request.email}
-        )
-        
-        return {
-            "user": {
-                "id": user_info.user_id,
-                "email": request.email,
-                "google_id": request.google_id,
-                "name": user_info.nickname,
-                "is_first_login": is_new_user,
-                "created_at": user_info.created_at.isoformat() if user_info.created_at else None,
-                "updated_at": user_info.created_at.isoformat() if user_info.created_at else None
-            },
-            "access_token": access_token,
-            "token_type": "bearer",
-            "is_first_login": is_new_user,
-            "db_status": "새로 생성됨" if is_new_user else "기존 사용자"
-        }
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Test login failed: {str(e)}"
         )
 
 @router.get("/google/callback")
