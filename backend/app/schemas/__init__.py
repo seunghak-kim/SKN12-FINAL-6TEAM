@@ -8,7 +8,7 @@ from .chat import (
     SendMessageRequest, SendMessageResponse
 )
 from .friend import (
-    FriendBase, FriendCreate, FriendUpdate, FriendResponse
+    PersonaBase, PersonaCreate, PersonaUpdate, PersonaResponse
 )
 from .test import (
     DrawingTestBase, DrawingTestCreate, DrawingTestUpdate, DrawingTestResponse,
@@ -32,8 +32,8 @@ __all__ = [
     "ChatSessionDetailResponse", "ChatMessageBase", "ChatMessageCreate", "ChatMessageResponse",
     "SendMessageRequest", "SendMessageResponse",
     
-    # Friend schemas
-    "FriendBase", "FriendCreate", "FriendUpdate", "FriendResponse",
+    # Persona schemas
+    "PersonaBase", "PersonaCreate", "PersonaUpdate", "PersonaResponse",
     
     # Test schemas
     "DrawingTestBase", "DrawingTestCreate", "DrawingTestUpdate", "DrawingTestResponse",

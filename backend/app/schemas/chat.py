@@ -7,7 +7,7 @@ from uuid import UUID
 class ChatSessionBase(BaseModel):
     session_name: Optional[str] = Field(None, max_length=255, description="세션 이름")
     user_id: int = Field(..., description="사용자 ID")
-    friends_id: int = Field(..., description="친구 ID")
+    persona_id: int = Field(..., description="페르소나 ID")
 
 class ChatSessionCreate(ChatSessionBase):
     pass

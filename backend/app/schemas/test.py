@@ -25,7 +25,7 @@ class DrawingTestResponse(DrawingTestBase):
 class DrawingTestResultBase(BaseModel):
     """그림 테스트 결과 기본 스키마"""
     test_id: int = Field(..., description="테스트 ID")
-    friends_type: Optional[int] = Field(None, description="친구 타입 ID")
+    persona_type: Optional[int] = Field(None, description="친구 타입 ID")
     summary_text: Optional[str] = Field(None, description="결과 요약")
 
 class DrawingTestResultCreate(DrawingTestResultBase):
@@ -34,7 +34,7 @@ class DrawingTestResultCreate(DrawingTestResultBase):
 
 class DrawingTestResultUpdate(BaseModel):
     """그림 테스트 결과 업데이트 스키마"""
-    friends_type: Optional[int] = Field(None, description="친구 타입 ID")
+    persona_type: Optional[int] = Field(None, description="친구 타입 ID")
     summary_text: Optional[str] = Field(None, description="결과 요약")
 
 class DrawingTestResultResponse(DrawingTestResultBase):
