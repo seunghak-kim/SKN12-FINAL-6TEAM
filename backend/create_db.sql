@@ -123,25 +123,25 @@ ALTER TABLE "drawing_test_results" ADD CONSTRAINT "drawing_test_results_persona_
 ALTER TABLE "drawing_test_results" ADD CONSTRAINT "drawing_test_results_test_id_fkey" FOREIGN KEY ("test_id") REFERENCES "drawing_tests" ("test_id") ON DELETE CASCADE;
 
 -- user_informations에서 social_user_id와 regular_user_id가 모두 NULL이면 해당 레코드 삭제하는 트리거
-CREATE OR REPLACE FUNCTION cleanup_orphaned_user_informations()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- social_user_id와 regular_user_id가 모두 NULL인 user_informations 레코드 삭제
-    DELETE FROM user_informations 
-    WHERE social_user_id IS NULL AND regular_user_id IS NULL;
+-- CREATE OR REPLACE FUNCTION cleanup_orphaned_user_informations()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     -- social_user_id와 regular_user_id가 모두 NULL인 user_informations 레코드 삭제
+--     DELETE FROM user_informations 
+--     WHERE social_user_id IS NULL AND regular_user_id IS NULL;
     
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
+--     RETURN NULL;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
--- social_users 삭제 후 트리거
-CREATE TRIGGER trigger_cleanup_after_social_users_delete
-    AFTER DELETE ON social_users
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION cleanup_orphaned_user_informations();
+-- -- social_users 삭제 후 트리거
+-- CREATE TRIGGER trigger_cleanup_after_social_users_delete
+--     AFTER DELETE ON social_users
+--     FOR EACH STATEMENT
+--     EXECUTE FUNCTION cleanup_orphaned_user_informations();
 
--- users 삭제 후 트리거  
-CREATE TRIGGER trigger_cleanup_after_users_delete
-    AFTER DELETE ON users
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION cleanup_orphaned_user_informations();
+-- -- users 삭제 후 트리거  
+-- CREATE TRIGGER trigger_cleanup_after_users_delete
+--     AFTER DELETE ON users
+--     FOR EACH STATEMENT
+--     EXECUTE FUNCTION cleanup_orphaned_user_informations();
