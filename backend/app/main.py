@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from .api.chat import router as chat_router
 from .api.auth import router as auth_router
 from .api.user import router as user_router
-from .api.friend import router as friend_router
+from .api.persona import router as persona_router
 from .api.test import router as test_router
 from .api.rating import router as rating_router
 from .api.agreement import router as agreement_router
@@ -52,7 +52,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 # 라우터 등록
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(user_router, prefix="/users", tags=["users"])
-app.include_router(friend_router, prefix="/friends", tags=["friends"])
+app.include_router(persona_router, prefix="/personas", tags=["personas"])
 app.include_router(chat_router, prefix="/chat", tags=["chat"])
 app.include_router(test_router, prefix="/api/v1/test", tags=["tests"])
 app.include_router(rating_router, prefix="/ratings", tags=["ratings"])
@@ -75,7 +75,7 @@ async def startup_event():
         
         db = next(get_db())
         try:
-            sync_success = persona_sync_service.sync_friends_table(db)
+            sync_success = persona_sync_service.sync_personas_table(db)
             if sync_success:
                 print("Persona synchronization completed successfully")
             else:

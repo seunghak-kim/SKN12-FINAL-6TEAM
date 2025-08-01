@@ -297,18 +297,18 @@ export const useAppState = () => {
 
   // 최신 테스트 결과에 따라 캐릭터 설정
   const setCharacterFromTestResult = useCallback((testResult: DrawingTest) => {
-    if (testResult.result?.friend_info) {
-      const friendName = testResult.result.friend_info.friends_name;
-      console.log(`🎭 테스트 결과에서 캐릭터 이름: ${friendName}`);
+    if (testResult.result?.persona_info) {
+      const personaName = testResult.result.persona_info.persona_name;
+      console.log(`🎭 테스트 결과에서 캐릭터 이름: ${personaName}`);
       
       // 캐릭터 매핑 (이제 유형 이름이 캐릭터 이름과 동일)
-      const character = getAvailableCharacters().find(char => char.name === friendName);
+      const character = getAvailableCharacters().find(char => char.name === personaName);
       
       if (character) {
-        console.log(`✅ 캐릭터 설정 완료: ${friendName}`);
+        console.log(`✅ 캐릭터 설정 완료: ${personaName}`);
         setSelectedCharacter(character);
       } else {
-        console.log(`❌ 캐릭터를 찾을 수 없음: ${friendName}, 기본 캐릭터(안정이) 사용`);
+        console.log(`❌ 캐릭터를 찾을 수 없음: ${personaName}, 기본 캐릭터(안정이) 사용`);
         const defaultCharacter = getAvailableCharacters().find(char => char.name === '안정이');
         if (defaultCharacter) {
           setSelectedCharacter(defaultCharacter);

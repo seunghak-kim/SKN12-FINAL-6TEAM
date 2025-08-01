@@ -24,9 +24,9 @@ def get_persona_type_from_persona_id(persona_id: int, db: Session = None) -> str
     # DB에서 실제 persona 데이터 조회 시도
     if db:
         try:
-            friend = db.query(Persona).filter(Persona.persona_id == persona_id).first()
-            if friend and friend.name:
-                return friend.name
+            persona = db.query(Persona).filter(Persona.persona_id == persona_id).first()
+            if persona and persona.name:
+                return persona.name
         except Exception as e:
             print(f"DB 조회 실패, 기본값 사용: {e}")
     
@@ -55,19 +55,19 @@ async def create_chat_session(
                 detail="사용자를 찾을 수 없습니다."
             )
         
-        # 친구 존재 확인
-        friend = db.query(Persona).filter(Persona.persona_id == session_data.persona_id).first()
-        if not friend:
+        # 페르소나 존재 확인
+        persona = db.query(Persona).filter(Persona.persona_id == session_data.persona_id).first()
+        if not persona:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="친구를 찾을 수 없습니다."
+                detail="페르소나를 찾을 수 없습니다."
             )
         
         # 새 세션 생성
         new_session = ChatSession(
             user_id=session_data.user_id,
             persona_id=session_data.persona_id,
-            session_name=session_data.session_name or f"{user.nickname}와 {friend.friends_name}의 대화",
+            session_name=session_data.session_name or f"{user.nickname}와 {persona.name}의 대화",
             is_active=True
         )
         

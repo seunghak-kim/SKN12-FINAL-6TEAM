@@ -44,15 +44,15 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
         const foundResult = allResults.find(result => result.test_id.toString() === id);
         
         if (foundResult) {
-          // friends_type에 따른 올바른 캐릭터 이름 매핑
-          const getCharacterName = (friendsType?: number) => {
-            switch (friendsType) {
+          // persona_type에 따른 올바른 캐릭터 이름 매핑
+          const getCharacterName = (personaType?: number) => {
+            switch (personaType) {
               case 1: return '추진이';
               case 2: return '내면이';
               case 3: return '관계이';
               case 4: return '쾌락이';
               case 5: return '안정이';
-              default: return foundResult.result?.friend_info?.friends_name || '분석 중';
+              default: return foundResult.result?.persona_info?.persona_name || '분석 중';
             }
           };
 
@@ -71,7 +71,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
             id: foundResult.test_id.toString(),
             testType: 'Drawing' as const,
             result: foundResult.result?.summary_text || '결과 분석 중입니다.',
-            characterMatch: getCharacterName(foundResult.result?.friends_type),
+            characterMatch: getCharacterName(foundResult.result?.persona_type),
             date: foundResult.submitted_at,
             description: foundResult.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
             images: [foundResult.image_url],

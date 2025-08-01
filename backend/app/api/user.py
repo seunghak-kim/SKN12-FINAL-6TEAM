@@ -359,7 +359,7 @@ async def get_user_test_results(
     # 테스트 결과 조회 (최신순)
     from sqlalchemy.orm import joinedload
     test_results = db.query(DrawingTest).options(
-        joinedload(DrawingTest.result).joinedload(DrawingTestResult.friend)
+        joinedload(DrawingTest.result).joinedload(DrawingTestResult.persona)
     ).filter(
         DrawingTest.user_id == user_id
     ).order_by(DrawingTest.submitted_at.desc()).offset(skip).limit(limit).all()
@@ -369,8 +369,8 @@ async def get_user_test_results(
         character_match = "미정"
         interpretation = "분석 중..."
         
-        if test.result and test.result.friend:
-            character_match = test.result.friend.name
+        if test.result and test.result.persona:
+            character_match = test.result.persona.name
             interpretation = test.result.summary_text or "분석 결과가 없습니다."
         
         results.append({

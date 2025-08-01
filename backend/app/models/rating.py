@@ -19,4 +19,4 @@ class Rating(Base):
     # 관계 정의
     session = relationship("ChatSession", back_populates="rating")
     user_information = relationship("UserInformation", back_populates="ratings")
-    friend = relationship("Persona", back_populates="ratings")
+    persona = relationship("Persona", back_populates="ratings")

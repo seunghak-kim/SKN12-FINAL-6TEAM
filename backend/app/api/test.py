@@ -236,15 +236,15 @@ async def get_my_test_results(
                 "persona_type": test.result.persona_type,
                 "summary_text": test.result.summary_text,
                 "created_at": test.result.created_at,
-                "friend_info": None
+                "persona_info": None
             }
             
-            # 친구 정보도 포함
-            if test.result.friend:
-                test_data["result"]["friend_info"] = {
-                    "persona_id": test.result.friend.persona_id,
-                    "name": test.result.friend.name,
-                    "description": test.result.friend.description
+            # 페르소나 정보도 포함
+            if test.result.persona:
+                test_data["result"]["persona_info"] = {
+                    "persona_id": test.result.persona.persona_id,
+                    "name": test.result.persona.name,
+                    "description": test.result.persona.description
                 }
         
         response_data.append(test_data)

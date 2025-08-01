@@ -209,7 +209,7 @@ const AppContent: React.FC = () => {
               onNavigate={handleNavigate}
               onInitializeChat={handleInitializeChat}
               // userId prop 제거 - ChatPage에서 내부적으로 로그인된 사용자 ID를 가져옴
-              friendsId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
+              personaId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
             />
           } 
         />

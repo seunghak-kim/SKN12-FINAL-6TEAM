@@ -114,7 +114,7 @@ const MyPage: React.FC<MyPageProps> = ({
   const ITEMS_PER_PAGE = 5;
 
   // 캐릭터 ID에 따른 아바타 매핑
-  const getCharacterAvatar = (friendsId: number | null): string => {
+  const getCharacterAvatar = (personaId: number | null): string => {
     const nameMap: { [key: number]: string } = {
       1: '추진이',
       2: '내면이',
@@ -122,7 +122,7 @@ const MyPage: React.FC<MyPageProps> = ({
       4: '쾌락이',
       5: '안정이',
     };
-    const name = friendsId ? nameMap[friendsId] : '내면이';
+    const name = personaId ? nameMap[personaId] : '내면이';
     return `/assets/persona/${name}.png`;
   };
 
@@ -192,9 +192,9 @@ const MyPage: React.FC<MyPageProps> = ({
         // 간단한 채팅 히스토리 생성 (상세 정보 로드 생략)
         const simpleChatHistory = sessions.map(session => ({
           id: session.chat_sessions_id,
-          characterId: session.friends_id?.toString() || '',
+          characterId: session.persona_id?.toString() || '',
           characterName: session.session_name || 'AI 상담사',
-          characterAvatar: getCharacterAvatar(session.friends_id),
+          characterAvatar: getCharacterAvatar(session.persona_id),
           date: session.created_at.split('T')[0],
           lastMessage: '채팅 기록이 있습니다.',
           messages: []
@@ -216,7 +216,7 @@ const MyPage: React.FC<MyPageProps> = ({
           id: test.test_id.toString(),
           testType: 'Drawing' as const,
           result: test.result?.summary_text || '결과 분석 중입니다.',
-          characterMatch: test.result?.friend_info?.friends_name || '분석 중',
+          characterMatch: test.result?.persona_info?.persona_name || '분석 중',
           date: test.submitted_at,
           description: test.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
           images: [test.image_url]

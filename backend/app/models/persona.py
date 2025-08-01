@@ -4,7 +4,7 @@ from sqlalchemy.sql import func
 from .user import Base
 
 class Persona(Base):
-    """친구/캐릭터 모델"""
+    """페르소나/캐릭터 모델"""
     __tablename__ = "personas"
     
     persona_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -14,6 +14,6 @@ class Persona(Base):
     created_at = Column(DateTime, default=func.now())
     
     # 관계 정의
-    chat_sessions = relationship("ChatSession", back_populates="friend")
-    drawing_test_results = relationship("DrawingTestResult", back_populates="friend")
-    ratings = relationship("Rating", back_populates="friend")
+    chat_sessions = relationship("ChatSession", back_populates="persona")
+    drawing_test_results = relationship("DrawingTestResult", back_populates="persona")
+    ratings = relationship("Rating", back_populates="persona")

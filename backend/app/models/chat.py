@@ -20,7 +20,7 @@ class ChatSession(Base):
     # 관계 정의
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
     user_information = relationship("UserInformation", back_populates="chat_sessions")
-    friend = relationship("Persona", back_populates="chat_sessions")
+    persona = relationship("Persona", back_populates="chat_sessions")
     rating = relationship("Rating", back_populates="session", uselist=False)
 
 class ChatMessage(Base):
@@ -29,7 +29,7 @@ class ChatMessage(Base):
     
     chat_messages_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     session_id = Column(UUID(as_uuid=True), ForeignKey('chat_sessions.chat_sessions_id', ondelete='CASCADE'))
-    sender_type = Column(String(20), nullable=False)  # 'user' or 'friend'
+    sender_type = Column(String(20), nullable=False)  # 'user' or 'assistant'
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=func.now())
     

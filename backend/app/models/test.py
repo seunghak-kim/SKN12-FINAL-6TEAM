@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, DateTime, Integer, ForeignKey, JSON
+from sqlalchemy import Column, String, Text, DateTime, Integer, ForeignKey, JSON, DECIMAL
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .user import Base
@@ -23,11 +23,16 @@ class DrawingTestResult(Base):
     result_id = Column(Integer, primary_key=True, autoincrement=True)
     test_id = Column(Integer, ForeignKey('drawing_tests.test_id'), unique=True, nullable=False)
     persona_type = Column(Integer, ForeignKey('personas.persona_id'))
-    # score = Column(Integer) 스코어 제거 
     summary_text = Column(Text)
-    personality_scores = Column(JSON)  # 5유형 확률 저장
+    dog_scores = Column(DECIMAL(5,2))
+    cat_scores = Column(DECIMAL(5,2))
+    rabbit_scores = Column(DECIMAL(5,2))
+    bear_scores = Column(DECIMAL(5,2))
+    turtle_scores = Column(DECIMAL(5,2))
+    thumbs_up = Column(Integer)
+    thumbs_down = Column(Integer)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     
     # 관계 정의
     test = relationship("DrawingTest", back_populates="result")
-    friend = relationship("Persona", back_populates="drawing_test_results")
+    persona = relationship("Persona", back_populates="drawing_test_results")

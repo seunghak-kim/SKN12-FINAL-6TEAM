@@ -1,5 +1,5 @@
 """
-프롬프트 파일과 DB friends 테이블 동기화 서비스
+프롬프트 파일과 DB personas 테이블 동기화 서비스
 """
 import os
 import re
@@ -119,31 +119,31 @@ class PersonaSyncService:
         
         return persona_data
     
-    def sync_friends_table(self, db: Session) -> bool:
-        """DB friends 테이블과 프롬프트 파일 동기화"""
+    def sync_personas_table(self, db: Session) -> bool:
+        """DB personas 테이블과 프롬프트 파일 동기화"""
         try:
             # 모든 페르소나 데이터 가져오기
             persona_data = self.get_all_persona_data()
             
             for data in persona_data:
                 # 기존 personas 레코드 확인
-                existing_friend = db.query(Persona).filter(
+                existing_persona = db.query(Persona).filter(
                     Persona.name == data["name"]
                 ).first()
                 
-                if existing_friend:
+                if existing_persona:
                     # 기존 레코드 업데이트
-                    existing_friend.description = data["description"]
-                    existing_friend.is_active = data["is_active"]
+                    existing_persona.description = data["description"]
+                    existing_persona.is_active = data["is_active"]
                     logger.info(f"페르소나 업데이트: {data['name']}")
                 else:
                     # 새 레코드 생성
-                    new_friend = Persona(
+                    new_persona = Persona(
                         name=data["name"],
                         description=data["description"],
                         is_active=data["is_active"]
                     )
-                    db.add(new_friend)
+                    db.add(new_persona)
                     logger.info(f"페르소나 생성: {data['name']}")
             
             db.commit()

@@ -121,7 +121,7 @@ class UserService {
       id: test.test_id.toString(),
       testType: 'Drawing' as const,
       result: test.result?.summary_text || '결과 분석 중입니다.',
-      characterMatch: test.result?.friend_info?.friends_name || '분석 중',
+      characterMatch: test.result?.persona_info?.persona_name || '분석 중',
       date: test.submitted_at,
       description: test.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
       images: [test.image_url]

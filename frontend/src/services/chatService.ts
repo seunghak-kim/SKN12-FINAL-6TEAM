@@ -66,9 +66,9 @@ export class ChatService {
   }
 
   // 페르소나별 초기 인사 메시지 조회
-  async getSessionGreeting(sessionId: string): Promise<{ persona_type: string; friends_id: number; greeting: string }> {
+  async getSessionGreeting(sessionId: string): Promise<{ persona_type: string; persona_id: number; greeting: string }> {
     try {
-      return await apiClient.get<{ persona_type: string; friends_id: number; greeting: string }>(`/chat/sessions/${sessionId}/greeting`);
+      return await apiClient.get<{ persona_type: string; persona_id: number; greeting: string }>(`/chat/sessions/${sessionId}/greeting`);
     } catch (error) {
       throw this.handleError(error);
     }

@@ -74,7 +74,7 @@ const DreamSearchApp: React.FC = () => {
             onCloseRatingModal={handleCloseRatingModal}
             onNavigate={handleNavigate}
             userId={1} // 실제로는 로그인한 사용자 ID
-            friendsId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
+            personaId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
           />
         );
       case 'mypage':

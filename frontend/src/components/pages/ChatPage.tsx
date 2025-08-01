@@ -20,7 +20,7 @@ interface ChatPageProps {
   onShowSatisfaction?: () => void;
   // 새로 추가된 props
   userId?: number;
-  friendsId?: number;
+  personaId?: number;
 }
 
 const ChatPage: React.FC<ChatPageProps> = ({
@@ -31,7 +31,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   onNavigate,
   onInitializeChat,
   userId, // 외부에서 전달받거나 내부에서 계산
-  friendsId // 외부에서 전달받거나 selectedCharacter에서 가져옴
+  personaId // 외부에서 전달받거나 selectedCharacter에서 가져옴
 }) => {
   console.log('ChatPage - 받은 selectedCharacter:', selectedCharacter);
   const [inputMessage, setInputMessage] = useState('');
@@ -85,7 +85,7 @@ useEffect(() => {
   // 실제 사용자 ID 가져오기
   const [realUserId, setRealUserId] = useState<number | null>(null);
   const currentUserId = userId || realUserId;
-  const currentFriendsId = friendsId || (selectedCharacter ? parseInt(selectedCharacter.id) : 1);
+  const currentPersonaId = personaId || (selectedCharacter ? parseInt(selectedCharacter.id) : 1);
   
   // 컴포넌트 마운트 시 실제 사용자 정보 로드
   useEffect(() => {
@@ -176,7 +176,7 @@ useEffect(() => {
             await loadSession(sessionId);
           } else if (selectedCharacter && currentUserId !== null) {
             // 새 세션 생성
-            console.log('새 세션 생성 시도:', { userId: currentUserId, friendsId: currentFriendsId, characterName: selectedCharacter.name });
+            console.log('새 세션 생성 시도:', { userId: currentUserId, personaId: currentPersonaId, characterName: selectedCharacter.name });
             
             // 사용자 인증 상태 재확인 (좀 더 관대하게)
             if (!authService.isAuthenticated() && !localStorage.getItem('access_token')) {
@@ -188,7 +188,7 @@ useEffect(() => {
             
             await createSession({
               user_id: currentUserId,
-              friends_id: currentFriendsId,
+              persona_id: currentPersonaId,
               session_name: `${selectedCharacter.name}와의 대화`
             });
           }
@@ -204,7 +204,7 @@ useEffect(() => {
         isCancelled = true;
       };
     }
-  }, [selectedCharacter?.name, session, isLoading, currentUserId, currentFriendsId, createSession, loadSession, location.search]);
+  }, [selectedCharacter?.name, session, isLoading, currentUserId, currentPersonaId, createSession, loadSession, location.search]);
 
   // 레거시 초기화 함수 호출 (기존 코드와의 호환성 유지)
   useEffect(() => {

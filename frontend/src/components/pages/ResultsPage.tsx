@@ -37,37 +37,37 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [satisfaction, setSatisfaction] = useState<"like" | "dislike" | null>(null);
   
   // 성격 유형별 데이터 매핑
-  const personalityData: { [key: string]: { friendsType: number; emoji: string; message: string; keywords: string[]; color: string; } } = {
+  const personalityData: { [key: string]: { personaType: number; emoji: string; message: string; keywords: string[]; color: string; } } = {
     '추진형': {
-      friendsType: 1,
+      personaType: 1,
       emoji: '💪',
       message: '목표를 향해 나아가자! 어떤 장애물도 내가 극복할 수 있어. 도전이 두렵지 않아!',
       keywords: ['목표 지향', '리더십', '적극성'],
       color: 'red'
     },
     '내면형': {
-      friendsType: 2, 
+      personaType: 2, 
       emoji: '😖',
       message: '아무도 내 기분을 제대로 이해하지 못할 거야... 괜찮아, 혼자인 게 더 편하니까. 내 세상 안에서 나는 완전하거든.',
       keywords: ['감정적 깊이', '내성적 성향', '공감 능력'],
       color: 'blue'
     },
     '관계형': {
-      friendsType: 3,
+      personaType: 3,
       emoji: '🤝', 
       message: '함께하면 더 좋은 일들이 생길 거야! 혼자보다는 다 같이 할 때 더 의미있어.',
       keywords: ['사교성', '협력', '친화력'],
       color: 'green'
     },
     '쾌락형': {
-      friendsType: 4,
+      personaType: 4,
       emoji: '😄',
       message: '인생은 즐거워야 해! 재미있는 일들을 찾아보자! 매 순간이 새로운 모험이야.',
       keywords: ['즐거움 추구', '활발함', '창의성'],
       color: 'yellow'
     },
     '안정형': {
-      friendsType: 5,
+      personaType: 5,
       emoji: '😌',
       message: '차분하고 안정적인 게 최고야. 평온함 속에서 행복을 찾자. 급할 건 없어.',
       keywords: ['안정감', '신중함', '조화'],
@@ -223,10 +223,10 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     try {
       // 파이프라인 데이터 직접 사용 (state에 의존하지 않음)
       const predictedPersonality = pipelineData?.predicted_personality || actualPersonalityType;
-      const pipelineFriendsType = pipelineData?.friends_type;
+      const pipelinePersonaType = pipelineData?.persona_type;
       
-      // friends_type만 업데이트 (summary_text는 파이프라인에서 이미 설정됨)
-      const finalFriendsType = pipelineFriendsType || personalityData[predictedPersonality]?.friendsType || 2;
+      // persona_type만 업데이트 (summary_text는 파이프라인에서 이미 설정됨)
+      const finalPersonaType = pipelinePersonaType || personalityData[predictedPersonality]?.personaType || 2;
       
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/test/drawing-test-results`, {
         method: 'POST',
@@ -236,7 +236,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         },
         body: JSON.stringify({
           test_id: testId,
-          friends_type: finalFriendsType
+          persona_type: finalPersonaType
           // summary_text 제거: 파이프라인에서 이미 상세한 분석 결과 저장됨
         })
       });
@@ -274,7 +274,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const handlePersonalityClick = (personalityType: string) => {
     // 성격 유형을 SearchResult 형태로 변환
     const character: SearchResult = {
-      id: personalityData[personalityType]?.friendsType.toString() || "2",
+      id: personalityData[personalityType]?.personaType.toString() || "2",
       name: getCharacterName(personalityType),
       description: personalityData[personalityType]?.message || "",
       avatar: getCharacterImageForType(personalityType)

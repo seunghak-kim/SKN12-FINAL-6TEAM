@@ -7,7 +7,7 @@ from .chat import (
     ChatSessionDetailResponse, ChatMessageBase, ChatMessageCreate, ChatMessageResponse,
     SendMessageRequest, SendMessageResponse
 )
-from .friend import (
+from .persona import (
     PersonaBase, PersonaCreate, PersonaUpdate, PersonaResponse
 )
 from .test import (

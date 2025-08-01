@@ -303,7 +303,7 @@ def save_analysis_result_sync(
         # 파이프라인 인스턴스 가져오기
         pipeline = get_pipeline()
         
-        # 성격 유형을 friends 테이블의 ID로 매핑
+        # 성격 유형을 personas 테이블의 ID로 매핑
         personality_mapping = {
             "추진형": 1,  # 추진이
             "내면형": 2,  # 내면이  

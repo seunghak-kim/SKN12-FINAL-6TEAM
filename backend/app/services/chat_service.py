@@ -158,9 +158,9 @@ class ChatService:
         from ..models.user import User
         from ..models.persona import Persona
         user_exists = self.db.query(User).filter(User.user_id == session_data.user_id).first() is not None
-        friend_exists = self.db.query(Persona).filter(Persona.persona_id == session_data.persona_id).first() is not None
+        persona_exists = self.db.query(Persona).filter(Persona.persona_id == session_data.persona_id).first() is not None
         
-        print(f"사용자 존재: {user_exists}, 친구 존재: {friend_exists}")
+        print(f"사용자 존재: {user_exists}, 페르소나 존재: {persona_exists}")
         
         db_session = ChatSession(
             user_id=session_data.user_id,
