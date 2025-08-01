@@ -35,6 +35,32 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
   const [actualPersonalityType, setActualPersonalityType] = useState<string>('내면형');
   const [satisfaction, setSatisfaction] = useState<"like" | "dislike" | null>(null);
+
+  // thumbs up/down 피드백 처리
+  const handleThumbsFeedback = async (feedbackType: 'like' | 'dislike') => {
+    console.log('🔴 handleThumbsFeedback 호출됨:', { feedbackType, testData });
+    
+    try {
+      // testData 구조 확인
+      const testId = testData?.test_id || testData?.testId || testData?.id;
+      console.log('🔍 추출된 testId:', testId);
+      
+      if (testId) {
+        console.log('📡 API 호출 시작...');
+        await testService.updateThumbsFeedback(testId, feedbackType);
+        setSatisfaction(feedbackType);
+        console.log(`✅ 피드백 전송 성공: ${feedbackType}`);
+      } else {
+        console.error('❌ 테스트 ID가 없습니다. testData:', testData);
+        // testId가 없어도 UI는 업데이트
+        setSatisfaction(feedbackType);
+      }
+    } catch (error) {
+      console.error('❌ 피드백 전송 실패:', error);
+      // 에러가 발생해도 UI는 업데이트 (사용자 경험 향상)
+      setSatisfaction(feedbackType);
+    }
+  };
   
   // 성격 유형별 데이터 매핑
   const personalityData: { [key: string]: { personaType: number; emoji: string; message: string; keywords: string[]; color: string; } } = {
@@ -403,7 +429,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                   <h3 className="text-white text-lg font-bold">나와 매칭된 결과가 마음에 드시나요?</h3>
                   <div className="flex space-x-4">
                     <button
-                      onClick={() => setSatisfaction("like")}
+                      onClick={() => handleThumbsFeedback("like")}
                       className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
                         satisfaction === "like"
                           ? "bg-green-500 text-white shadow-lg scale-110"
@@ -413,7 +439,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                       <ThumbsUp size={20} />
                     </button>
                     <button
-                      onClick={() => setSatisfaction("dislike")}
+                      onClick={() => handleThumbsFeedback("dislike")}
                       className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
                         satisfaction === "dislike"
                           ? "bg-red-500 text-white shadow-lg scale-110"

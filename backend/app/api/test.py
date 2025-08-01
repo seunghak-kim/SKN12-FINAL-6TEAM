@@ -143,6 +143,10 @@ class TestResultCreate(BaseModel):
     persona_type: int
     summary_text: Optional[str] = None
 
+class ThumbsFeedback(BaseModel):
+    test_id: int
+    feedback_type: str  # "like" or "dislike"
+
 @router.post("/drawing-test-results", status_code=status.HTTP_201_CREATED)
 async def create_test_result(
     result_data: TestResultCreate,
@@ -324,5 +328,60 @@ async def get_test_result(result_id: int, db: Session = Depends(get_db)):
         "persona_type": result.persona_type,
         "summary_text": result.summary_text,
         "created_at": result.created_at
+    }
+
+@router.post("/drawing-test-results/feedback")
+async def update_thumbs_feedback(
+    feedback: ThumbsFeedback,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """테스트 결과에 thumbs up/down 피드백 업데이트"""
+    
+    # 해당 테스트가 현재 사용자의 것인지 확인
+    test = db.query(DrawingTest).filter(
+        DrawingTest.test_id == feedback.test_id,
+        DrawingTest.user_id == current_user["user_id"]
+    ).first()
+    
+    if not test:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="테스트를 찾을 수 없습니다."
+        )
+    
+    # 테스트 결과 조회
+    test_result = db.query(DrawingTestResult).filter(
+        DrawingTestResult.test_id == feedback.test_id
+    ).first()
+    
+    if not test_result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="테스트 결과를 찾을 수 없습니다."
+        )
+    
+    # 피드백 타입에 따라 업데이트
+    if feedback.feedback_type == "like":
+        test_result.thumbs_up = 1
+        test_result.thumbs_down = 0
+    elif feedback.feedback_type == "dislike":
+        test_result.thumbs_up = 0
+        test_result.thumbs_down = 1
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="피드백 타입은 'like' 또는 'dislike'여야 합니다."
+        )
+    
+    db.commit()
+    db.refresh(test_result)
+    
+    return {
+        "result_id": test_result.result_id,
+        "test_id": test_result.test_id,
+        "thumbs_up": test_result.thumbs_up,
+        "thumbs_down": test_result.thumbs_down,
+        "message": "피드백이 성공적으로 업데이트되었습니다."
     }
 

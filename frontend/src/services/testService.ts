@@ -190,6 +190,21 @@ class TestService {
     const relativePath = imageUrl.replace('result/', '');
     return `${baseUrl}/${relativePath}`;
   }
+
+  /**
+   * 테스트 결과에 thumbs up/down 피드백 전송
+   */
+  async updateThumbsFeedback(testId: number, feedbackType: 'like' | 'dislike'): Promise<any> {
+    try {
+      return await apiClient.post(`${this.BASE_PATH}/drawing-test-results/feedback`, {
+        test_id: testId,
+        feedback_type: feedbackType
+      });
+    } catch (error) {
+      console.error('Failed to update thumbs feedback:', error);
+      throw error;
+    }
+  }
 }
 
 export const testService = new TestService();
