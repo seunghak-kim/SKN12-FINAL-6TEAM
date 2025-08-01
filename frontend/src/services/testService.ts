@@ -205,6 +205,18 @@ class TestService {
       throw error;
     }
   }
+
+  /**
+   * 특정 테스트 정보 조회 (이미지 URL 포함)
+   */
+  async getTestById(testId: number): Promise<any> {
+    try {
+      return await apiClient.get(`${this.BASE_PATH}/drawing-tests/${testId}`);
+    } catch (error) {
+      console.error('Failed to get test by id:', error);
+      throw error;
+    }
+  }
 }
 
 export const testService = new TestService();

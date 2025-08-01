@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import Navigation from '../common/Navigation';
 import { SearchResult } from '../../types';
 import { testService } from '../../services/testService';
@@ -32,6 +33,20 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [analysisResult, setAnalysisResult] = useState<string>('');
   const [isCreatingResult, setIsCreatingResult] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+
+  // 모달 상태에 따른 body 스크롤 제어
+  useEffect(() => {
+    if (showImageModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // 컴포넌트 언마운트 시 정리
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showImageModal]);
   const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
   const [actualPersonalityType, setActualPersonalityType] = useState<string>('내면형');
   const [satisfaction, setSatisfaction] = useState<"like" | "dislike" | null>(null);
@@ -181,10 +196,25 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   // 분석 데이터 가져온 후 DB 저장하는 순서 보장
   const initializeTestResult = async (testId: number) => {
     try {
-      // 1. 먼저 분석 상태 조회하여 파이프라인 결과 가져오기
+      // 1. 먼저 테스트 정보를 가져와서 이미지 URL 설정
+      try {
+        const testInfo = await testService.getTestById(testId);
+        console.log('📋 테스트 정보:', testInfo);
+        if (testInfo?.image_url) {
+          setTestData((prev: any) => ({
+            ...prev,
+            image_url: testInfo.image_url,
+            imageUrl: testInfo.image_url
+          }));
+        }
+      } catch (error) {
+        console.error('테스트 정보 가져오기 실패:', error);
+      }
+      
+      // 2. 분석 상태 조회하여 파이프라인 결과 가져오기
       const pipelineData = await fetchAnalysisStatus(testId);
       
-      // 2. 그 다음 DB에 저장 (파이프라인 데이터를 직접 전달)
+      // 3. 그 다음 DB에 저장 (파이프라인 데이터를 직접 전달)  
       await createTestResult(testId, pipelineData);
     } catch (error) {
       console.error('테스트 결과 초기화 실패:', error);
@@ -393,9 +423,40 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="w-32 h-32 bg-slate-500/50 rounded-lg flex items-center justify-center">
-                      <span className="text-white/50 text-xs text-center">이미지 없음</span>
-                    </div>
+                    (() => {
+                      const imageUrl = testData?.image_url || testData?.imageUrl;
+                      console.log('🖼️ 오른쪽 이미지 URL 확인:', { testData, imageUrl });
+                      
+                      if (imageUrl) {
+                        const fullImageUrl = testService.getImageUrl(imageUrl);
+                        console.log('📸 오른쪽 최종 이미지 URL:', fullImageUrl);
+                        
+                        return (
+                          <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
+                            <img 
+                              src={fullImageUrl}
+                              alt="분석한 그림"
+                              className="w-32 h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                              onError={(e) => {
+                                console.error('❌ 오른쪽 이미지 로드 실패:', fullImageUrl);
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-opacity duration-200 flex items-center justify-center">
+                              <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium transition-opacity duration-200">
+                                클릭하여 확대
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div className="w-32 h-32 bg-slate-500/50 rounded-lg flex items-center justify-center">
+                            <span className="text-white/50 text-xs text-center">이미지 없음</span>
+                          </div>
+                        );
+                      }
+                    })()
                   )}
                 </div>
               </div>
@@ -515,16 +576,22 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       `}</style>
     
 
-        {/* 이미지 모달 */}
-        {showImageModal && testData?.imageUrl && (
+        {/* 이미지 모달 - Portal로 body에 직접 렌더링 */}
+        {showImageModal && testData?.imageUrl && createPortal(
           <div 
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
+            style={{ zIndex: 999999 }}
             onClick={() => setShowImageModal(false)}
           >
             <div className="relative max-w-4xl max-h-full">
               <button
-                onClick={() => setShowImageModal(false)}
-                className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-opacity duration-200 z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowImageModal(false);
+                  console.log('X 버튼 클릭됨!');
+                }}
+                className="absolute top-4 right-4 text-white bg-red-600 rounded-full w-12 h-12 flex items-center justify-center hover:bg-red-700 transition-colors duration-200 text-xl font-bold cursor-pointer"
+                style={{ zIndex: 1000000 }}
               >
                 ✕
               </button>
@@ -535,7 +602,8 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>
