@@ -189,18 +189,45 @@ const MyPage: React.FC<MyPageProps> = ({
         const sessions = await chatService.getUserSessions(currentUserId);
         console.log('✅ 채팅 세션 수:', sessions.length);
         
-        // 간단한 채팅 히스토리 생성 (상세 정보 로드 생략)
-        const simpleChatHistory = sessions.map(session => ({
-          id: session.chat_sessions_id,
-          characterId: session.persona_id?.toString() || '',
-          characterName: session.session_name || 'AI 상담사',
-          characterAvatar: getCharacterAvatar(session.persona_id),
-          date: session.created_at.split('T')[0],
-          lastMessage: '채팅 기록이 있습니다.',
-          messages: []
-        }));
+        // 각 세션의 메시지 데이터 로드
+        const chatHistoryWithMessages = await Promise.all(
+          sessions.map(async (session) => {
+            try {
+              const messages = await chatService.getSessionMessages(session.chat_sessions_id);
+              const lastMessage = messages.length > 0 
+                ? messages[messages.length - 1]
+                : null;
+              
+              return {
+                id: session.chat_sessions_id,
+                characterId: session.persona_id?.toString() || '',
+                characterName: session.session_name || 'AI 상담사',
+                characterAvatar: getCharacterAvatar(session.persona_id),
+                date: session.created_at.split('T')[0],
+                lastMessage: lastMessage ? lastMessage.content : '채팅 기록이 있습니다.',
+                messages: messages.map(msg => ({
+                  id: msg.chat_messages_id,
+                  type: msg.sender_type,
+                  content: msg.content,
+                  timestamp: new Date(msg.created_at).toISOString()
+                }))
+              };
+            } catch (error) {
+              console.error(`❌ 세션 ${session.chat_sessions_id} 메시지 로드 실패:`, error);
+              return {
+                id: session.chat_sessions_id,
+                characterId: session.persona_id?.toString() || '',
+                characterName: session.session_name || 'AI 상담사',
+                characterAvatar: getCharacterAvatar(session.persona_id),
+                date: session.created_at.split('T')[0],
+                lastMessage: '메시지 로드 실패',
+                messages: []
+              };
+            }
+          })
+        );
         
-        setChatHistory(simpleChatHistory);
+        setChatHistory(chatHistoryWithMessages);
       } catch (chatError) {
         console.error('❌ 채팅 히스토리 로드 실패:', chatError);
         setChatHistory([]);
@@ -798,7 +825,6 @@ const MyPage: React.FC<MyPageProps> = ({
                             <span>가입일: {userProfile?.joinDate && formatDate(userProfile.joinDate)}</span>
                           </span>
                           <span>총 검사: {userProfile?.totalTests}회</span>
-                          <span>총 채팅: {userProfile?.totalChats}회</span>
                         </div>
                       </div>
                     )}
