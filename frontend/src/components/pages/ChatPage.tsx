@@ -33,7 +33,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
   userId, // 외부에서 전달받거나 내부에서 계산
   personaId // 외부에서 전달받거나 selectedCharacter에서 가져옴
 }) => {
-  console.log('ChatPage - 받은 selectedCharacter:', selectedCharacter);
   const [inputMessage, setInputMessage] = useState('');
   const [currentRating, setCurrentRating] = useState(3);
   const [isChatEnded, setIsChatEnded] = useState(false);
@@ -85,7 +84,35 @@ useEffect(() => {
   // 실제 사용자 ID 가져오기
   const [realUserId, setRealUserId] = useState<number | null>(null);
   const currentUserId = userId || realUserId;
-  const currentPersonaId = personaId || (selectedCharacter ? parseInt(selectedCharacter.id) : 1);
+  // 페르소나 ID에 따른 이름과 아바타 매핑 (MyPage와 동일한 로직)
+  const getPersonaName = (personaType: number | null): string => {
+    const nameMap: { [key: number]: string } = {
+      1: '추진이',
+      2: '내면이',
+      3: '관계이',
+      4: '쾌락이',
+      5: '안정이',
+    };
+    return personaType ? nameMap[personaType] : '내면이';
+  };
+
+  const getCharacterAvatar = (personaId: number | null): string => {
+    const nameMap: { [key: number]: string } = {
+      1: '추진이',
+      2: '내면이',
+      3: '관계이',
+      4: '쾌락이',
+      5: '안정이',
+    };
+    const name = personaId ? nameMap[personaId] : '내면이';
+    return `/assets/persona/${name}.png`;
+  };
+
+  // 세션 데이터를 최우선으로 하고, 없으면 기타 값들 사용
+  const actualPersonaId = session?.persona_id || personaId || (selectedCharacter ? parseInt(selectedCharacter.id) : 2);
+  const currentPersonaName = getPersonaName(actualPersonaId);
+  const currentAvatarPath = getCharacterAvatar(actualPersonaId);
+
   
   // 컴포넌트 마운트 시 실제 사용자 정보 로드
   useEffect(() => {
@@ -94,9 +121,7 @@ useEffect(() => {
         const user = await authService.getCurrentUser();
         if (user) {
           setRealUserId(user.id);
-          console.log('현재 로그인된 사용자:', user);
-        } else {
-          console.log('로그인된 사용자 없음');
+          } else {
         }
       } catch (error) {
         console.error('사용자 정보 로드 실패:', error);
@@ -106,13 +131,6 @@ useEffect(() => {
     loadCurrentUser();
   }, []);
   
-  console.log('ChatPage 사용자 ID 정보:', {
-    userId: userId,
-    realUserId: realUserId,
-    authServiceId: authService.getCurrentUserId(),
-    currentUserId: currentUserId,
-    isAuthenticated: authService.isAuthenticated()
-  });
 
   // 초기 메시지를 한 번만 생성하고 저장
   const [initialMessage] = useState(() => {
@@ -172,11 +190,9 @@ useEffect(() => {
           
           if (sessionId) {
             // 기존 세션 로드
-            console.log('기존 세션 로드 시도:', sessionId);
             await loadSession(sessionId);
           } else if (selectedCharacter && currentUserId !== null) {
             // 새 세션 생성
-            console.log('새 세션 생성 시도:', { userId: currentUserId, personaId: currentPersonaId, characterName: selectedCharacter.name });
             
             // 사용자 인증 상태 재확인 (좀 더 관대하게)
             if (!authService.isAuthenticated() && !localStorage.getItem('access_token')) {
@@ -188,8 +204,8 @@ useEffect(() => {
             
             await createSession({
               user_id: currentUserId,
-              persona_id: currentPersonaId,
-              session_name: `${selectedCharacter.name}와의 대화`
+              persona_id: actualPersonaId,
+              session_name: `${currentPersonaName}와의 대화`
             });
           }
         } catch (error) {
@@ -204,7 +220,7 @@ useEffect(() => {
         isCancelled = true;
       };
     }
-  }, [selectedCharacter?.name, session, isLoading, currentUserId, currentPersonaId, createSession, loadSession, location.search]);
+  }, [selectedCharacter?.name, session, isLoading, currentUserId, actualPersonaId, createSession, loadSession, location.search]);
 
   // 레거시 초기화 함수 호출 (기존 코드와의 호환성 유지)
   useEffect(() => {
@@ -460,8 +476,8 @@ useEffect(() => {
           {/* Character */}
           <div className="flex justify-center items-center">
             <img 
-              src={selectedCharacter?.avatar ? `/assets/persona/${selectedCharacter.name}.png` : '/assets/persona/내면이.png'}
-              alt={selectedCharacter?.name || '기본 캐릭터'}
+              src={currentAvatarPath}
+              alt={currentPersonaName}
               className="w-40 h-40 object-contain"
             />
           </div>
@@ -506,7 +522,7 @@ useEffect(() => {
               <Input
                 ref={inputRef}
                 type="text"
-                placeholder={`${selectedCharacter?.name || '챗봇'}에게 고민을 이야기해보세요`}
+                placeholder={`${currentPersonaName}에게 고민을 이야기해보세요`}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}

@@ -126,6 +126,18 @@ const MyPage: React.FC<MyPageProps> = ({
     return `/assets/persona/${name}.png`;
   };
 
+  // 페르소나 ID에 따른 이름 매핑
+  const getPersonaName = (personaType: number | null): string => {
+    const nameMap: { [key: number]: string } = {
+      1: '추진이',
+      2: '내면이',
+      3: '관계이',
+      4: '쾌락이',
+      5: '안정이',
+    };
+    return personaType ? nameMap[personaType] : '분석 중';
+  };
+
   // 채팅 히스토리 초기 로드
   const loadInitialChats = useCallback(() => {
     const sortedChats = [...chatHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -151,7 +163,6 @@ const MyPage: React.FC<MyPageProps> = ({
     
     try {
       setIsLoadingProfile(true);
-      console.log('📊 사용자 데이터 로드 시작 - UserID:', currentUserId);
       
       // 토큰 재확인
       const token = localStorage.getItem('access_token');
@@ -185,9 +196,7 @@ const MyPage: React.FC<MyPageProps> = ({
       
       // 채팅 히스토리는 간소화
       try {
-        console.log('💬 채팅 히스토리 로드 시작...');
         const sessions = await chatService.getUserSessions(currentUserId);
-        console.log('✅ 채팅 세션 수:', sessions.length);
         
         // 각 세션의 메시지 데이터 로드
         const chatHistoryWithMessages = await Promise.all(
@@ -198,11 +207,14 @@ const MyPage: React.FC<MyPageProps> = ({
                 ? messages[messages.length - 1]
                 : null;
               
+              const personaName = getPersonaName(session.persona_id);
+              const avatar = getCharacterAvatar(session.persona_id);
+              
               return {
                 id: session.chat_sessions_id,
                 characterId: session.persona_id?.toString() || '',
-                characterName: session.session_name || 'AI 상담사',
-                characterAvatar: getCharacterAvatar(session.persona_id),
+                characterName: session.session_name || personaName,
+                characterAvatar: avatar,
                 date: session.created_at.split('T')[0],
                 lastMessage: lastMessage ? lastMessage.content : '채팅 기록이 있습니다.',
                 messages: messages.map(msg => ({
@@ -214,11 +226,14 @@ const MyPage: React.FC<MyPageProps> = ({
               };
             } catch (error) {
               console.error(`❌ 세션 ${session.chat_sessions_id} 메시지 로드 실패:`, error);
+              const personaName = getPersonaName(session.persona_id);
+              const avatar = getCharacterAvatar(session.persona_id);
+              
               return {
                 id: session.chat_sessions_id,
                 characterId: session.persona_id?.toString() || '',
-                characterName: session.session_name || 'AI 상담사',
-                characterAvatar: getCharacterAvatar(session.persona_id),
+                characterName: session.session_name || personaName,
+                characterAvatar: avatar,
                 date: session.created_at.split('T')[0],
                 lastMessage: '메시지 로드 실패',
                 messages: []
@@ -235,15 +250,13 @@ const MyPage: React.FC<MyPageProps> = ({
       
       // 테스트 결과 로드
       try {
-        console.log('📝 테스트 결과 로드 시작...');
         const tests = await testService.getMyTestResults();
-        console.log('✅ 테스트 결과 수:', tests.length);
         
         setTestResults(tests.map(test => ({
           id: test.test_id.toString(),
           testType: 'Drawing' as const,
           result: test.result?.summary_text || '결과 분석 중입니다.',
-          characterMatch: test.result?.persona_info?.persona_name || '분석 중',
+          characterMatch: test.result?.persona_info?.persona_name || getPersonaName(test.result?.persona_type || null),
           date: test.submitted_at,
           description: test.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
           images: [test.image_url]
@@ -377,6 +390,8 @@ const MyPage: React.FC<MyPageProps> = ({
   };
 
   const handleContinueChat = (chat: ChatHistory) => {
+    console.log('🔄 이어서 대화하기:', chat.characterName);
+    
     if (onContinueChat) {
       onContinueChat(chat.id, chat.characterName);
     }
@@ -866,7 +881,7 @@ const MyPage: React.FC<MyPageProps> = ({
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
                           <img 
-                            src={getCharacterAvatar(chat.characterId ? parseInt(chat.characterId, 10) : null)} 
+                            src={chat.characterAvatar} 
                             alt={chat.characterName}
                             className="w-32 h-32 object-contain"
                           />
