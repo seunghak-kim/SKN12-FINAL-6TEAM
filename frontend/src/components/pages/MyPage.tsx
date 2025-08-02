@@ -639,7 +639,7 @@ const MyPage: React.FC<MyPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0F103F] via-[#1a1b4a] via-[#2a2b5a] to-[#3a3b6a] relative overflow-hidden">
-      <Navigation onNavigate={onNavigate} />
+      <Navigation onNavigate={onNavigate} activeTab="mypage" />
       
     {/* Minimal particles background */}
       <div

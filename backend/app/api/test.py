@@ -235,11 +235,21 @@ async def get_my_test_results(
         
         # 결과가 있다면 포함
         if test.result:
+            # DB의 *_scores를 personality_scores로 변환
+            personality_scores = {
+                "추진이": float(test.result.dog_scores) if test.result.dog_scores else 0.0,
+                "내면이": float(test.result.cat_scores) if test.result.cat_scores else 0.0,
+                "관계이": float(test.result.rabbit_scores) if test.result.rabbit_scores else 0.0,
+                "쾌락이": float(test.result.bear_scores) if test.result.bear_scores else 0.0,
+                "안정이": float(test.result.turtle_scores) if test.result.turtle_scores else 0.0,
+            }
+            
             test_data["result"] = {
                 "result_id": test.result.result_id,
                 "persona_type": test.result.persona_type,
                 "summary_text": test.result.summary_text,
                 "created_at": test.result.created_at,
+                "personality_scores": personality_scores,
                 "persona_info": None
             }
             

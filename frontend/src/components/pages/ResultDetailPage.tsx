@@ -101,7 +101,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <Navigation onNavigate={onNavigate} />
+        <Navigation onNavigate={onNavigate} activeTab="mypage" />
         <div className="container mx-auto px-4 py-12">
           <div className="text-center">
             <Loader className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
@@ -115,7 +115,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
   if (error || !testResult) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <Navigation onNavigate={onNavigate} />
+        <Navigation onNavigate={onNavigate} activeTab="mypage" />
         <div className="container mx-auto px-4 py-12">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-800">{error || '결과를 찾을 수 없습니다'}</h1>
@@ -221,7 +221,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0F103F] via-[#1a1b4a] to-[#2a2b5a] relative overflow-hidden">
-      <Navigation onNavigate={onNavigate} />
+      <Navigation onNavigate={onNavigate} activeTab="mypage" />
 
       {/* Decorative elements */}
       <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-full opacity-20 blur-2xl"></div>

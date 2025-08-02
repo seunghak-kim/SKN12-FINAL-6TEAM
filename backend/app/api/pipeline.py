@@ -249,7 +249,9 @@ def run_analysis_pipeline(
         print(f"📊 파이프라인 실행 완료: {result.status}")
         
         # 결과를 데이터베이스에 저장 (동기 함수로 변경)
+        print(f"🔥 save_analysis_result_sync 함수 호출 시작 - test_id: {test_id}")
         save_analysis_result_sync(result, test_id, description, db)
+        print(f"🔥 save_analysis_result_sync 함수 호출 완료 - test_id: {test_id}")
         
         print(f"✅ 분석 완료 및 저장: {unique_id}")
         
@@ -299,6 +301,7 @@ def save_analysis_result_sync(
         description: 사용자 설명
         db: 데이터베이스 세션
     """
+    print(f"🔥🔥 save_analysis_result_sync 함수 내부 진입 - test_id: {test_id}")
     try:
         # 파이프라인 인스턴스 가져오기
         pipeline = get_pipeline()
@@ -333,17 +336,49 @@ def save_analysis_result_sync(
                     
                     # 1. 키워드 분석 결과 우선 처리
                     keyword_analysis = result_data.get('keyword_personality_analysis', {})
+                    keyword_analysis_success = False  # 초기값 설정
                     
                     if keyword_analysis and keyword_analysis.get('predicted_personality'):
                         predicted_personality = keyword_analysis.get('predicted_personality')
                         confidence = keyword_analysis.get('confidence', 0.0)
-                        persona_type_id = personality_mapping.get(predicted_personality)
+                        probabilities = keyword_analysis.get('probabilities', {})
+                        
+                        # 💡 핵심 수정: predicted_personality가 아닌 실제 최고 확률 유형 사용
+                        print(f"🚨 DB 저장 직전 - 수정된 코드 실행 중!")
+                        if probabilities:
+                            # 확률에서 가장 높은 유형 찾기 (프론트엔드와 동일한 로직)
+                            highest_prob_type = max(probabilities.items(), key=lambda x: x[1])[0]
+                            actual_persona_type_id = personality_mapping.get(highest_prob_type)
+                            
+                            print(f"🔍 키워드 분석 결과:")
+                            print(f"  - 원본 키워드 모델 예측: {predicted_personality} -> persona_id: {personality_mapping.get(predicted_personality)}")
+                            print(f"  - 실제 최고 확률: {highest_prob_type} ({probabilities[highest_prob_type]:.2f}%) -> persona_id: {actual_persona_type_id}")
+                            print(f"  - 전체 확률: {probabilities}")
+                            print(f"  - 최종 사용할 persona_id: {actual_persona_type_id}")
+                            
+                            # 실제 최고 확률 유형으로 persona_type_id 설정
+                            persona_type_id = actual_persona_type_id
+                            predicted_personality = highest_prob_type  # 실제 최고 확률 유형으로 업데이트
+                            print(f"🎯 DB에 저장될 persona_type_id: {persona_type_id}")
+                        else:
+                            persona_type_id = personality_mapping.get(predicted_personality)
+                            print(f"🔍 키워드 분석 결과 (확률 없음): {predicted_personality} -> persona_id: {persona_type_id}")
+                            print(f"🎯 DB에 저장될 persona_type_id (확률없음): {persona_type_id}")
                         
                         # 키워드 정보
                         current_keywords = keyword_analysis.get('current_image_keywords', [])
                         previous_keywords = keyword_analysis.get('previous_stage_keywords', [])
                         total_keywords = keyword_analysis.get('total_keywords_used', 0)
-                        probabilities = keyword_analysis.get('probabilities', {})
+                        
+                        # 확률값을 DB 필드에 매핑 (기존 컬럼 재활용)
+                        # dog_scores -> 추진이, cat_scores -> 내면이, rabbit_scores -> 관계이, bear_scores -> 쾌락이, turtle_scores -> 안정이
+                        persona_scores = {
+                            'dog_scores': probabilities.get('추진형', 0.0),      # 추진이
+                            'cat_scores': probabilities.get('내면형', 0.0),      # 내면이
+                            'rabbit_scores': probabilities.get('관계형', 0.0),   # 관계이
+                            'bear_scores': probabilities.get('쾌락형', 0.0),     # 쾌락이
+                            'turtle_scores': probabilities.get('안정형', 0.0)    # 안정이
+                        }
                         
                         # 상세한 summary_text 생성
                         summary_parts = []
@@ -402,22 +437,55 @@ def save_analysis_result_sync(
             DrawingTestResult.test_id == test_id
         ).first()
         
+        print(f"💾 DB 저장 전 최종 확인:")
+        print(f"  - persona_type_id: {persona_type_id}")
+        print(f"  - test_id: {test_id}")
+        print(f"  - persona_scores 변수 존재: {'persona_scores' in locals()}")
+        if 'persona_scores' in locals():
+            print(f"  - persona_scores: {persona_scores}")
+            
         if existing_result:
             # 기존 결과 업데이트
+            print(f"🔄 기존 결과 업데이트 - 이전 persona_type: {existing_result.persona_type}")
             existing_result.persona_type = persona_type_id
             existing_result.summary_text = summary_text
             existing_result.created_at = datetime.now()
+            print(f"🔄 업데이트 후 persona_type: {existing_result.persona_type}")
+            # 확률 점수 업데이트 (키워드 분석 성공한 경우만)
+            if 'persona_scores' in locals():
+                existing_result.dog_scores = persona_scores['dog_scores']
+                existing_result.cat_scores = persona_scores['cat_scores'] 
+                existing_result.rabbit_scores = persona_scores['rabbit_scores']
+                existing_result.bear_scores = persona_scores['bear_scores']
+                existing_result.turtle_scores = persona_scores['turtle_scores']
+                print(f"🔄 확률 점수도 업데이트됨")
         else:
             # 새 결과 생성
-            test_result = DrawingTestResult(
-                test_id=test_id,
-                persona_type=persona_type_id,
-                summary_text=summary_text,
-                created_at=datetime.now()
-            )
+            print(f"🆕 새 결과 생성")
+            test_result_data = {
+                'test_id': test_id,
+                'persona_type': persona_type_id,
+                'summary_text': summary_text,
+                'created_at': datetime.now()
+            }
+            # 확률 점수 추가 (키워드 분석 성공한 경우만)
+            if 'persona_scores' in locals():
+                test_result_data.update({
+                    'dog_scores': persona_scores['dog_scores'],
+                    'cat_scores': persona_scores['cat_scores'],
+                    'rabbit_scores': persona_scores['rabbit_scores'],
+                    'bear_scores': persona_scores['bear_scores'],
+                    'turtle_scores': persona_scores['turtle_scores']
+                })
+                print(f"🆕 확률 점수도 포함됨")
+            
+            test_result = DrawingTestResult(**test_result_data)
             db.add(test_result)
+            print(f"🆕 새 결과 DB에 추가됨 - persona_type: {test_result_data['persona_type']}")
         
+        print(f"💾 DB commit 시작...")
         db.commit()
+        print(f"💾 DB commit 완료!")
         
     except Exception as e:
         db.rollback()
