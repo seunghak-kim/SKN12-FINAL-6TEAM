@@ -202,15 +202,19 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
                     className="max-w-full h-32 object-contain mx-auto rounded-lg"
                   />
                   <p className="text-white/90 text-sm">선택된 파일: {selectedImage?.name}</p>
-                  <button
-                    onClick={() => {
-                      setSelectedImage(null);
-                      setImagePreview(null);
-                    }}
-                    className="text-white/70 hover:text-white text-sm underline"
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleFileInput}
+                    className="hidden"
+                    id="file-reselect"
+                  />
+                  <label 
+                    htmlFor="file-reselect"
+                    className="text-white/70 hover:text-white text-sm underline cursor-pointer"
                   >
                     다른 파일 선택
-                  </button>
+                  </label>
                 </div>
               ) : (
                 <>
