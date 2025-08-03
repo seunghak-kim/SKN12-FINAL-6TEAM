@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import { SearchResult } from '../../types';
 import { Button } from "../../components/ui/button";
-import { ChevronLeft } from "lucide-react";
 import { testService } from '../../services/testService';
+import { chatService } from '../../services/chatService';
+import { authService } from '../../services/authService';
+import { personaService, Persona } from '../../services/personaService';
 
 // 확장된 캐릭터 타입 (UI용 추가 필드 포함)
 interface ExtendedCharacter extends SearchResult {
@@ -31,8 +33,20 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
   onNavigate
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [hasTestRecords, setHasTestRecords] = useState<boolean>(true); // 기본값은 true로 설정하여 로딩 중에는 버튼이 활성화되도록
+  const [matchedPersonaId, setMatchedPersonaId] = useState<number | null>(null);
+  const [chattingPersonaId, setChattingPersonaId] = useState<number | null>(null);
+  const [personas, setPersonas] = useState<Persona[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 페르소나별 스타일링 정보 (UI 전용)
+  const personaStyles: { [key: number]: { color: string; emoji: string } } = {
+    1: { color: "from-orange-500 to-red-600", emoji: "/assets/persona/추진이.png" },
+    2: { color: "from-gray-500 to-gray-700", emoji: "/assets/persona/내면이.png" },
+    3: { color: "from-blue-500 to-purple-600", emoji: "/assets/persona/관계이.png" },
+    4: { color: "from-pink-500 to-red-600", emoji: "/assets/persona/쾌락이.png" },
+    5: { color: "from-green-500 to-emerald-600", emoji: "/assets/persona/안정이.png" },
+  };
 
   // 기본 캐릭터 데이터 (props로 전달되지 않은 경우 사용)
   const defaultCharacters: ExtendedCharacter[] = [
@@ -49,27 +63,25 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
     },
     {
       id: "2",
-      name: "관계이",
-      description: "당신의 고민을 이해하고 함께 극복해나가는 방법을 찾아드립니다. 저와 함께 나아가봐요.",
-      avatar: "/assets/persona/관계이.png",
-      color: "from-blue-500 to-purple-600",
-      emoji: "/assets/persona/관계이.png",
-      buttonText: "관계이와 대화하기",
-      badge: "매칭된 페르소나",
-      personality_type: "관계형",
-      score: 0.92
-    },
-    {
-      id: "3",
       name: "내면이",
       description: "본질과 감정을 진정하게 표현하고 해소하는 방법을 알려드릴게요. 마음의 평화를 찾아봐요.",
       avatar: "/assets/persona/내면이.png",
       color: "from-gray-500 to-gray-700",
       emoji: "/assets/persona/내면이.png",
       buttonText: "내면이와 대화하기",
-      badge: "대화 중",
       personality_type: "내성형",
       score: 0.78
+    },
+    {
+      id: "3",
+      name: "관계이",
+      description: "당신의 고민을 이해하고 함께 극복해나가는 방법을 찾아드립니다. 저와 함께 나아가봐요.",
+      avatar: "/assets/persona/관계이.png",
+      color: "from-blue-500 to-purple-600",
+      emoji: "/assets/persona/관계이.png",
+      buttonText: "관계이와 대화하기",
+      personality_type: "관계형",
+      score: 0.92
     },
     {
       id: "4",
@@ -118,32 +130,162 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
     };
   };
 
-  // 컴포넌트 마운트 시 테스트 기록 확인
+  // 컴포넌트 마운트 시 모든 데이터 로드
   useEffect(() => {
-    const checkTestStatus = async () => {
+    const loadData = async () => {
+      setIsLoading(true);
+      
       try {
-        console.log('🔍 캐릭터 페이지 - 테스트 상태 확인 중...');
+        console.log('🔍 캐릭터 페이지 - 데이터 로드 중...');
+        
+        // 1. 테스트 상태 확인 (최우선)
         const testStatus = await testService.getUserTestStatus();
         console.log('테스트 상태:', testStatus);
         setHasTestRecords(testStatus.hasTests);
+        
+        // 2. 페르소나 데이터 로드 (실패해도 테스트 상태에는 영향 없음)
+        try {
+          const personasData = await personaService.getAllPersonas();
+          console.log('페르소나 데이터:', personasData);
+          setPersonas(personasData);
+        } catch (personaError) {
+          console.error('페르소나 데이터 로드 실패 (기본 데이터 사용):', personaError);
+          // 페르소나 데이터 로드 실패해도 기본 데이터 사용하므로 계속 진행
+        }
+        
+        if (testStatus.hasTests) {
+          // 3. 가장 최근 매칭된 페르소나 조회
+          try {
+            const latestMatchedPersona = await testService.getLatestMatchedPersona();
+            console.log('최근 매칭된 페르소나:', latestMatchedPersona);
+            setMatchedPersonaId(latestMatchedPersona.matched_persona_id);
+          } catch (matchedError) {
+            console.error('매칭된 페르소나 조회 실패:', matchedError);
+          }
+          
+          // 4. 현재 사용자의 가장 최근 채팅 세션 조회
+          try {
+            const currentUser = await authService.getCurrentUser();
+            if (currentUser) {
+              const userSessions = await chatService.getUserSessions(currentUser.id);
+              if (userSessions.length > 0) {
+                // updated_at 기준으로 가장 최근 세션
+                const latestSession = userSessions.sort((a, b) => 
+                  new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+                )[0];
+                console.log('최근 채팅 세션:', latestSession);
+                setChattingPersonaId(latestSession.persona_id);
+              }
+            }
+          } catch (chatError) {
+            console.error('채팅 세션 조회 실패:', chatError);
+          }
+        }
       } catch (error) {
         console.error('❌ 테스트 상태 확인 실패:', error);
-        // 에러 발생 시 안전하게 false로 설정
         setHasTestRecords(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    checkTestStatus();
+    loadData();
   }, []);
 
-  // props에서 받은 캐릭터 데이터가 있으면 변환해서 사용, 없으면 기본 데이터 사용
-  const characters = propCharacters 
-    ? propCharacters.map(convertToExtendedCharacter)
-    : defaultCharacters;
+  // 페르소나 ID에 따른 키워드 및 버튼 텍스트 결정
+  const getPersonaStatus = (personaId: string) => {
+    const id = parseInt(personaId);
+    const personaName = personas.find(p => p.persona_id === id)?.name || '';
+    
+    let badge = '';
+    let buttonText = '';
+    
+    console.log(`페르소나 ${id} (${personaName}) 상태 확인:`, {
+      chattingPersonaId,
+      matchedPersonaId,
+      isChattingMatch: chattingPersonaId === id,
+      isMatchedMatch: matchedPersonaId === id
+    });
+    
+    if (chattingPersonaId === id) {
+      badge = '대화중';
+      buttonText = '이어서 대화하기';
+    } else if (matchedPersonaId === id) {
+      badge = '매칭됨';
+      buttonText = `${personaName}와 대화하기`;
+    } else {
+      buttonText = `${personaName}와 대화하기`;
+    }
+    
+    console.log(`페르소나 ${id} 최종 상태:`, { badge, buttonText });
+    
+    return { badge, buttonText };
+  };
 
-  const handleCharacterClick = (character: ExtendedCharacter) => {
+  // 백엔드 페르소나 데이터를 ExtendedCharacter로 변환
+  const convertPersonaToExtendedCharacter = (persona: Persona): ExtendedCharacter => {
+    const style = personaStyles[persona.persona_id] || personaStyles[2]; // 기본값: 내면이 스타일
+    const status = getPersonaStatus(persona.persona_id.toString());
+    
+    return {
+      id: persona.persona_id.toString(),
+      name: persona.name,
+      description: persona.description,
+      avatar: `/assets/persona/${persona.name}.png`,
+      color: style.color,
+      emoji: style.emoji,
+      buttonText: status.buttonText,
+      badge: status.badge,
+      personality_type: `${persona.name.replace('이', '')}형`,
+      score: Math.random() * 0.3 + 0.7 // 임시 점수
+    };
+  };
+
+  // 최종 캐릭터 데이터: 상태 변경에 반응하도록 useMemo 사용
+  const characters: ExtendedCharacter[] = useMemo(() => {
+    console.log('캐릭터 데이터 재계산:', { matchedPersonaId, chattingPersonaId, personasLength: personas.length });
+    
+    if (propCharacters) {
+      return propCharacters.map(convertToExtendedCharacter);
+    } else if (personas.length > 0) {
+      return personas.map(convertPersonaToExtendedCharacter);
+    } else {
+      return defaultCharacters.map(char => {
+        const status = getPersonaStatus(char.id);
+        return {
+          ...char,
+          badge: status.badge,
+          buttonText: status.buttonText
+        };
+      });
+    }
+  }, [propCharacters, personas, matchedPersonaId, chattingPersonaId]);
+
+  const handleCharacterClick = async (character: ExtendedCharacter) => {
     console.log('CharactersPage - 클릭된 캐릭터:', character);
-    // ExtendedCharacter를 SearchResult로 변환해서 전달
+    
+    // '대화중' 페르소나인 경우 기존 세션으로 이동
+    if (character.badge === '대화중' && chattingPersonaId === parseInt(character.id)) {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          const userSessions = await chatService.getUserSessions(currentUser.id);
+          const latestSession = userSessions
+            .filter(session => session.persona_id === chattingPersonaId)
+            .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
+          
+          if (latestSession) {
+            console.log('기존 세션으로 이동:', latestSession.chat_sessions_id);
+            navigate(`/chat?sessionId=${latestSession.chat_sessions_id}`);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('기존 세션 찾기 실패:', error);
+      }
+    }
+    
+    // 새로운 채팅 시작
     const searchResult: SearchResult = {
       id: character.id,
       name: character.name,
@@ -284,8 +426,14 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
           <p className="text-white/80 text-lg">대화하면서 당신과 맞는 캐릭터를 찾아가 보세요!</p>
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-6">
-          {characters.map((character, index) => (
+        {isLoading ? (
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white/80">페르소나 정보를 불러오는 중...</p>
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto space-y-6">
+            {characters.map((character, index) => (
             <div key={character.id || index} className="bg-slate-600/40 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
@@ -297,7 +445,13 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
                     <div className="flex items-center mb-2">
                       <h3 className="text-2xl font-bold text-white mr-3">{character.name}</h3>
                       {character.badge && (
-                        <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-white">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium shadow-lg ${
+                          character.badge === '대화중' 
+                            ? 'bg-green-500/80 text-white backdrop-blur-sm border border-green-400/50' 
+                            : character.badge === '매칭됨'
+                            ? 'bg-orange-500/80 text-white backdrop-blur-sm border border-orange-400/50'
+                            : 'bg-white/20 backdrop-blur-sm text-white'
+                        }`}>
                           {character.badge}
                         </span>
                       )}
@@ -323,7 +477,8 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
