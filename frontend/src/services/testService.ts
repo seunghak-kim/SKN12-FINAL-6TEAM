@@ -217,6 +217,18 @@ class TestService {
       throw error;
     }
   }
+
+  /**
+   * 현재 사용자의 가장 최근 매칭된 페르소나 조회
+   */
+  async getLatestMatchedPersona(): Promise<{ matched_persona_id: number | null; matched_at?: string }> {
+    try {
+      return await apiClient.get(`${this.BASE_PATH}/drawing-test-results/latest-matched`);
+    } catch (error) {
+      console.error('Failed to get latest matched persona:', error);
+      throw error;
+    }
+  }
 }
 
 export const testService = new TestService();

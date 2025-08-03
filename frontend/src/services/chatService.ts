@@ -91,15 +91,48 @@ export class ChatService {
 
   // 백엔드 메시지를 프론트엔드 형식으로 변환
   static convertToFrontendMessage(message: ChatMessage) {
+    // created_at 값이 유효한지 확인하고 안전하게 처리
+    let timestamp = '';
+    try {
+      if (message.created_at) {
+        const date = new Date(message.created_at);
+        if (!isNaN(date.getTime())) {
+          timestamp = date.toLocaleTimeString("ko-KR", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+        } else {
+          // created_at이 유효하지 않으면 현재 시간 사용
+          timestamp = new Date().toLocaleTimeString("ko-KR", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+        }
+      } else {
+        // created_at이 없으면 현재 시간 사용
+        timestamp = new Date().toLocaleTimeString("ko-KR", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
+    } catch (error) {
+      console.error('timestamp 변환 오류:', error, 'created_at:', message.created_at);
+      // 오류 발생시 현재 시간 사용
+      timestamp = new Date().toLocaleTimeString("ko-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
     return {
       id: message.chat_messages_id,
       type: message.sender_type,
       content: message.content,
-      timestamp: new Date(message.created_at).toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })
+      timestamp: timestamp
     };
   }
 

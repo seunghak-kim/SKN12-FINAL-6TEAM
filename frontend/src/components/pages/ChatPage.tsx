@@ -6,6 +6,7 @@ import StarRating, { SatisfactionModal } from '../common/StarRating';
 import { FrontendChatMessage, SearchResult } from '../../types';
 import { useChatSession } from '../../hooks/useChatSession';
 import { authService } from '../../services/authService';
+import { testService } from '../../services/testService';
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
@@ -83,6 +84,7 @@ useEffect(() => {
 
   // 실제 사용자 ID 가져오기
   const [realUserId, setRealUserId] = useState<number | null>(null);
+  const [latestPersonaId, setLatestPersonaId] = useState<number | null>(null);
   const currentUserId = userId || realUserId;
   // 페르소나 ID에 따른 이름과 아바타 매핑 (MyPage와 동일한 로직)
   const getPersonaName = (personaType: number | null): string => {
@@ -93,7 +95,7 @@ useEffect(() => {
       4: '쾌락이',
       5: '안정이',
     };
-    return personaType ? nameMap[personaType] : '내면이';
+    return personaType && nameMap[personaType] ? nameMap[personaType] : '알 수 없음';
   };
 
   const getCharacterAvatar = (personaId: number | null): string => {
@@ -104,17 +106,17 @@ useEffect(() => {
       4: '쾌락이',
       5: '안정이',
     };
-    const name = personaId ? nameMap[personaId] : '내면이';
+    const name = personaId && nameMap[personaId] ? nameMap[personaId] : '알 수 없음';
     return `/assets/persona/${name}.png`;
   };
 
-  // 세션 데이터를 최우선으로 하고, 없으면 기타 값들 사용
-  const actualPersonaId = session?.persona_id || personaId || (selectedCharacter ? parseInt(selectedCharacter.id) : 2);
+  // 세션 데이터를 최우선으로 하고, 없으면 최신 페르소나, 그 다음 기타 값들 사용
+  const actualPersonaId = session?.persona_id || personaId || latestPersonaId || (selectedCharacter ? parseInt(selectedCharacter.id) : null);
   const currentPersonaName = getPersonaName(actualPersonaId);
   const currentAvatarPath = getCharacterAvatar(actualPersonaId);
 
   
-  // 컴포넌트 마운트 시 실제 사용자 정보 로드
+  // 컴포넌트 마운트 시 실제 사용자 정보 및 최신 페르소나 로드
   useEffect(() => {
     const loadCurrentUser = async () => {
       try {
@@ -128,7 +130,19 @@ useEffect(() => {
       }
     };
     
+    const loadLatestPersona = async () => {
+      try {
+        const result = await testService.getLatestMatchedPersona();
+        if (result.matched_persona_id) {
+          setLatestPersonaId(result.matched_persona_id);
+        }
+      } catch (error) {
+        console.error('최신 페르소나 로드 실패:', error);
+      }
+    };
+    
     loadCurrentUser();
+    loadLatestPersona();
   }, []);
   
 
@@ -221,6 +235,21 @@ useEffect(() => {
       };
     }
   }, [selectedCharacter?.name, session, isLoading, currentUserId, actualPersonaId, createSession, loadSession, location.search]);
+
+  // 세션이 생성되면 URL에 세션 ID 추가 (새로고침 시 세션 유지를 위해)
+  useEffect(() => {
+    if (session?.chat_sessions_id) {
+      const urlParams = new URLSearchParams(location.search);
+      const currentSessionId = urlParams.get('sessionId');
+      
+      // URL에 세션 ID가 없거나 다른 경우에만 업데이트
+      if (currentSessionId !== session.chat_sessions_id) {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('sessionId', session.chat_sessions_id);
+        window.history.replaceState({}, '', currentUrl.toString());
+      }
+    }
+  }, [session?.chat_sessions_id, location.search]);
 
   // 레거시 초기화 함수 호출 (기존 코드와의 호환성 유지)
   useEffect(() => {
@@ -570,7 +599,7 @@ useEffect(() => {
                   {message.content}
                 </div>
                 <div className={`text-xs text-white/70 mt-1 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
-                  {new Date(message.timestamp).toLocaleTimeString()}
+                  {message.timestamp}
                 </div>
               </div>
             </div>
