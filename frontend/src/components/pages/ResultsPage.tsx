@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import Navigation from '../common/Navigation';
 import { SearchResult } from '../../types';
 import { testService } from '../../services/testService';
 import { Button } from "../../components/ui/button";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Download } from "lucide-react";
 
 interface ResultsPageProps {
   characters: SearchResult[];
@@ -50,6 +50,44 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
   const [actualPersonalityType, setActualPersonalityType] = useState<string>('내면형');
   const [satisfaction, setSatisfaction] = useState<"like" | "dislike" | null>(null);
+  const resultCardRef = useRef<HTMLDivElement>(null);
+
+  // 결과 카드를 이미지로 저장
+  const handleSaveAsImage = async () => {
+    if (!resultCardRef.current) return;
+    
+    try {
+      // html2canvas 동적 import
+      const html2canvas = await import('html2canvas');
+      
+      const canvas = await html2canvas.default(resultCardRef.current, {
+        background: '#0F103F',
+        scale: 2, // 고화질을 위한 스케일링
+        logging: false,
+        useCORS: true,
+        allowTaint: true
+      });
+      
+      // 캔버스를 blob으로 변환
+      canvas.toBlob((blob: Blob | null) => {
+        if (!blob) return;
+        
+        // 다운로드 링크 생성
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `그림검사결과_${getCharacterName(actualPersonalityType)}_${new Date().toLocaleDateString('ko-KR')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+      
+    } catch (error) {
+      console.error('이미지 저장 중 오류가 발생했습니다:', error);
+      alert('이미지 저장에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
 
   // thumbs up/down 피드백 처리
   const handleThumbsFeedback = async (feedbackType: 'like' | 'dislike') => {
@@ -377,7 +415,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       
         {/* Main result card */}
         <div className="max-w-4xl mx-auto mb-8">
-          <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+          <div ref={resultCardRef} className="bg-slate-700/50 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
             <h1 className="text-white text-xl font-bold text-left mb-8">그림 심리 분석 결과</h1>
 
             <div className="bg-slate-600/50 rounded-2xl p-8">
@@ -483,12 +521,14 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
               </Button>
             </div>
 
-            {/* 수정(따봉/붐따) */}
+            {/* 수정(따봉/붐따) 및 저장 버튼 */}
             <div className="max-w-4xl mx-auto mb-8">
-              <div className="bg-slate-700/60 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-2xl">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-white text-lg font-bold">나와 매칭된 결과가 마음에 드시나요?</h3>
-                  <div className="flex space-x-4">
+              <div className="flex">
+                {/* 수정(따봉/붐따) 박스 */}
+                <div className="flex-[2] bg-slate-700/60 backdrop-blur-lg rounded-l-2xl p-4 border border-white/20 shadow-2xl border-r-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white text-lg font-bold">나와 매칭된 결과가 마음에 드시나요?</h3>
+                    <div className="flex space-x-1">
                     <button
                       onClick={() => handleThumbsFeedback("like")}
                       className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
@@ -510,14 +550,28 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                       <ThumbsDown size={20} />
                     </button>
                   </div>
-                </div>
-                {satisfaction && (
-                  <div className="mt-3 text-center">
-                    <p className="text-white/80 text-sm animate-fade-in">
-                      {satisfaction === "like" ? "좋은 평가 감사합니다! 😊" : "더 나은 결과를 위해 노력하겠습니다 🙏"}
-                    </p>
                   </div>
-                )}
+                  {satisfaction && (
+                    <div className="mt-3 text-center">
+                      <p className="text-white/80 text-sm animate-fade-in">
+                        {satisfaction === "like" ? "좋은 평가 감사합니다! 😊" : "더 나은 결과를 위해 노력하겠습니다 🙏"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* 저장 버튼 박스 */}
+                <div className="flex-[1] bg-slate-700/60 backdrop-blur-lg rounded-r-2xl p-4 border border-white/20 shadow-2xl border-l-0">
+                  <div className="flex items-center justify-center h-full space-x-3">
+                    <h3 className="text-white text-m font-bold">이미지로 저장하기</h3>
+                    <button
+                      onClick={handleSaveAsImage}
+                      className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-all duration-300 hover:scale-105"
+                    >
+                      <Download size={20} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
