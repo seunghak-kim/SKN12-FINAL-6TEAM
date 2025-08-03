@@ -415,10 +415,10 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       
         {/* Main result card */}
         <div className="max-w-4xl mx-auto mb-8">
-          <div ref={resultCardRef} className="bg-slate-700/50 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+          <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
             <h1 className="text-white text-xl font-bold text-left mb-8">그림 심리 분석 결과</h1>
 
-            <div className="bg-slate-600/50 rounded-2xl p-8">
+            <div ref={resultCardRef} className="bg-slate-600/50 rounded-2xl p-8">
               <div className="flex items-center justify-center space-x-8 mb-6">
                 {/* 왼쪽: 캐릭터 */}
                 <div className={`w-32 h-32 ${getColorForType(actualPersonalityType)} flex items-center justify-center flex-shrink-0 overflow-hidden`}>
