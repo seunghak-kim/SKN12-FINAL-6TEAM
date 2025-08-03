@@ -599,9 +599,34 @@ const MyPage: React.FC<MyPageProps> = ({
     setShowDeleteAccountModal(false);
   };
 
-  const handleDeleteAccountConfirm = () => {
-    setShowDeleteAccountModal(false);
-    onDeleteAccount();
+  const handleDeleteAccountConfirm = async () => {
+    try {
+      if (userProfile?.id) {
+        const userId = parseInt(userProfile.id);
+        console.log('탈퇴 시도 - userProfile:', userProfile);
+        console.log('탈퇴 시도 - userId:', userId);
+        
+        // 회원 탈퇴 API 호출
+        await userService.deleteAccount(userId);
+        
+        // 성공시 로컬 스토리지에서 토큰 제거
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        
+        // 모달 닫기
+        setShowDeleteAccountModal(false);
+        
+        // 랜딩페이지로 이동
+        navigate('/', { replace: true });
+      } else {
+        console.error('사용자 프로필 또는 ID가 없습니다:', userProfile);
+        alert('사용자 정보를 찾을 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('회원 탈퇴 중 오류가 발생했습니다:', error);
+      // 에러 발생시 모달은 그대로 두고 에러 표시
+      alert('회원 탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   const formatDate = (dateString: string) => {

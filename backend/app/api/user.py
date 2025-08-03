@@ -99,7 +99,7 @@ async def social_login(social_id: str, nickname: str, db: Session = Depends(get_
             is_new_user=False
         )
 
-@router.get("/users")
+@router.get("/")
 async def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """사용자 목록 조회"""
     users = db.query(UserInformation).filter(
@@ -119,7 +119,7 @@ async def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
     
     return {"users": user_responses}
 
-@router.get("/users/{user_id}")
+@router.get("/{user_id}")
 async def get_user(user_id: int, db: Session = Depends(get_db)):
     """특정 사용자 조회"""
     user_info = db.query(UserInformation).filter(
@@ -142,7 +142,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
         "created_at": user_info.created_at.isoformat() if user_info.created_at else None
     }
 
-@router.put("/users/{user_id}")
+@router.put("/{user_id}")
 async def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends(get_db)):
     """사용자 정보 수정"""
     user_info = db.query(UserInformation).filter(
@@ -185,7 +185,7 @@ async def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends
         "created_at": user_info.created_at.isoformat() if user_info.created_at else None
     }
 
-@router.post("/users/{user_id}/change-password")
+@router.post("/{user_id}/change-password")
 async def change_password(user_id: int, password_data: PasswordChange, db: Session = Depends(get_db)):
     """비밀번호 변경 (일반 사용자만)"""
     user_info = db.query(UserInformation).filter(
@@ -215,7 +215,7 @@ async def change_password(user_id: int, password_data: PasswordChange, db: Sessi
     
     return {"message": "비밀번호가 성공적으로 변경되었습니다."}
 
-@router.delete("/users/{user_id}")
+@router.delete("/{user_id}")
 async def delete_user(user_id: int, db: Session = Depends(get_db)):
     """사용자 삭제 (비활성화)"""
     user_info = db.query(UserInformation).filter(
@@ -236,7 +236,7 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
     
     return {"message": "사용자가 성공적으로 삭제되었습니다."}
 
-@router.get("/users/{user_id}/profile", response_model=dict)
+@router.get("/{user_id}/profile", response_model=dict)
 async def get_user_profile(user_id: int, db: Session = Depends(get_db)):
     """마이페이지용 사용자 프로필 조회"""
     from app.models.chat import ChatSession
@@ -278,7 +278,7 @@ async def get_user_profile(user_id: int, db: Session = Depends(get_db)):
         "total_tests": total_tests
     }
 
-@router.get("/users/{user_id}/chat-history")
+@router.get("/{user_id}/chat-history")
 async def get_user_chat_history(
     user_id: int, 
     skip: int = 0, 
@@ -336,7 +336,7 @@ async def get_user_chat_history(
         "has_more": len(chat_sessions) == limit
     }
 
-@router.get("/users/{user_id}/test-results")
+@router.get("/{user_id}/test-results")
 async def get_user_test_results(
     user_id: int, 
     skip: int = 0, 
@@ -389,7 +389,7 @@ async def get_user_test_results(
         "has_more": len(test_results) == limit
     }
 
-@router.post("/users/{user_id}/check-nickname")
+@router.post("/{user_id}/check-nickname")
 async def check_nickname_availability(
     user_id: int,
     nickname: str,
@@ -423,7 +423,7 @@ async def check_nickname_availability(
     
     return {"available": True, "message": "사용 가능한 닉네임입니다."}
 
-@router.post("/users/{user_id}/upload-profile-image")
+@router.post("/{user_id}/upload-profile-image")
 async def upload_profile_image(
     user_id: int,
     file: UploadFile = File(...),

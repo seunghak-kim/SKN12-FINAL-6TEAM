@@ -62,7 +62,7 @@ class UserService {
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
       return cached.data;
     }
-    const response = await apiClient.get<UserProfileResponse>(`/users/users/${userId}/profile`);
+    const response = await apiClient.get<UserProfileResponse>(`/users/${userId}/profile`);
     
     // 백엔드 응답을 프론트엔드 타입으로 변환
     const profile: UserProfile = {
@@ -87,7 +87,7 @@ class UserService {
 
   // 채팅 히스토리 조회
   async getChatHistory(userId: number, skip: number = 0, limit: number = 10): Promise<ChatHistory[]> {
-    const response = await apiClient.get<ChatHistoryResponse>(`/users/users/${userId}/chat-history`, {
+    const response = await apiClient.get<ChatHistoryResponse>(`/users/${userId}/chat-history`, {
       skip,
       limit
     });
@@ -130,12 +130,12 @@ class UserService {
 
   // 닉네임 중복 확인
   async checkNickname(userId: number, nickname: string): Promise<NicknameCheckResponse> {
-    return await apiClient.post<NicknameCheckResponse>(`/users/users/${userId}/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+    return await apiClient.post<NicknameCheckResponse>(`/users/${userId}/check-nickname?nickname=${encodeURIComponent(nickname)}`);
   }
 
   // 사용자 정보 업데이트
   async updateUser(userId: number, data: { nickname?: string }): Promise<UserProfileResponse> {
-    const result = await apiClient.put<UserProfileResponse>(`/users/users/${userId}`, data);
+    const result = await apiClient.put<UserProfileResponse>(`/users/${userId}`, data);
     
     // 업데이트 후 캐시 무효화
     this.profileCache.delete(userId);
@@ -161,7 +161,7 @@ class UserService {
       
       console.log('📤 업로드 요청 전송...');
       const result = await apiClient.postFormData<{ message: string; profile_image_url: string }>(
-        `/users/users/${userId}/upload-profile-image`,
+        `/users/${userId}/upload-profile-image`,
         formData
       );
       
@@ -200,6 +200,20 @@ class UserService {
       this.profileCache.delete(userId);
     } else {
       this.profileCache.clear();
+    }
+  }
+
+  /**
+   * 회원 탈퇴 (사용자 상태를 INACTIVE로 변경)
+   */
+  async deleteAccount(userId: number): Promise<void> {
+    try {
+      await apiClient.delete(`/users/${userId}`);
+      // 캐시 클리어
+      this.clearCache();
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      throw error;
     }
   }
 }
