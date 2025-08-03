@@ -11,37 +11,37 @@ from app.database import get_db
 
 router = APIRouter()
 
-@router.post("/", response_model=PersonaResponse, status_code=status.HTTP_201_CREATED)
-async def create_persona(persona_data: PersonaCreate, db: Session = Depends(get_db)):
-    """새 페르소나 생성"""
-    # 페르소나 이름 중복 확인
-    existing_persona = db.query(Persona).filter(
-        Persona.name == persona_data.name
-    ).first()
+# @router.post("/", response_model=PersonaResponse, status_code=status.HTTP_201_CREATED)
+# async def create_persona(persona_data: PersonaCreate, db: Session = Depends(get_db)):
+#     """새 페르소나 생성"""
+#     # 페르소나 이름 중복 확인
+#     existing_persona = db.query(Persona).filter(
+#         Persona.name == persona_data.name
+#     ).first()
     
-    if existing_persona:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="이미 존재하는 페르소나 이름입니다."
-        )
+#     if existing_persona:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="이미 존재하는 페르소나 이름입니다."
+#         )
     
-    new_persona = Persona(
-        name=persona_data.name,
-        description=persona_data.description,
-        is_active=True
-    )
+#     new_persona = Persona(
+#         name=persona_data.name,
+#         description=persona_data.description,
+#         is_active=True
+#     )
     
-    db.add(new_persona)
-    db.commit()
-    db.refresh(new_persona)
+#     db.add(new_persona)
+#     db.commit()
+#     db.refresh(new_persona)
     
-    return PersonaResponse(
-        persona_id=new_persona.persona_id,
-        name=new_persona.name,
-        description=new_persona.description,
-        is_active=new_persona.is_active,
-        created_at=new_persona.created_at
-    )
+#     return PersonaResponse(
+#         persona_id=new_persona.persona_id,
+#         name=new_persona.name,
+#         description=new_persona.description,
+#         is_active=new_persona.is_active,
+#         created_at=new_persona.created_at
+#     )
 
 @router.get("/", response_model=List[PersonaResponse])
 async def get_personas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

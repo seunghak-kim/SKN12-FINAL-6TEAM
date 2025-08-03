@@ -27,12 +27,12 @@ async def upload_drawing_image(
     """그림 이미지 업로드 및 테스트 생성"""
     
     # 파일 확장자 검증
-    allowed_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp"}
+    allowed_extensions = {".jpg", ".jpeg", ".png"}
     file_extension = os.path.splitext(file.filename)[1].lower()
     if file_extension not in allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="지원하지 않는 파일 형식입니다. (jpg, jpeg, png, gif, bmp만 가능)"
+            detail="지원하지 않는 파일 형식입니다. (jpg, jpeg, png만 가능)"
         )
     
     # 고유한 파일명 생성
@@ -172,8 +172,7 @@ async def create_test_result(
     ).first()
     
     if existing_result:
-        # 기존 결과 업데이트
-        existing_result.persona_type = result_data.persona_type
+        # 기존 결과 업데이트 - persona_type 덮어쓰기 제거 (파이프라인 결과 보존)
         # summary_text가 제공된 경우에만 업데이트 (파이프라인 결과 보존)
         if result_data.summary_text:
             existing_result.summary_text = result_data.summary_text

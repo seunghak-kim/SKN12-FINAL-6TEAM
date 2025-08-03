@@ -343,24 +343,27 @@ def save_analysis_result_sync(
                         confidence = keyword_analysis.get('confidence', 0.0)
                         probabilities = keyword_analysis.get('probabilities', {})
                         
-                        # 💡 핵심 수정: predicted_personality가 아닌 실제 최고 확률 유형 사용
-                        print(f"🚨 DB 저장 직전 - 수정된 코드 실행 중!")
+                        # 💡 핵심 수정: 확률값에서 최고 확률 유형을 찾아서 사용
+                        print(f"🚨 DB 저장 직전 - 최고 확률 유형 찾기 시작!")
                         if probabilities:
-                            # 확률에서 가장 높은 유형 찾기 (프론트엔드와 동일한 로직)
+                            # 확률에서 가장 높은 유형 찾기
                             highest_prob_type = max(probabilities.items(), key=lambda x: x[1])[0]
-                            actual_persona_type_id = personality_mapping.get(highest_prob_type)
+                            highest_prob_value = probabilities[highest_prob_type]
+                            
+                            # 최고 확률 유형을 persona_type_id로 매핑
+                            persona_type_id = personality_mapping.get(highest_prob_type)
                             
                             print(f"🔍 키워드 분석 결과:")
                             print(f"  - 원본 키워드 모델 예측: {predicted_personality} -> persona_id: {personality_mapping.get(predicted_personality)}")
-                            print(f"  - 실제 최고 확률: {highest_prob_type} ({probabilities[highest_prob_type]:.2f}%) -> persona_id: {actual_persona_type_id}")
+                            print(f"  - 실제 최고 확률 유형: {highest_prob_type} ({highest_prob_value:.2f}%)")
+                            print(f"  - 최고 확률 유형의 persona_id: {persona_type_id}")
                             print(f"  - 전체 확률: {probabilities}")
-                            print(f"  - 최종 사용할 persona_id: {actual_persona_type_id}")
                             
-                            # 실제 최고 확률 유형으로 persona_type_id 설정
-                            persona_type_id = actual_persona_type_id
-                            predicted_personality = highest_prob_type  # 실제 최고 확률 유형으로 업데이트
-                            print(f"🎯 DB에 저장될 persona_type_id: {persona_type_id}")
+                            # 실제 최고 확률 유형으로 predicted_personality 업데이트
+                            predicted_personality = highest_prob_type
+                            print(f"🎯 최종 DB에 저장될 persona_type_id: {persona_type_id}")
                         else:
+                            # 확률 정보가 없는 경우 원본 예측 사용
                             persona_type_id = personality_mapping.get(predicted_personality)
                             print(f"🔍 키워드 분석 결과 (확률 없음): {predicted_personality} -> persona_id: {persona_type_id}")
                             print(f"🎯 DB에 저장될 persona_type_id (확률없음): {persona_type_id}")
