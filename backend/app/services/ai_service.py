@@ -94,6 +94,12 @@ class AIService:
                 content=persona_response
             )
             self.db.add(assistant_msg)
+            
+            # 세션의 updated_at 업데이트 (가장 최근 대화 시간 반영)
+            from sqlalchemy.sql import func
+            session.updated_at = func.now()
+            self.db.add(session)
+            
             self.db.commit()
             
             return persona_response

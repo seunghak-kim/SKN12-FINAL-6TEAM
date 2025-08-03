@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { testService } from '../../services/testService';
+import { chatService } from '../../services/chatService';
 
 interface NavigationProps {
   activeTab?: string;
@@ -72,28 +73,49 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onNavigate, onSetCha
     }
   };
 
-  // 챗봇 클릭 시 테스트 상태 확인
+  // 챗봇 클릭 시 가장 최근 세션으로 이동
   const handleChatClick = async () => {
     try {
-      console.log('🔍 챗봇 클릭 - 테스트 상태 확인 중...');
+      console.log('🔍 챗봇 클릭 - 사용자 정보 및 세션 확인 중...');
+      
+      // 먼저 사용자 정보 확인
+      const currentUser = await authService.getCurrentUser();
+      if (!currentUser) {
+        console.log('❌ 사용자 정보 없음 - 로그인 필요');
+        navigate('/');
+        return;
+      }
+      
+      // 테스트 상태 확인
       const testStatus = await testService.getUserTestStatus();
       
       if (!testStatus.hasTests) {
         console.log('📝 테스트 기록 없음 - BeforeTest 페이지로 이동');
         handleNavigation('before-test', '/before-test');
-      } else {
-        console.log('✅ 테스트 기록 있음 - 챗봇 페이지로 이동');
-        console.log('최신 테스트 결과:', testStatus.latestResult);
+        return;
+      }
+      
+      // 사용자의 채팅 세션 목록 조회
+      const userSessions = await chatService.getUserSessions(currentUser.id);
+      
+      if (userSessions.length > 0) {
+        // 가장 최근 방문한 세션으로 이동 (updated_at 기준 정렬 - 마지막 메시지 시간)
+        const latestVisitedSession = userSessions.sort((a, b) => 
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        )[0];
         
+        console.log('✅ 가장 최근 방문한 세션으로 이동:', latestVisitedSession.chat_sessions_id);
+        navigate(`/chat?sessionId=${latestVisitedSession.chat_sessions_id}`);
+      } else {
+        console.log('📝 채팅 세션 없음 - 새 채팅 시작');
         // 최신 테스트 결과에 따라 캐릭터 설정
         if (testStatus.latestResult && onSetCharacterFromTest) {
           onSetCharacterFromTest(testStatus.latestResult);
         }
-        
         handleNavigation('chat', '/chat');
       }
     } catch (error) {
-      console.error('❌ 테스트 상태 확인 실패:', error);
+      console.error('❌ 챗봇 세션 확인 실패:', error);
       // 에러 발생 시 기본적으로 BeforeTest 페이지로 이동
       handleNavigation('before-test', '/before-test');
     }

@@ -100,11 +100,11 @@ async def get_user_sessions(
 ):
     """사용자의 메시지가 있는 채팅 세션 목록 조회"""
     try:
-        # 메시지가 최소 1개 이상 있는 세션만 조회
+        # 메시지가 최소 1개 이상 있는 세션만 조회 (가장 최근 대화 순으로 정렬)
         sessions = db.query(ChatSession).filter(
             ChatSession.user_id == user_id,
             ChatSession.is_active == True
-        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).distinct().order_by(ChatSession.created_at.desc()).all()
+        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).distinct().order_by(ChatSession.updated_at.desc()).all()
         
         return [
             ChatSessionResponse(
