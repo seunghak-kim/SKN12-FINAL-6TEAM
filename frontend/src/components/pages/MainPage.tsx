@@ -115,7 +115,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">MY MOODY</h1>
 
           <div className="text-white/90 text-lg md:text-xl mb-4 max-w-2xl mx-auto">
-            당신의 감정이 위로받을 수 있도록 -
+            당신의 감정이 위로받을 수 있도록
           </div>
           <div className="text-white/90 text-lg md:text-xl mb-8 max-w-2xl mx-auto">
             마이무디는 HTP* 그림 심리 분석과 맞춤형 챗봇 기능을 제공합니다
@@ -138,6 +138,17 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
         {/* About Service Section */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-12">About Service</h2>
+          
+          {/* Demo Video Section */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-2xl mx-auto mb-12 shadow-xl">
+            <div className="w-full h-auto">
+              <img 
+                src="/assets/gif/tutorial-video.gif" 
+                alt="서비스 시연 영상" 
+                className="w-full h-auto rounded-lg shadow-lg"
+              />
+            </div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {/* Service Card 1 */}
@@ -180,6 +191,33 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
             </div>
           </div>
         </div>
+
+        {/* Footer Section */}
+        <footer className="text-center py-12 border-t border-white/10">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-white/80 text-lg mb-4">MY MOODY</div>
+            <div className="text-white/60 text-sm mb-6">
+              감정 위로를 위한 AI 심리 분석 서비스
+            </div>
+            <div className="flex justify-center space-x-8 mb-6">
+              <a href="#" className="text-white/50 hover:text-white/80 transition-colors duration-300 text-sm">
+                이용약관
+              </a>
+              <a href="#" className="text-white/50 hover:text-white/80 transition-colors duration-300 text-sm">
+                개인정보처리방침
+              </a>
+              <a href="#" className="text-white/50 hover:text-white/80 transition-colors duration-300 text-sm">
+                고객지원
+              </a>
+            </div>
+            <div className="text-white/40 text-xs mb-2">
+              대표: 이정민 | leejm2157@gmail.com
+            </div>
+            <div className="text-white/40 text-xs">
+              © 2024 MY MOODY. All rights reserved.
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
