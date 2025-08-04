@@ -216,11 +216,13 @@ useEffect(() => {
               return;
             }
             
-            await createSession({
-              user_id: currentUserId,
-              persona_id: actualPersonaId,
-              session_name: `${currentPersonaName}와의 대화`
-            });
+            if (actualPersonaId !== null) {
+              await createSession({
+                user_id: currentUserId,
+                persona_id: actualPersonaId,
+                session_name: `${currentPersonaName}와의 대화`
+              });
+            }
           }
         } catch (error) {
           console.error('세션 초기화 실패:', error);

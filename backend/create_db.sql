@@ -1,4 +1,4 @@
-CREATE TABLE "personas" (
+CREATE TABLE IF NOT EXISTS "personas" (
   "persona_id" serial4 NOT NULL,
   "name" varchar(10) NOT NULL,
   "description" text NOT NULL,
@@ -7,19 +7,19 @@ CREATE TABLE "personas" (
   PRIMARY KEY ("persona_id")
 );
 
-CREATE TABLE "social_users" (
+CREATE TABLE IF NOT EXISTS "social_users" (
   "social_user_id" serial4 NOT NULL,
   "social_id" varchar(255) NOT NULL,
   PRIMARY KEY ("social_user_id")
 );
 
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
   "user_id" serial4 NOT NULL,
   "user_password" varchar(255) NOT NULL,
   PRIMARY KEY ("user_id")
 );
 
-CREATE TABLE "user_informations" (
+CREATE TABLE IF NOT EXISTS "user_informations" (
   "user_id" serial4 NOT NULL,
   "nickname" varchar(20) NOT NULL,
   "profile_image_url" varchar(500),
@@ -31,7 +31,7 @@ CREATE TABLE "user_informations" (
   PRIMARY KEY ("user_id")
 );
 
-CREATE TABLE "agreements" (
+CREATE TABLE IF NOT EXISTS "agreements" (
   "agreement_id" serial4 NOT NULL,
   "user_id" int4 NOT NULL,
   "is_agree" bool,
@@ -39,7 +39,7 @@ CREATE TABLE "agreements" (
   PRIMARY KEY ("agreement_id")
 );
 
-CREATE TABLE "chat_sessions" (
+CREATE TABLE IF NOT EXISTS "chat_sessions" (
   "chat_sessions_id" uuid NOT NULL,
   "user_id" int4,
   "persona_id" int4,
@@ -50,7 +50,7 @@ CREATE TABLE "chat_sessions" (
   PRIMARY KEY ("chat_sessions_id")
 );
 
-CREATE TABLE "drawing_tests" (
+CREATE TABLE IF NOT EXISTS "drawing_tests" (
   "test_id" serial4 NOT NULL,
   "user_id" int4 NOT NULL,
   "image_url" varchar(2048),
@@ -58,7 +58,7 @@ CREATE TABLE "drawing_tests" (
   PRIMARY KEY ("test_id")
 );
 
-CREATE TABLE "ratings" (
+CREATE TABLE IF NOT EXISTS "ratings" (
   "ratings_id" serial4 NOT NULL,
   "session_id" uuid NOT NULL,
   "user_id" int4 NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE "ratings" (
   PRIMARY KEY ("ratings_id")
 );
 
-CREATE TABLE "chat_messages" (
+CREATE TABLE IF NOT EXISTS "chat_messages" (
   "chat_messages_id" uuid NOT NULL,
   "session_id" uuid,
   "sender_type" varchar(20) NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE "chat_messages" (
   PRIMARY KEY ("chat_messages_id")
 );
 
-CREATE TABLE "drawing_test_results" (
+CREATE TABLE IF NOT EXISTS "drawing_test_results" (
   "result_id" serial4 NOT NULL,
   "test_id" int4 NOT NULL,
   "persona_type" int4,

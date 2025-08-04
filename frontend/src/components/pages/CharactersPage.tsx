@@ -15,7 +15,7 @@ interface ExtendedCharacter extends SearchResult {
   buttonText: string;
   personality_type: string;
   score: number;
-  badge?: string;
+  badges?: string[];
 }
 
 interface CharactersPageProps {
@@ -207,7 +207,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
                        defaultCharacters.find(c => c.id === personaId)?.name || 
                        '';
     
-    let badge = '';
+    let badges: string[] = [];
     let buttonText = '';
     
     // 디버깅: 상태 값들 확인
@@ -220,21 +220,28 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
       id
     });
     
+    // 대화중과 매칭됨 모두 체크 (순서 중요: 대화중이 먼저)
     if (chattingPersonaId === id) {
-      badge = '대화중';
+      badges.push('대화중');
       buttonText = '이어서 대화하기';
       console.log(`[DEBUG] 페르소나 ${id}에 '대화중' 뱃지 할당`);
-    } else if (matchedPersonaId === id) {
-      badge = '매칭됨';
-      buttonText = `${personaName}와 대화하기`;
+    }
+    
+    if (matchedPersonaId === id) {
+      badges.push('매칭됨');
+      if (!buttonText) { // 대화중이 아닐 때만 버튼 텍스트 설정
+        buttonText = `${personaName}와 대화하기`;
+      }
       console.log(`[DEBUG] 페르소나 ${id}에 '매칭됨' 뱃지 할당`);
-    } else {
+    }
+    
+    if (!buttonText) {
       buttonText = `${personaName}와 대화하기`;
     }
     
-    console.log(`[DEBUG] 페르소나 ${id} 최종 결과:`, { badge, buttonText });
+    console.log(`[DEBUG] 페르소나 ${id} 최종 결과:`, { badges, buttonText });
     
-    return { badge, buttonText };
+    return { badges, buttonText };
   };
 
   // 백엔드 페르소나 데이터를 ExtendedCharacter로 변환
@@ -250,7 +257,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
       color: style.color,
       emoji: style.emoji,
       buttonText: status.buttonText,
-      badge: status.badge,
+      badges: status.badges,
       personality_type: `${persona.name.replace('이', '')}형`,
       score: Math.random() * 0.3 + 0.7 // 임시 점수
     };
@@ -278,7 +285,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
         console.log(`[CHARACTERS] ${char.name}(ID:${char.id}) 상태:`, status);
         return {
           ...char,
-          badge: status.badge,
+          badges: status.badges,
           buttonText: status.buttonText
         };
       });
@@ -289,7 +296,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
     console.log('CharactersPage - 클릭된 캐릭터:', character);
     
     // '대화중' 페르소나인 경우 기존 세션으로 이동
-    if (character.badge === '대화중' && chattingPersonaId === parseInt(character.id)) {
+    if (character.badges?.includes('대화중') && chattingPersonaId === parseInt(character.id)) {
       try {
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
@@ -468,17 +475,21 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center mb-2">
                       <h3 className="text-2xl font-bold text-white mr-3">{character.name}</h3>
-                      {/* 실제 API 데이터 기반 뱃지 표시 */}
-                      {character.badge && (
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium shadow-lg ${
-                          character.badge === '대화중' 
-                            ? 'bg-green-500/80 text-white backdrop-blur-sm border border-green-400/50' 
-                            : character.badge === '매칭됨'
-                            ? 'bg-orange-500/80 text-white backdrop-blur-sm border border-orange-400/50'
-                            : 'bg-blue-500/80 text-white backdrop-blur-sm border border-blue-400/50'
-                        }`}>
-                          {character.badge}
-                        </span>
+                      {/* 실제 API 데이터 기반 뱃지 표시 - 여러 개 지원 */}
+                      {character.badges && character.badges.length > 0 && (
+                        <div className="flex space-x-2">
+                          {character.badges.map((badge, index) => (
+                            <span key={index} className={`px-3 py-1 rounded-full text-xs font-medium shadow-lg ${
+                              badge === '대화중' 
+                                ? 'bg-green-500/80 text-white backdrop-blur-sm border border-green-400/50' 
+                                : badge === '매칭됨'
+                                ? 'bg-orange-500/80 text-white backdrop-blur-sm border border-orange-400/50'
+                                : 'bg-blue-500/80 text-white backdrop-blur-sm border border-blue-400/50'
+                            }`}>
+                              {badge}
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <p className="text-white/90 text-sm leading-relaxed max-w-md">{character.description}</p>
