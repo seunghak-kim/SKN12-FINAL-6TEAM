@@ -75,7 +75,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
 
     // 메시지는 퀴즈로 덮어씀 (기존 message 무시)
     // 퀴즈 기반 메시지 설정
-    switch (status) {
+      switch (status) {
         case 'pending':
           setCurrentMessage('분석을 시작합니다...');
           break;
@@ -102,7 +102,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
           if (randomJoke) {
             setCurrentMessage('정답: ' + randomJoke.answer);
           } else {
-            setCurrentMessage('분석이 완료되었습니다!');
+          setCurrentMessage('분석이 완료되었습니다!');
           }
           break;
         case 'failed':
