@@ -52,7 +52,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
 
       {/* Cosmic spheres */}
       <div
-        className="absolute top-1/4 right-1/4 w-96 h-64 opacity-40"
+        className="absolute top-1/4 right-1/4 w-96 h-64 opacity-40 blur-sm"
         style={{
           backgroundImage: `url('/images/cosmic-spheres.png')`,
           backgroundSize: "contain",
