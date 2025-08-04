@@ -90,26 +90,21 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   };
 
   // thumbs up/down 피드백 처리
-  const handleThumbsFeedback = async (feedbackType: 'like' | 'dislike') => {
-    console.log('🔴 handleThumbsFeedback 호출됨:', { feedbackType, testData });
-    
+  const handleThumbsFeedback = async (feedbackType: 'like' | 'dislike') => {    
     try {
       // testData 구조 확인
       const testId = testData?.test_id || testData?.testId || testData?.id;
-      console.log('🔍 추출된 testId:', testId);
       
       if (testId) {
-        console.log('📡 API 호출 시작...');
         await testService.updateThumbsFeedback(testId, feedbackType);
         setSatisfaction(feedbackType);
-        console.log(`✅ 피드백 전송 성공: ${feedbackType}`);
       } else {
-        console.error('❌ 테스트 ID가 없습니다. testData:', testData);
+        console.error('테스트 ID가 없습니다. testData:', testData);
         // testId가 없어도 UI는 업데이트
         setSatisfaction(feedbackType);
       }
     } catch (error) {
-      console.error('❌ 피드백 전송 실패:', error);
+      console.error('피드백 전송 실패:', error);
       // 에러가 발생해도 UI는 업데이트 (사용자 경험 향상)
       setSatisfaction(feedbackType);
     }
@@ -212,7 +207,6 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     
     if (stateData?.error) {
       // 분석 실패 시 0% 데이터 표시
-      console.log('분석 실패 상태로 0% UI 표시');
       setTestData({ testId: null, error: true, errorMessage: stateData.errorMessage });
       setAnalysisResult(stateData.errorMessage || '분석 중 오류가 발생했습니다.');
       
@@ -237,7 +231,6 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       // 1. 먼저 테스트 정보를 가져와서 이미지 URL 설정
       try {
         const testInfo = await testService.getTestById(testId);
-        console.log('📋 테스트 정보:', testInfo);
         if (testInfo?.image_url) {
           setTestData((prev: any) => ({
             ...prev,
@@ -271,10 +264,8 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       if (response.ok) {
         const data = await response.json();
         
+        
         if (data.status === 'completed' && data.result) {
-          // 파이프라인 결과 저장 (state 업데이트용)
-          // setPipelineResult(data.result); // 제거됨
-          
           // API에서 직접 확률 데이터 가져오기
           const probabilities = data.result.probabilities;
           if (probabilities && Object.keys(probabilities).length > 0) {
@@ -285,14 +276,16 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             // 캐릭터 이름으로 변환해서 useAppState에 반영
             const characterName = getCharacterName(mainType);
             updateTestResult(characterName);
+          } else {
+            console.warn('Warning 확률 데이터가 비어있음');
           }
           
           // result_text가 있으면 분석 결과 업데이트
-          if (data.result.result_text) {
-            setAnalysisResult(data.result.result_text);
+          if (data.result.result_text || data.result.summary_text) {
+            const analysisText = data.result.result_text || data.result.summary_text;
+            setAnalysisResult(analysisText);
           }
           
-
           // 이미지 URL 업데이트 (API 응답에 image_url이 있는 경우)
           if (data.result.image_url || data.image_url) {
             setTestData((prev: any) => ({
@@ -300,7 +293,18 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
               imageUrl: data.result.image_url || data.image_url
             }));
           }
+          
+          // 파이프라인 데이터 반환 (createTestResult에 전달용)
+          return {
+            predicted_personality: data.result.predicted_personality,
+            probabilities: data.result.probabilities,
+            result_text: data.result.result_text || data.result.summary_text,
+            persona_type: data.result.persona_type,
+            analysis_method: data.result.analysis_method
+          };
         }
+        
+        return data; // 진행 중이나 다른 상태인 경우
       } else {
         console.error('분석 상태 조회 실패:', response.status, response.statusText);
         return null;
@@ -309,19 +313,20 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       console.error('분석 상태 조회 오류:', error);
       return null;
     }
+    
+    return null; // 기본 반환값
   };
 
   const createTestResult = async (testId: number, pipelineData?: any) => {
     setIsCreatingResult(true);
-    
+        
     try {
       // 파이프라인 데이터 직접 사용 (state에 의존하지 않음)
       const predictedPersonality = pipelineData?.predicted_personality || actualPersonalityType;
       const pipelinePersonaType = pipelineData?.persona_type;
-      
+
       // persona_type만 업데이트 (summary_text는 파이프라인에서 이미 설정됨)
-      const finalPersonaType = pipelinePersonaType || personalityData[predictedPersonality]?.personaType || 2;
-      
+      const finalPersonaType = pipelinePersonaType || personalityData[predictedPersonality]?.personaType || 2;      
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/test/drawing-test-results`, {
         method: 'POST',
         headers: {
@@ -347,13 +352,19 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         // 파이프라인 결과 텍스트를 사용
         if (pipelineData?.result_text) {
           setAnalysisResult(pipelineData.result_text);
+        } else {
+          console.warn('Warning pipelineData.result_text가 비어있음');
         }
       }
       
     } catch (error) {
       console.error('테스트 결과 생성 실패:', error);
       // 에러가 있어도 테스트 결과는 표시
-      setAnalysisResult("테스트 결과: 그림 분석이 완료되었습니다. 결과를 바탕으로 대화를 진행해보세요.");
+      if (pipelineData?.result_text) {
+        setAnalysisResult(pipelineData.result_text);
+      } else {
+        setAnalysisResult("테스트 결과: 그림 분석이 완료되었습니다. 결과를 바탕으로 대화를 진행해보세요.");
+      }
     } finally {
       setIsCreatingResult(false);
     }
@@ -462,13 +473,9 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                     </div>
                   ) : (
                     (() => {
-                      const imageUrl = testData?.image_url || testData?.imageUrl;
-                      console.log('🖼️ 오른쪽 이미지 URL 확인:', { testData, imageUrl });
-                      
+                      const imageUrl = testData?.image_url || testData?.imageUrl;                      
                       if (imageUrl) {
-                        const fullImageUrl = testService.getImageUrl(imageUrl);
-                        console.log('📸 오른쪽 최종 이미지 URL:', fullImageUrl);
-                        
+                        const fullImageUrl = testService.getImageUrl(imageUrl);                        
                         return (
                           <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
                             <img 
@@ -642,7 +649,6 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowImageModal(false);
-                  console.log('X 버튼 클릭됨!');
                 }}
                 className="absolute top-4 right-4 text-white bg-red-600 rounded-full w-12 h-12 flex items-center justify-center hover:bg-red-700 transition-colors duration-200 text-xl font-bold cursor-pointer"
                 style={{ zIndex: 1000000 }}
