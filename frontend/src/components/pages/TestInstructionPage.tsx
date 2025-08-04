@@ -83,27 +83,21 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
       // 새로운 파이프라인 API 사용
       const { testService } = await import('../../services/testService');
       
-      console.log('🚀 파이프라인 분석 시작:', selectedImage.name);
       
       // 이미지 분석 시작
       const analysisResult = await testService.analyzeImage(selectedImage, description);
-      console.log('✅ 분석 시작 응답:', analysisResult);
       
       const testId = analysisResult.test_id;
       
       // 분석 상태 폴링 시작
-      console.log('📡 상태 폴링 시작, test_id:', testId);
       await testService.pollAnalysisStatus(testId.toString(), (status) => {
-        console.log('📊 폴링 상태 업데이트:', status);
         
         // 진행률에 따른 UI 업데이트 (AnalysisModal에서 처리)
         // 여기서는 로그만 출력
         if (status.status === 'processing') {
-          console.log(`⏳ 분석 진행 중: ${status.message}`);
         }
       });
       
-      console.log('🎉 분석 완료! 결과 페이지로 이동');
       
       // 분석 완료 후 결과 페이지로 이동
       setIsAnalyzing(false);
@@ -119,7 +113,6 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
       setIsAnalyzing(false);
       
       // 분석 실패해도 결과 페이지로 이동 (0% UI 표시)
-      console.log('분석 실패했지만 결과 페이지로 이동하여 0% UI 표시');
       navigate('/results', { 
         state: { 
           testId: null, // testId가 없음을 표시
