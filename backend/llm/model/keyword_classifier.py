@@ -365,20 +365,30 @@ def predict_personality_from_text(text: str) -> Dict[str, any]:
     return classifier.predict_from_text(text)
 
 def run_keyword_prediction_from_result(image_base: str, quiet: bool = True) -> Dict[str, any]:
-    """이미지 분석 결과와 이전 단계 키워드를 결합하여 성격 유형 예측"""
+    """이미지 분석 결과와 이전 단계 키워드를 결합하여 성격 유형 예측 (하위 호환성 유지)"""
+    # 이 함수는 하위 호환성을 위해 유지하되, 파일을 찾을 수 없으면 오류 발생
     try:
-        # 결과 파일 경로
         result_json_path = os.path.join(BASE_DIR, f"../detection_results/results/result_{image_base}.json")
         
         if not os.path.exists(result_json_path):
             raise FileNotFoundError(f"결과 파일을 찾을 수 없습니다: {result_json_path}")
         
-        # 결과 파일 로드
         with open(result_json_path, 'r', encoding='utf-8') as f:
             result_data = json.load(f)
         
-        # 텍스트 추출
         raw_text = result_data.get('raw_text', '')
+        return run_keyword_prediction_from_data(raw_text, quiet=quiet)
+    except Exception as e:
+        print(f"키워드 기반 예측 실패: {e}")
+        return {}
+
+def run_keyword_prediction_from_data(analysis_text: str, quiet: bool = True) -> Dict[str, any]:
+    """분석 텍스트를 직접 받아서 성격 유형 예측"""
+    try:
+        if not analysis_text:
+            raise ValueError("분석 텍스트가 비어있습니다.")
+        
+        raw_text = analysis_text
         
         if not raw_text:
             raise ValueError("분석 결과에서 텍스트를 찾을 수 없습니다.")
@@ -422,27 +432,19 @@ def run_keyword_prediction_from_result(image_base: str, quiet: bool = True) -> D
                                            key=lambda x: -x[1]):
                 print(f"- {persona_type}: {prob:.2f}%")
         
-        # 기존 결과 파일에 키워드 분석 결과 추가
-        result_data['keyword_personality_analysis'] = {
-            "predicted_personality": prediction_result['personality_type'],
-            "confidence": prediction_result['confidence'],
-            "probabilities": prediction_result['probabilities'],
-            "current_image_keywords": current_keywords,
-            "previous_stage_keywords": previous_keywords[:20],  # 상위 20개만 저장
-            "total_keywords_used": len(unique_keywords),
-            "weighting_applied": "current_3x_previous_1x",  # 가중치 정보 추가
-            "analysis_timestamp": datetime.now().isoformat(),
-            "model_used": "keyword_classifier_enhanced_v2"
-        }
-        
-        # 업데이트된 내용을 다시 저장
-        with open(result_json_path, 'w', encoding='utf-8') as f:
-            json.dump(result_data, f, ensure_ascii=False, indent=2)
-        
-        if not quiet:
-            print(f"개선된 키워드 분석 결과가 저장되었습니다: {result_json_path}")
-        
         return prediction_result
+        
+    except Exception as e:
+        error_msg = f"키워드 기반 예측 실패: {str(e)}"
+        if not quiet:
+            print(error_msg)
+        
+        return {
+            "personality_type": "내면형",
+            "confidence": 0.2,
+            "probabilities": {"내면형": 20.0, "외향형": 20.0, "감수성": 20.0, "차분함": 20.0, "창의형": 20.0},
+            "error": error_msg
+        }
         
     except Exception as e:
         error_msg = f"키워드 기반 예측 실패: {str(e)}"
