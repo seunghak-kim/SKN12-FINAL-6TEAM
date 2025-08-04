@@ -17,6 +17,11 @@ interface Step {
   active: boolean;
 }
 
+interface Joke {
+  question: string;
+  answer: string;
+}
+
 const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, onComplete, onClose }) => {
   const [steps, setSteps] = useState<Step[]>([
     { id: 1, name: '이미지 처리', completed: false, active: false },
@@ -25,6 +30,22 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
   ]);
 
   const [currentMessage, setCurrentMessage] = useState('분석을 시작합니다...');
+  const [randomJoke, setRandomJoke] = useState<Joke | null>(null);
+
+  // 랜덤 퀴즈 로드
+  useEffect(() => {
+    if (isOpen && !randomJoke) {
+      fetch('/jokes.json')
+        .then(response => response.json())
+        .then(jokes => {
+          if (jokes && jokes.length > 0) {
+            const randomIndex = Math.floor(Math.random() * jokes.length);
+            setRandomJoke(jokes[randomIndex]);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isOpen, randomJoke]);
 
   // 모달이 닫혔을 때 초기화
   useEffect(() => {
@@ -35,38 +56,54 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
         { id: 3, name: '결과 생성', completed: false, active: false }
       ]);
       setCurrentMessage('분석을 시작합니다...');
+      setRandomJoke(null);
     }
   }, [isOpen]);
 
+
   // 실제 분석 상태에 따른 진행 상황 업데이트
   useEffect(() => {
-    if (!isOpen || !analysisStatus) return;
+    if (!isOpen) return;
+
+    if (!analysisStatus) {
+      // analysisStatus가 없을 때는 시작 메시지 표시
+      setCurrentMessage('분석을 시작합니다...');
+      return;
+    }
 
     const { status, message, current_step } = analysisStatus;
 
-    // 메시지 업데이트
-    if (message) {
-      setCurrentMessage(message);
-    } else {
-      // 기본 메시지 설정
-      switch (status) {
+    // 메시지는 퀴즈로 덮어씀 (기존 message 무시)
+    // 퀴즈 기반 메시지 설정
+    switch (status) {
         case 'pending':
           setCurrentMessage('분석을 시작합니다...');
           break;
         case 'processing':
-          if (typeof current_step === 'number') {
-            const stepMessages = {
-              1: '이미지를 처리하고 있습니다...',
-              2: '패턴을 분석하고 있습니다...',
-              3: '결과를 생성하고 있습니다...'
-            };
-            setCurrentMessage(stepMessages[current_step as keyof typeof stepMessages] || '분석을 진행하고 있습니다...');
+          if (typeof current_step === 'number' && randomJoke) {
+            switch (current_step) {
+              case 1:
+                setCurrentMessage('분석을 시작합니다...');
+                break;
+              case 2:
+                setCurrentMessage(randomJoke.question);
+                break;
+              case 3:
+                setCurrentMessage('정답: ' + randomJoke.answer);
+                break;
+              default:
+                setCurrentMessage('분석을 진행하고 있습니다...');
+            }
           } else {
             setCurrentMessage('분석을 진행하고 있습니다...');
           }
           break;
         case 'completed':
-          setCurrentMessage('분석이 완료되었습니다!');
+          if (randomJoke) {
+            setCurrentMessage('정답: ' + randomJoke.answer);
+          } else {
+            setCurrentMessage('분석이 완료되었습니다!');
+          }
           break;
         case 'failed':
           setCurrentMessage('분석 중 오류가 발생했습니다.');
@@ -74,7 +111,6 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
         default:
           setCurrentMessage('분석을 진행하고 있습니다...');
       }
-    }
 
     // 단계별 진행 상황 업데이트
     if (status === 'processing' && typeof current_step === 'number') {
@@ -99,7 +135,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
         }, 1000); // 1초 후 결과 페이지로 이동
       }
     }
-  }, [analysisStatus, isOpen, onComplete]);
+  }, [analysisStatus, isOpen, onComplete, randomJoke]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose || (() => {})} className="relative">
@@ -118,7 +154,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
         {/* 단계별 진행 상황 */}
         <div className="space-y-4 mb-6 flex flex-col items-center">
           {steps.map((step) => (
-            <div key={step.id} className="flex items-center space-x-3 w-32">
+            <div key={step.id} className="flex items-center space-x-3 w-64">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 flex-shrink-0 ${
                 step.completed 
                   ? 'bg-green-500 text-white' 
