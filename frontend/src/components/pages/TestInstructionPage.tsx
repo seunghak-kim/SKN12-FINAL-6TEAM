@@ -172,12 +172,6 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
         style={{ animationDelay: "1.5s" }}
       ></div>
 
-      {/* 3D Crystal with enhanced glow */}
-      <div
-        className="absolute bottom-20 right-20 w-32 h-40 bg-gradient-to-br from-cyan-400 via-blue-500 via-purple-600 to-pink-500 opacity-60 transform rotate-12 rounded-lg shadow-2xl animate-pulse"
-        style={{ animationDelay: "2s" }}
-      ></div>
-
       {/* Enhanced orbital rings */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div

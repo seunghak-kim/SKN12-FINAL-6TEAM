@@ -56,8 +56,12 @@ class AIService:
                 .all()
             )
             
-            # 1단계: 공통 답변 생성
-            common_response, tokens_step1 = self._generate_common_response(messages, user_message, **context)
+            # 히스토리 관리: 메시지가 10개 이상이면 요약 업데이트
+            if len(messages) >= 10:
+                session = self._manage_conversation_history(session, messages)
+            
+            # 1단계: 공통 답변 생성 (세션 정보 포함)
+            common_response, tokens_step1 = self._generate_common_response(session, messages, user_message, **context)
             
             # 2단계: 페르소나별 변환
             persona_response, tokens_step2 = self._transform_to_persona(common_response, persona_type, user_message, **context)
@@ -122,7 +126,7 @@ class AIService:
             
             return error_response
     
-    def _generate_common_response(self, messages: list, user_message: str, **context) -> Tuple[str, Dict[str, int]]:
+    def _generate_common_response(self, session: ChatSession, messages: list, user_message: str, **context) -> Tuple[str, Dict[str, int]]:
         """1단계: 공통 규칙으로 기본 답변 생성"""
         try:
             # 공통 규칙 프롬프트 로드
@@ -141,17 +145,28 @@ class AIService:
 
 위 정보를 바탕으로 사용자의 심리 상태와 성향을 고려한 답변을 생성해주세요."""
             
+            # 대화 요약 컨텍스트 준비
+            conversation_context = ""
+            if session.conversation_summary:
+                conversation_context = f"""
+
+[과거 대화 요약]
+{session.conversation_summary}
+
+위 요약은 이전 대화의 핵심 내용입니다. 이를 참고하여 대화의 연속성을 유지해주세요."""
+            
             # LLM에 보낼 메시지 구성
             llm_messages = []
             llm_messages.append(SystemMessage(content=f"""# 거북이상담소 AI 상담사 - 공통 답변 생성
 
-{common_rules}{user_analysis_context}
+{common_rules}{user_analysis_context}{conversation_context}
 
 위 규칙에 따라 사용자의 메시지에 대해 기본적이고 중립적인 상담 답변을 생성해주세요.
 이 답변은 나중에 각 페르소나의 특성에 맞게 변환될 예정입니다."""))
             
             # 대화 히스토리 추가 (최근 8개만)
-            for msg in messages[-8:]:
+            recent_messages = messages[-8:] if len(messages) > 8 else messages
+            for msg in recent_messages:
                 if msg.sender_type == "user":
                     llm_messages.append(HumanMessage(content=msg.content))
                 else:
@@ -304,6 +319,72 @@ class AIService:
         
         print(f"[AI] 개인화된 인사 생성: {greeting}")
         return greeting
+    
+    def _manage_conversation_history(self, session: ChatSession, messages: list) -> ChatSession:
+        """대화 히스토리 관리: 슬라이딩 윈도우 + 요약 방식"""
+        try:
+            # 최근 8개 메시지는 유지하고, 나머지는 요약에 포함
+            recent_messages = messages[-8:]
+            old_messages = messages[:-8]
+            
+            if old_messages:
+                # 기존 요약과 오래된 메시지들을 합쳐서 새로운 요약 생성
+                old_summary = session.conversation_summary or ""
+                new_summary = self._generate_conversation_summary(old_summary, old_messages)
+                
+                # 세션에 요약 업데이트
+                session.conversation_summary = new_summary
+                self.db.add(session)
+                self.db.flush()
+                
+                print(f"[히스토리] 대화 요약 업데이트: {len(old_messages)}개 메시지 요약됨")
+                
+        except Exception as e:
+            print(f"대화 히스토리 관리 오류: {e}")
+            
+        return session
+    
+    def _generate_conversation_summary(self, existing_summary: str, messages: list) -> str:
+        """과거 대화 내용을 요약 생성"""
+        try:
+            # 메시지들을 텍스트로 변환
+            conversation_text = []
+            for msg in messages:
+                sender = "사용자" if msg.sender_type == "user" else "상담사"
+                conversation_text.append(f"{sender}: {msg.content}")
+            
+            conversation_str = "\n".join(conversation_text)
+            
+            # 요약 프롬프트
+            summary_prompt = f"""다음은 심리 상담 대화 내용입니다. 이를 간결하게 요약해주세요.
+
+기존 요약 (있다면):
+{existing_summary}
+
+새로운 대화 내용:
+{conversation_str}
+
+요구사항:
+1. 사용자의 주요 고민과 감정 상태를 중심으로 요약
+2. 상담사가 제공한 주요 조언이나 통찰 포함  
+3. 대화의 흐름과 중요한 전환점 기록
+4. 200자 이내로 간결하게 작성
+5. 기존 요약이 있다면 통합하여 작성
+
+요약:"""
+
+            # GPT로 요약 생성
+            from langchain.schema import HumanMessage
+            response = self.llm.invoke([HumanMessage(content=summary_prompt)])
+            summary = response.content.strip()
+            
+            print(f"[요약] 생성된 대화 요약: {summary[:100]}...")
+            return summary
+            
+        except Exception as e:
+            print(f"대화 요약 생성 오류: {e}")
+            # 실패 시 기존 요약 반환
+            return existing_summary or "대화 요약 생성 실패"
     
     def get_available_personas(self) -> list:
         """사용 가능한 페르소나 목록 반환"""

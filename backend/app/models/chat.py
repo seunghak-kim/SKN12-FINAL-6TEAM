@@ -13,6 +13,7 @@ class ChatSession(Base):
     user_id = Column(Integer, ForeignKey('user_informations.user_id', ondelete='CASCADE'))
     persona_id = Column(Integer, ForeignKey('personas.persona_id'))
     session_name = Column(String(255))
+    conversation_summary = Column(Text)  # 대화 요약 저장용
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now())
