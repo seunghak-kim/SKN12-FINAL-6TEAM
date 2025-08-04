@@ -234,7 +234,16 @@ class AIService:
 
     def get_initial_greeting(self, persona_type: str = "내면형", user_analysis_result: dict = None) -> str:
         """페르소나별 초기 인사 메시지 반환 (그림 분석 결과 반영)"""
-        # 기본 인사말
+        
+        # 그림 분석 결과가 있으면 GPT-4o로 개인화된 인사 생성
+        if user_analysis_result:
+            try:
+                return self._generate_personalized_greeting(persona_type, user_analysis_result)
+            except Exception as e:
+                print(f"개인화된 인사 생성 실패: {e}")
+                # 실패시 기본 인사로 폴백
+        
+        # 기본 인사말 (폴백용)
         base_greetings = {
             "내면형": "안녕... 나는 내면이야. 말보다 느낌이 먼저일 때, 조용한 마음으로 함께 있을 수 있다면 좋겠어.",
             "추진형": "저는 당신의 고민을 함께 해결해갈 추진이에요. 지금부터 가장 중요한 얘기를 해볼까요?",
@@ -243,26 +252,45 @@ class AIService:
             "쾌락형": "저는 당신의 고민을 함께 해결해갈 쾌락이에요. 지금부터 재밌는 얘기를 해볼까요?"
         }
         
-        base_greeting = base_greetings.get(persona_type, base_greetings["내면형"])
+        return base_greetings.get(persona_type, base_greetings["내면형"])
+
+    def _generate_personalized_greeting(self, persona_type: str, user_analysis_result: dict) -> str:
+        """그림 분석 결과를 바탕으로 GPT-4o가 개인화된 첫 인사 생성"""
         
-        # 그림 분석 결과가 있으면 반영
-        if user_analysis_result and 'keyword_personality_analysis' in user_analysis_result:
-            analysis_type = user_analysis_result['keyword_personality_analysis']['predicted_personality']
-            print(f"그림 분석 결과 반영: {analysis_type}")
-            
-            # 분석 결과에 따른 추가 메시지
-            analysis_additions = {
-                "추진형": " 그림에서 보니 당신은 목표를 향해 나아가는 힘이 있어 보이네요.",
-                "관계형": " 그림에서 보니 당신은 사람들과의 관계를 소중히 여기는 것 같아요.",
-                "안정형": " 그림에서 보니 당신은 안정적이고 차분한 성향을 가지고 계시네요.",
-                "내면형": " 그림에서 보니 당신만의 깊은 내면세계가 느껴져요.",
-                "쾌락형": " 그림에서 보니 당신은 즐거움과 활력이 넘치는 분이네요."
-            }
-            
-            if analysis_type in analysis_additions:
-                base_greeting += analysis_additions[analysis_type]
+        # 페르소나별 기본 성격 설명
+        persona_descriptions = {
+            "내면형": "내면이: 감정과 사고의 깊은 바다를 탐험하는 조력자. 비관적 성향을 가지고 있으며 깊이 있는 통찰 제공",
+            "추진형": "추진이: 목표 달성을 강력히 추진하는 전략가. 결과 지향적이고 효율성을 극대화하는 스타일",
+            "관계형": "관계이: 사람들과의 관계와 소통을 중시하는 따뜻한 상담자",
+            "안정형": "안정이: 중립과 조화를 지향하는 안전한 대화 파트너. 신중하고 부드러운 말투",
+            "쾌락형": "쾌락이: 즐거움과 활력을 추구하는 반쯤 미친 에너지 넘치는 동반자"
+        }
         
-        return base_greeting
+        # GPT-4o 프롬프트 구성
+        prompt = f"""당신은 {persona_descriptions.get(persona_type, persona_descriptions['내면형'])}입니다.
+
+사용자의 그림검사 분석 결과를 바탕으로 개인화된 첫 인사 메시지를 생성해주세요.
+
+**그림 분석 결과:**
+{user_analysis_result}
+
+**요구사항:**
+1. 위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나도록 하세요
+2. 해당 페르소나의 말투와 성격에 맞게 작성하세요
+3. 따뜻하고 공감적인 톤으로 첫 인사를 건네세요
+4. 150자 이내로 작성하세요
+5. 사용자가 편안하게 대화를 시작할 수 있도록 유도하세요
+
+첫 인사 메시지:"""
+
+        # GPT-4o 호출
+        from langchain.schema import HumanMessage
+        
+        response = self.llm.invoke([HumanMessage(content=prompt)])
+        greeting = response.content.strip()
+        
+        print(f"[AI] 개인화된 인사 생성: {greeting}")
+        return greeting
     
     def get_available_personas(self) -> list:
         """사용 가능한 페르소나 목록 반환"""
