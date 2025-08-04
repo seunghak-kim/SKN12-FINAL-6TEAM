@@ -81,6 +81,11 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     }
   };
 
+  const handleFileDelete = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
   const handleStartTest = () => {
     // 동의 상태와 관계없이 항상 동의 모달 표시
     setShowConsentModal(true);
@@ -105,12 +110,10 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const handleAnalysis = async () => {
     if (!selectedImage) return;
 
-    console.log('🔍 분석 시작 - 모달 표시');
     setIsAnalyzing(true);
     setShowAnalysisModal(true);
     setAnalysisStatus(null);
 
-    console.log('📊 showAnalysisModal 상태:', true);
 
     try {
       // 이미지 분석 시작
@@ -121,14 +124,12 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
       const finalStatus = await testService.pollAnalysisStatus(
         analysisResponse.test_id,
         (status) => {
-          console.log('📈 분석 상태 업데이트:', status);
           setAnalysisStatus(status);
         }
       );
 
       if (finalStatus.status === 'completed') {
         // 분석 완료 시 - AnalysisModal의 onComplete에서 처리하도록 함
-        console.log('✅ 분석 완료 - AnalysisModal에서 결과 페이지로 이동 처리');
         // setIsAnalyzing(false);
         // setShowAnalysisModal(false);
         // navigate는 AnalysisModal의 onComplete에서 처리
@@ -179,8 +180,8 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
             <div className="bg-slate-500/50 rounded-2xl p-6 mb-8">
               <h2 className="text-white font-bold mb-4">필독사항</h2>
               <div className="text-white/90 text-sm space-y-2">
-                <p>• 메모장, 흰종이 노트 등을 활용해 집, 나무, 사람 각 요소를 분리해서 그려주세요</p>
-                <p>• 3가지 요소를 모두 그려야 정상적인 검사가 가능합니다</p>
+                <p>• 핸드폰 메모장, 종이, 노트 등에 아래 예시와 같이 <br/> 그린 뒤 촬영하여 올려주세요</p>
+                <p>• 집,나무, 사람 3가지 요소를 분리해서 그려야 <br/>정상적인 검사가 가능합니다</p>
                 <p>• 파일 업로드는 JPG 및 PNG로만 가능합니다</p>
               </div>
             </div>
@@ -209,12 +210,20 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
                     className="hidden"
                     id="file-reselect"
                   />
-                  <label 
-                    htmlFor="file-reselect"
-                    className="text-white/70 hover:text-white text-sm underline cursor-pointer"
-                  >
-                    다른 파일 선택
-                  </label>
+                  <div className="flex items-center justify-center space-x-4">
+                    <label 
+                      htmlFor="file-reselect"
+                      className="text-white/70 hover:text-white text-sm underline cursor-pointer"
+                    >
+                      다른 파일 선택
+                    </label>
+                    <button
+                      onClick={handleFileDelete}
+                      className="text-white/70 hover:text-red-300 text-sm underline cursor-pointer"
+                    >
+                      파일 삭제하기
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>
@@ -292,14 +301,12 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
 
       {/* AnalysisModal */}
       {(() => {
-        console.log('🎭 AnalysisModal 렌더링 체크:', { showAnalysisModal, isAnalyzing });
         return null;
       })()}
       <AnalysisModal 
         isOpen={showAnalysisModal}
         analysisStatus={analysisStatus}
         onComplete={() => {
-          console.log('🎉 AnalysisModal onComplete 호출됨 - 결과 페이지로 이동');
           setIsAnalyzing(false);
           setShowAnalysisModal(false);
           if (currentTestId) {
@@ -312,7 +319,6 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
           }
         }}
         onClose={() => {
-          console.log('❌ AnalysisModal 강제 종료됨');
           setIsAnalyzing(false);
           setShowAnalysisModal(false);
           // 분석 중지 로직이 필요하면 여기에 추가
