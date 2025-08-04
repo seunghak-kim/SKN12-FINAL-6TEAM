@@ -74,6 +74,7 @@ class PipelineResult:
     psychological_analysis: Optional[Dict] = None
     personality_type: Optional[str] = None
     confidence_score: Optional[float] = None
+    keyword_analysis: Optional[Dict] = None  # 키워드 분석 결과 직접 저장
     
     # 오류 정보
     error_message: Optional[str] = None
@@ -241,29 +242,20 @@ class HTPAnalysisPipeline:
             # GPT 분석 실행
             analysis_result = analyze_image_gpt(result.image_base)
             
-            # 결과 파일 확인
-            analysis_file_path = (
-                self.config.detection_results_dir / "results" / 
-                f"result_{result.image_base}.json"
-            )
-            
-            if analysis_file_path.exists():
-                # 분석 결과 로드
-                with open(analysis_file_path, 'r', encoding='utf-8') as f:
-                    analysis_data = json.load(f)
-                
+            # 분석 결과 직접 처리 (파일 확인 불필요)
+            if analysis_result:
                 result.analysis_success = True
-                result.psychological_analysis = analysis_data
-                self.logger.info(f"심리 분석 완료: {analysis_file_path}")
+                result.psychological_analysis = analysis_result
+                self.logger.info("심리 분석 완료 (직접 반환)")
                 
                 # GPT 응답 검증
-                if self._validate_gpt_response(analysis_data):
+                if self._validate_gpt_response(analysis_result):
                     return True
                 else:
                     self.logger.warning("GPT 응답이 불완전합니다.")
                     return False
             else:
-                self.logger.error("심리 분석 결과 파일이 생성되지 않았습니다.")
+                self.logger.error("심리 분석 결과를 받지 못했습니다.")
                 return False
                 
         except Exception as e:
@@ -318,18 +310,39 @@ class HTPAnalysisPipeline:
             
             # 키워드 분류기 실행
             try:
-                # 키워드 기반 성격 유형 예측 실행
-                prediction_result = run_keyword_prediction_from_result(result.image_base, quiet=False)
+                # 심리 분석 결과에서 텍스트 추출
+                analysis_text = ""
+                if hasattr(result, 'psychological_analysis') and result.psychological_analysis:
+                    analysis_text = result.psychological_analysis.get('raw_text', '')
+                
+                if not analysis_text:
+                    self.logger.error("심리 분석 텍스트를 찾을 수 없습니다.")
+                    return False
+                
+                # 키워드 기반 성격 유형 예측 실행 (직접 텍스트 사용)
+                from keyword_classifier import run_keyword_prediction_from_data
+                prediction_result = run_keyword_prediction_from_data(analysis_text, quiet=False)
                 
                 if prediction_result and prediction_result.get('personality_type'):
                     result.classification_success = True
                     result.personality_type = prediction_result.get('personality_type')
                     result.confidence_score = prediction_result.get('confidence', 0.0)
                     
+                    # 🔥 키워드 분석 결과를 직접 result 객체에 저장 (JSON 파일 의존성 제거)
+                    result.keyword_analysis = {
+                        'predicted_personality': prediction_result.get('personality_type'),
+                        'confidence': prediction_result.get('confidence', 0.0),
+                        'probabilities': prediction_result.get('probabilities', {}),
+                        'current_image_keywords': prediction_result.get('current_image_keywords', []),
+                        'previous_stage_keywords': prediction_result.get('previous_stage_keywords', []),
+                        'total_keywords_used': prediction_result.get('total_keywords_used', 0)
+                    }
+                    
                     self.logger.info(
                         f"키워드 기반 성격 유형 분류 완료: {result.personality_type} "
                         f"(신뢰도: {result.confidence_score:.3f})"
                     )
+                    self.logger.info(f"키워드 분석 결과가 result 객체에 직접 저장됨: {result.keyword_analysis}")
                     return True
                 else:
                     self.logger.error("키워드 분류 결과를 받지 못했습니다.")

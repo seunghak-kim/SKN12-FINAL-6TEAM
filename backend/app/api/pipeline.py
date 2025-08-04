@@ -293,7 +293,8 @@ def save_analysis_result_sync(
     db: Session
 ):
     """
-    분석 결과를 데이터베이스에 저장 (동기 버전)
+    분석 결과를 데이터베이스에 저장 (간소화된 직접 저장 버전)
+    JSON 파일 의존성 제거하고 파이프라인 결과를 직접 활용
     
     Args:
         result: 파이프라인 분석 결과
@@ -301,7 +302,8 @@ def save_analysis_result_sync(
         description: 사용자 설명
         db: 데이터베이스 세션
     """
-    print(f"🔥🔥 save_analysis_result_sync 함수 내부 진입 - test_id: {test_id}")
+    print(f"🔥 save_analysis_result_sync 함수 진입 - test_id: {test_id}")
+    
     try:
         # 파이프라인 인스턴스 가져오기
         pipeline = get_pipeline()
@@ -315,125 +317,86 @@ def save_analysis_result_sync(
             "안정형": 5   # 안정이
         }
         
-        persona_type_id = None
+        # 기본값 설정
+        persona_type_id = 2  # 기본값: 내면형
         summary_text = "분석을 완료할 수 없습니다."
+        persona_scores = {
+            'dog_scores': 0.0,     # 추진형
+            'cat_scores': 0.0,     # 내면형
+            'rabbit_scores': 0.0,  # 관계형
+            'bear_scores': 0.0,    # 쾌락형
+            'turtle_scores': 0.0   # 안정형
+        }
         
-        # 키워드 분석 결과 우선 처리
+        # 파이프라인 결과가 성공적인 경우 처리
         if (PipelineStatus is not None and 
             hasattr(result, 'status') and 
-            result.status == PipelineStatus.SUCCESS and 
-            hasattr(result, 'personality_type') and 
-            result.personality_type):
-            persona_type_id = personality_mapping.get(result.personality_type)
+            result.status == PipelineStatus.SUCCESS):
             
-            # result 파일에서 키워드 분석 결과 확인
-            result_file_path = pipeline.config.detection_results_dir / "results" / f"result_{result.image_base}.json"
+            print(f"📊 파이프라인 결과 처리 시작")
             
-            if result_file_path.exists():
-                try:
-                    with open(result_file_path, 'r', encoding='utf-8') as f:
-                        result_data = json.load(f)
-                    
-                    # 1. 키워드 분석 결과 우선 처리
-                    keyword_analysis = result_data.get('keyword_personality_analysis', {})
-                    keyword_analysis_success = False  # 초기값 설정
-                    
-                    if keyword_analysis and keyword_analysis.get('predicted_personality'):
-                        predicted_personality = keyword_analysis.get('predicted_personality')
-                        confidence = keyword_analysis.get('confidence', 0.0)
-                        probabilities = keyword_analysis.get('probabilities', {})
-                        
-                        # 💡 핵심 수정: 확률값에서 최고 확률 유형을 찾아서 사용
-                        print(f"🚨 DB 저장 직전 - 최고 확률 유형 찾기 시작!")
-                        if probabilities:
-                            # 확률에서 가장 높은 유형 찾기
-                            highest_prob_type = max(probabilities.items(), key=lambda x: x[1])[0]
-                            highest_prob_value = probabilities[highest_prob_type]
-                            
-                            # 최고 확률 유형을 persona_type_id로 매핑
-                            persona_type_id = personality_mapping.get(highest_prob_type)
-                            
-                            print(f"🔍 키워드 분석 결과:")
-                            print(f"  - 원본 키워드 모델 예측: {predicted_personality} -> persona_id: {personality_mapping.get(predicted_personality)}")
-                            print(f"  - 실제 최고 확률 유형: {highest_prob_type} ({highest_prob_value:.2f}%)")
-                            print(f"  - 최고 확률 유형의 persona_id: {persona_type_id}")
-                            print(f"  - 전체 확률: {probabilities}")
-                            
-                            # 실제 최고 확률 유형으로 predicted_personality 업데이트
-                            predicted_personality = highest_prob_type
-                            print(f"🎯 최종 DB에 저장될 persona_type_id: {persona_type_id}")
-                        else:
-                            # 확률 정보가 없는 경우 원본 예측 사용
-                            persona_type_id = personality_mapping.get(predicted_personality)
-                            print(f"🔍 키워드 분석 결과 (확률 없음): {predicted_personality} -> persona_id: {persona_type_id}")
-                            print(f"🎯 DB에 저장될 persona_type_id (확률없음): {persona_type_id}")
-                        
-                        # 키워드 정보
-                        current_keywords = keyword_analysis.get('current_image_keywords', [])
-                        previous_keywords = keyword_analysis.get('previous_stage_keywords', [])
-                        total_keywords = keyword_analysis.get('total_keywords_used', 0)
-                        
-                        # 확률값을 DB 필드에 매핑 (기존 컬럼 재활용)
-                        # dog_scores -> 추진이, cat_scores -> 내면이, rabbit_scores -> 관계이, bear_scores -> 쾌락이, turtle_scores -> 안정이
-                        persona_scores = {
-                            'dog_scores': probabilities.get('추진형', 0.0),      # 추진이
-                            'cat_scores': probabilities.get('내면형', 0.0),      # 내면이
-                            'rabbit_scores': probabilities.get('관계형', 0.0),   # 관계이
-                            'bear_scores': probabilities.get('쾌락형', 0.0),     # 쾌락이
-                            'turtle_scores': probabilities.get('안정형', 0.0)    # 안정이
-                        }
-                        
-                        # 상세한 summary_text 생성
-                        summary_parts = []
-                        
-                        # 기본 심리 분석 결과
-                        if result.psychological_analysis and result.psychological_analysis.get('result_text'):
-                            summary_parts.append(result.psychological_analysis['result_text'])
-                        
-                        # 키워드 분석 결과 추가
-                        summary_parts.append(f"\n[키워드 기반 성격 분석]")
-                        summary_parts.append(f"예측된 성격 유형: {predicted_personality}")
-                        summary_parts.append(f"분석 신뢰도: {confidence:.1%}")
-                        summary_parts.append(f"총 사용 키워드: {total_keywords}개")
-                        
-                        if current_keywords:
-                            summary_parts.append(f"주요 감정 키워드: {', '.join(current_keywords[:5])}")
-                        
-                        # 확률 정보
-                        if probabilities:
-                            sorted_probs = sorted(probabilities.items(), key=lambda x: -x[1])[:3]
-                            prob_text = ", ".join([f"{name}: {prob:.1f}%" for name, prob in sorted_probs])
-                            summary_parts.append(f"유형별 확률: {prob_text}")
-                        
-                        summary_text = "\n".join(summary_parts)
-                        keyword_analysis_success = True
-                        
-                        pipeline.logger.info(f"키워드 분석 결과 저장: {predicted_personality} (신뢰도: {confidence:.3f})")
-                    
-                    # 2. 키워드 분석 실패시 pipeline result 직접 사용
-                    if not keyword_analysis_success:
-                        if hasattr(result, 'personality_type') and result.personality_type:
-                            persona_type_id = personality_mapping.get(result.personality_type)
-                            
-                            if result.psychological_analysis and result.psychological_analysis.get('result_text'):
-                                summary_text = result.psychological_analysis['result_text']
-                                summary_text += f"\n[기본 분석] 성격 유형: {result.personality_type} (신뢰도: {result.confidence_score:.1%})"
-                            else:
-                                summary_text = f"성격 유형: {result.personality_type} (신뢰도: {result.confidence_score:.1%})"
-                            
-                            pipeline.logger.info(f"기본 결과 저장: {result.personality_type}")
+            # 1. 키워드 분석 결과 우선 처리 (result 객체에 직접 포함된 경우)
+            if hasattr(result, 'keyword_analysis') and result.keyword_analysis:
+                keyword_data = result.keyword_analysis
+                print(f"🔍 키워드 분석 데이터 발견: {keyword_data}")
                 
-                except Exception as e:
-                    pipeline.logger.warning(f"result 파일 읽기 실패: {e}")
+                predicted_personality = keyword_data.get('predicted_personality')
+                confidence = keyword_data.get('confidence', 0.0)
+                probabilities = keyword_data.get('probabilities', {})
+                
+                if probabilities:
+                    # 확률에서 가장 높은 유형 찾기
+                    highest_prob_type = max(probabilities.items(), key=lambda x: x[1])[0]
+                    highest_prob_value = probabilities[highest_prob_type]
                     
-                    # 파일 읽기 실패시 pipeline result 직접 사용
-                    if hasattr(result, 'personality_type') and result.personality_type:
-                        persona_type_id = personality_mapping.get(result.personality_type)
-                        summary_text = f"성격 유형: {result.personality_type}"
+                    # 최고 확률 유형을 persona_type_id로 매핑
+                    persona_type_id = personality_mapping.get(highest_prob_type, 2)
+                    
+                    # 확률값을 DB 필드에 매핑 (DECIMAL(5,2) 제한에 맞게 변환: 최대 999.99)
+                    persona_scores.update({
+                        'dog_scores': round(min(probabilities.get('추진형', 0.0), 999.99), 2),
+                        'cat_scores': round(min(probabilities.get('내면형', 0.0), 999.99), 2),
+                        'rabbit_scores': round(min(probabilities.get('관계형', 0.0), 999.99), 2),
+                        'bear_scores': round(min(probabilities.get('쾌락형', 0.0), 999.99), 2),
+                        'turtle_scores': round(min(probabilities.get('안정형', 0.0), 999.99), 2)
+                    })
+                    
+                    print(f"✅ 키워드 분석 결과 적용:")
+                    print(f"  - 최고 확률 유형: {highest_prob_type} ({highest_prob_value:.1f}%)")
+                    print(f"  - persona_type_id: {persona_type_id}")
+                    print(f"  - 확률 분포: {probabilities}")
+            
+            # 2. 기본 성격 유형 결과 처리
+            elif hasattr(result, 'personality_type') and result.personality_type:
+                persona_type_id = personality_mapping.get(result.personality_type, 2)
+                print(f"📝 기본 성격 유형 적용: {result.personality_type} -> ID: {persona_type_id}")
+            
+            # 3. GPT 심리 분석 텍스트만 처리 (키워드/기본 분석 정보 제외)
+            summary_text = "성격 유형 분석이 완료되었습니다."  # 기본값
+            
+            if hasattr(result, 'psychological_analysis') and result.psychological_analysis:
+                psych_analysis = result.psychological_analysis
+                if isinstance(psych_analysis, dict) and psych_analysis.get('result_text'):
+                    # GPT 심리 분석 결과만 사용 (다른 정보 추가 없이)
+                    summary_text = psych_analysis['result_text']
+                    print(f"📄 GPT 심리 분석 텍스트만 사용 (기타 정보 제외)")
+                else:
+                    print(f"⚠️ GPT 심리 분석 결과가 비어있음")
+            else:
+                print(f"⚠️ psychological_analysis 데이터가 없음")
+            
+            print(f"📝 최종 summary_text 생성 완료 (길이: {len(summary_text)}자)")
+            print(f"📝 내용 미리보기: {summary_text[:100]}..." if len(summary_text) > 100 else f"📝 전체 내용: {summary_text}")
         
-        # 오류 처리
-        if hasattr(result, 'error_message') and result.error_message:
+        # 오류 처리 (기존 로직 유지)
+        elif hasattr(result, 'error_message') and result.error_message:
             summary_text = f"분석 중 오류가 발생했습니다: {result.error_message}"
+            print(f"❌ 오류 메시지: {result.error_message}")
+        
+        else:
+            # 기본 메시지 사용 (이미 설정된 summary_text 사용)
+            print(f"⚠️ 파이프라인 결과가 예상과 다름. result 객체 속성: {dir(result) if result else 'None'}")
+            print(f"📝 기본 summary_text 사용: {summary_text}")
         
         # 결과 저장 (upsert 패턴)
         existing_result = db.query(DrawingTestResult).filter(
@@ -443,9 +406,17 @@ def save_analysis_result_sync(
         print(f"💾 DB 저장 전 최종 확인:")
         print(f"  - persona_type_id: {persona_type_id}")
         print(f"  - test_id: {test_id}")
-        print(f"  - persona_scores 변수 존재: {'persona_scores' in locals()}")
-        if 'persona_scores' in locals():
-            print(f"  - persona_scores: {persona_scores}")
+        print(f"  - persona_scores: {persona_scores}")
+        print(f"  - summary_text 길이: {len(summary_text)}자")
+        print(f"  - summary_text 샘플: {summary_text[:50]}..." if len(summary_text) > 50 else f"  - summary_text: {summary_text}")
+        
+        # DECIMAL 제한 검증 및 조정
+        for key, value in persona_scores.items():
+            if value > 999.99:
+                print(f"⚠️ {key} 값이 DECIMAL(5,2) 제한을 초과함: {value} -> 999.99로 조정")
+                persona_scores[key] = 999.99
+        
+        print(f"📊 조정된 persona_scores: {persona_scores}")
             
         if existing_result:
             # 기존 결과 업데이트
@@ -453,15 +424,18 @@ def save_analysis_result_sync(
             existing_result.persona_type = persona_type_id
             existing_result.summary_text = summary_text
             existing_result.created_at = datetime.now()
-            print(f"🔄 업데이트 후 persona_type: {existing_result.persona_type}")
-            # 확률 점수 업데이트 (키워드 분석 성공한 경우만)
-            if 'persona_scores' in locals():
-                existing_result.dog_scores = persona_scores['dog_scores']
-                existing_result.cat_scores = persona_scores['cat_scores'] 
-                existing_result.rabbit_scores = persona_scores['rabbit_scores']
-                existing_result.bear_scores = persona_scores['bear_scores']
-                existing_result.turtle_scores = persona_scores['turtle_scores']
-                print(f"🔄 확률 점수도 업데이트됨")
+            
+            # 확률 점수 업데이트 (안전한 값으로)
+            existing_result.dog_scores = persona_scores['dog_scores']
+            existing_result.cat_scores = persona_scores['cat_scores'] 
+            existing_result.rabbit_scores = persona_scores['rabbit_scores']
+            existing_result.bear_scores = persona_scores['bear_scores']
+            existing_result.turtle_scores = persona_scores['turtle_scores']
+            
+            print(f"🔄 업데이트할 점수들: {persona_scores}")
+            print(f"🔄 업데이트할 summary_text 미리보기: {summary_text[:100]}..." if len(summary_text) > 100 else f"🔄 업데이트할 summary_text: {summary_text}")
+            
+            print(f"🔄 업데이트 완료 - 새 persona_type: {existing_result.persona_type}")
         else:
             # 새 결과 생성
             print(f"🆕 새 결과 생성")
@@ -469,33 +443,56 @@ def save_analysis_result_sync(
                 'test_id': test_id,
                 'persona_type': persona_type_id,
                 'summary_text': summary_text,
-                'created_at': datetime.now()
+                'created_at': datetime.now(),
+                'dog_scores': persona_scores['dog_scores'],
+                'cat_scores': persona_scores['cat_scores'],
+                'rabbit_scores': persona_scores['rabbit_scores'],
+                'bear_scores': persona_scores['bear_scores'],
+                'turtle_scores': persona_scores['turtle_scores']
             }
-            # 확률 점수 추가 (키워드 분석 성공한 경우만)
-            if 'persona_scores' in locals():
-                test_result_data.update({
-                    'dog_scores': persona_scores['dog_scores'],
-                    'cat_scores': persona_scores['cat_scores'],
-                    'rabbit_scores': persona_scores['rabbit_scores'],
-                    'bear_scores': persona_scores['bear_scores'],
-                    'turtle_scores': persona_scores['turtle_scores']
-                })
-                print(f"🆕 확률 점수도 포함됨")
+            
+            print(f"🆕 새로 생성할 데이터: test_id={test_id}, persona_type={persona_type_id}")
+            print(f"🆕 점수 데이터: {persona_scores}")
+            print(f"🆕 새 summary_text 미리보기: {summary_text[:100]}..." if len(summary_text) > 100 else f"🆕 새 summary_text: {summary_text}")
             
             test_result = DrawingTestResult(**test_result_data)
             db.add(test_result)
-            print(f"🆕 새 결과 DB에 추가됨 - persona_type: {test_result_data['persona_type']}")
+            print(f"🆕 새 결과 DB에 추가됨 - persona_type: {persona_type_id}")
         
         print(f"💾 DB commit 시작...")
-        db.commit()
-        print(f"💾 DB commit 완료!")
+        
+        try:
+            db.commit()
+            print(f"✅ DB commit 성공! 분석 결과가 성공적으로 저장되었습니다.")
+            print(f"✅ 최종 저장된 summary_text: GPT 심리 분석 결과만 포함 ({len(summary_text)}자)")
+        except Exception as commit_error:
+            print(f"❌ DB commit 오류: {str(commit_error)}")
+            db.rollback()
+            raise commit_error
+        
+        # 파이프라인 로거에 성공 로그 기록
+        try:
+            pipeline.logger.info(f"분석 결과 저장 성공 - test_id: {test_id}, persona_type: {persona_type_id}")
+        except:
+            print(f"로거 사용 불가, 콘솔에 기록: test_id: {test_id}, persona_type: {persona_type_id}")
         
     except Exception as e:
+        print(f"❌ DB 저장 중 오류 발생: {str(e)}")
+        print(f"📊 에러 상세 정보: {repr(e)}")
+        
+        # 에러 타입별 상세 정보
+        import traceback
+        print(f"🔍 전체 에러 트레이스:")
+        traceback.print_exc()
+        
         db.rollback()
+        
         try:
             pipeline.logger.error(f"분석 결과 저장 오류: {str(e)}")
         except:
-            print(f"분석 결과 저장 오류: {str(e)}")
+            print(f"분석 결과 저장 오류 (로거 사용 불가): {str(e)}")
+        
+        # 오류를 다시 발생시켜서 상위에서 처리하도록 함
         raise
 
 
@@ -622,53 +619,50 @@ async def get_analysis_status(
                 "estimated_remaining": "2-3분"
             })
         
-        # result 파일에서 추가 데이터 읽기 (키워드 분석 우선)
+        # DB에서 직접 확률 데이터 가져오기 (기존 JSON 파일 의존성 제거)
         pipeline = get_pipeline()
-        image_url = drawing_test.image_url
-        result_text = None
-        predicted_personality = None
-        probabilities = {}
-        analysis_method = "unknown"
-        keyword_info = {}
+        result_text = test_result.summary_text  # DB에서 직접 가져오기
         
-        if image_url:
-            import re
-            match = re.search(r'result/images/(.+?)\.jpg', image_url)
-            if match:
-                unique_id = match.group(1)
-                result_file_path = pipeline.config.detection_results_dir / "results" / f"result_{unique_id}.json"
-                
-                if result_file_path.exists():
-                    try:
-                        with open(result_file_path, 'r', encoding='utf-8') as f:
-                            result_data = json.load(f)
-                        
-                        result_text = result_data.get('result_text', '')
-                        
-                        # 키워드 분석 결과 처리
-                        keyword_analysis = result_data.get('keyword_personality_analysis', {})
-                        
-                        if keyword_analysis and keyword_analysis.get('predicted_personality'):
-                            predicted_personality = keyword_analysis.get('predicted_personality', '')
-                            probabilities = keyword_analysis.get('probabilities', {})
-                            analysis_method = keyword_analysis.get('model_used', 'keyword_classifier')
-                            
-                            # 키워드 정보 추가
-                            keyword_info = {
-                                "current_keywords": keyword_analysis.get('current_image_keywords', []),
-                                "previous_keywords": keyword_analysis.get('previous_stage_keywords', []),
-                                "total_keywords": keyword_analysis.get('total_keywords_used', 0),
-                                "confidence": keyword_analysis.get('confidence', 0.0)
-                            }
-                            
-                            pipeline.logger.info(f"키워드 분석 결과 반환: {predicted_personality}")
-                        else:
-                            # 키워드 분석 결과가 없는 경우
-                            pipeline.logger.warning(f"키워드 분석 결과가 없습니다")
-                            analysis_method = "no_analysis"
-                            
-                    except Exception as e:
-                        pipeline.logger.warning(f"result 파일 읽기 실패: {e}")
+        # 성격 유형 매핑 (persona_type ID -> 이름)
+        personality_mapping = {
+            1: "추진형",  # 추진이
+            2: "내면형",  # 내면이  
+            3: "관계형",  # 관계이
+            4: "쾌락형",  # 쾌락이
+            5: "안정형"   # 안정이
+        }
+        
+        # DB에서 확률 데이터 추출
+        probabilities = {
+            "추진형": float(test_result.dog_scores or 0.0),
+            "내면형": float(test_result.cat_scores or 0.0),
+            "관계형": float(test_result.rabbit_scores or 0.0),
+            "쾌락형": float(test_result.bear_scores or 0.0),
+            "안정형": float(test_result.turtle_scores or 0.0)
+        }
+        
+        # 최고 확률 유형 찾기
+        if probabilities and any(v > 0 for v in probabilities.values()):
+            predicted_personality = max(probabilities.items(), key=lambda x: x[1])[0]
+            analysis_method = "keyword_classifier"
+        else:
+            # 확률 데이터가 없는 경우 persona_type에서 가져오기
+            predicted_personality = personality_mapping.get(test_result.persona_type, "내면형")
+            analysis_method = "fallback"
+        
+        # 키워드 정보 (기본값 제공)
+        keyword_info = {
+            "current_keywords": [],
+            "previous_keywords": [],  
+            "total_keywords": 0,
+            "confidence": max(probabilities.values()) / 100.0 if probabilities else 0.0
+        }
+        
+        print(f"📊 API 응답 데이터 준비:")
+        print(f"  - predicted_personality: {predicted_personality}")
+        print(f"  - probabilities: {probabilities}")
+        print(f"  - persona_type: {test_result.persona_type}")
+        print(f"  - analysis_method: {analysis_method}")
 
         # 분석 완료
         return JSONResponse(content={
@@ -691,7 +685,8 @@ async def get_analysis_status(
                 "probabilities": probabilities,
                 "analysis_method": analysis_method,
                 "keyword_analysis": keyword_info,
-                "created_at": test_result.created_at.isoformat() if test_result.created_at else None
+                "created_at": test_result.created_at.isoformat() if test_result.created_at else None,
+                "image_url": drawing_test.image_url  # 이미지 URL 추가
             }
         })
         

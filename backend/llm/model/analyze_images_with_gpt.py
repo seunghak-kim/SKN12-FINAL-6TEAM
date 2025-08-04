@@ -120,58 +120,90 @@ def search_rag_documents(query_elements):
     return None
 
 PROMPT = '''
-모든 답변은 반드시 한글로 작성해 주세요.
-주어진 그림은 실제 장소나 인물이 아닌, 심리 검사를 위해 직접 손으로 그린 그림입니다. 
-분석은 전문가처럼 자세하고 상세히 제시해야 하며, 모든 답변은 ~입니다 체로 적습니다.
+        당신은 HTP(House-Tree-Person) 심리검사 분석 전문가입니다. 주어진 그림을 분석해 주세요.
+        분석 방법
+        1단계: 관찰된 특징들
+        그림에서 보이는 구체적인 특징들을 나열해 주세요:
 
-아래의 세 단계로 분석을 수행해 주세요:
+        집: 크기, 창문, 문, 지붕, 굴뚝 등의 특징
+        나무: 크기, 줄기, 가지, 잎, 뿌리 등의 특징
+        사람: 크기, 자세, 얼굴, 옷차림 등의 특징
+        전체: 배치, 선의 굵기, 그림 스타일 등
 
-1. **심리 분석 요소 식별**  
-    - 그림에서 보이는 시각적 특징들을 가능한 한 많이 구체적으로 식별해 주세요.  
-    - 심리적 해석 없이 관찰 가능한 요소만 나열해 주세요.
+        2단계: 심리적 해석
+        각 요소가 나타내는 심리적 의미를 설명해 주세요:
 
-2. **요소별 심층 분석**  
-    - 집, 나무, 사람 순서로 분석합니다.  
-    - 각 요소에 대해 그 특징이 시사하는 심리적 해석을 구체적으로 제시해 주세요.
+        집 → 가족관계, 안정감, 소속감
+        나무 → 성장욕구, 생명력, 적응력
+        사람 → 자아상, 대인관계, 정서상태
 
-3. **주요 감정 키워드**  
-    - 아래와 같이 요소, 조건 없이 감정 키워드만 한 줄씩 나열해 주세요.  
-    - 최소 3개 이상의 키워드를 반드시 포함해 주세요.  
-    - 예시:
-    불안, 안정, 자기표현, 갈등
-'''
+        3단계: 핵심 감정 키워드
+        분석 결과를 바탕으로 주요 감정 키워드를 3-5개 제시해 주세요.
+        형식: 키워드만 한 줄씩 나열 (예: 불안, 안정감, 소외감)
+        
+        **작성 규칙**
+
+        - 모든 답변은 한글로 '~입니다' 체로 작성
+        - 단정적 표현보다는 '~로 보입니다', '~한 경향을 나타냅니다' 등 완화된 표현 사용
+        - 부정적 해석과 긍정적 해석을 균형있게 제시
+        - 이제 주어진 HTP 그림을 분석해 주세요.
+        '''
 
 openai.api_key = OPENAI_API_KEY
 
 def analyze_image_with_gpt(image_path, prompt, rag_context=None):
-    with open(image_path, "rb") as img_file:
-        img_bytes = img_file.read()
-        img_base64 = base64.b64encode(img_bytes).decode("utf-8")
-        data_url = f"data:image/jpeg;base64,{img_base64}"
+    try:
+        with open(image_path, "rb") as img_file:
+            img_bytes = img_file.read()
+            print(f"이미지 파일 크기: {len(img_bytes)} bytes")
+            
+            # 파일 확장자에 따른 MIME 타입 결정
+            _, ext = os.path.splitext(image_path.lower())
+            if ext in ['.jpg', '.jpeg']:
+                mime_type = "image/jpeg"
+            elif ext == '.png':
+                mime_type = "image/png"
+            elif ext == '.gif':
+                mime_type = "image/gif"
+            elif ext == '.webp':
+                mime_type = "image/webp"
+            else:
+                mime_type = "image/jpeg"  # 기본값
+            
+            img_base64 = base64.b64encode(img_bytes).decode("utf-8")
+            data_url = f"data:{mime_type};base64,{img_base64}"
+            print(f"MIME 타입: {mime_type}")
+            print(f"Base64 길이: {len(img_base64)}")
+            
+            # 메시지 컨텐츠 구성
+            content = [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": data_url}}
+            ]
+            
+            # RAG 컨텍스트 추가
+            if rag_context:
+                rag_text = f"\n\n[참고 자료]\n문서: {rag_context['document']} - {rag_context['element']}\n내용: {rag_context['text']}"
+                content.append({"type": "text", "text": rag_text})
 
-        # 메시지 컨텐츠 구성
-        content = [
-            {"type": "text", "text": prompt},
-            {"type": "image_url", "image_url": {"url": data_url}}
-        ]
+            print("GPT API 호출 시작...")
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "당신은 HTP(House-Tree-Person) 심리검사 전문 분석가입니다. 제공된 그림은 심리검사 목적으로 그려진 그림이며, 실제 인물의 신원 식별이 아닌 심리적 특성 분석을 위한 것입니다. 그림의 시각적 요소들을 통해 심리 상태를 분석해 주세요. 개인의 정체성이나 신원을 파악하려는 것이 아니라, 그림 표현 방식을 통한 심리 분석임을 명심하세요. 이미지가 제대로 보이지 않으면 '이미지를 인식할 수 없습니다'라고 응답하지 말고, 다시 시도해보거나 이미지 파일 문제일 수 있다고 안내해주세요."},
+                    {
+                        "role": "user",
+                        "content": content
+                    }
+                ],
+                max_tokens=2000,
+            )
+            print("GPT API 호출 완료")
+            return response.choices[0].message.content.strip()
         
-        # RAG 컨텍스트 추가
-        if rag_context:
-            rag_text = f"\n\n[참고 자료]\n문서: {rag_context['document']} - {rag_context['element']}\n내용: {rag_context['text']}"
-            content.append({"type": "text", "text": rag_text})
-
-        response = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "당신은 심리 분석가입니다. 제공된 참고 자료를 활용하여 더욱 정확하고 전문적인 분석을 제공하세요."},
-                {
-                    "role": "user",
-                    "content": content
-                }
-            ],
-            max_tokens=2000,
-        )
-    return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"GPT API 호출 실패: {e}")
+        raise
 
 
 def analyze_image_gpt(image_base):
@@ -185,16 +217,26 @@ def analyze_image_gpt(image_base):
     """
     if not OPENAI_API_KEY:
         print("OPENAI_API_KEY가 설정되어 있지 않습니다. .env 파일을 확인하세요.")
+        print(f"현재 OPENAI_API_KEY 값: {OPENAI_API_KEY[:10] if OPENAI_API_KEY else 'None'}...")
         return None
 
+    print(f"IMAGE_DIR 경로: {IMAGE_DIR}")
     if not os.path.exists(IMAGE_DIR):
         print(f"폴더를 찾을 수 없습니다: {IMAGE_DIR}")
+        print(f"현재 작업 디렉토리: {os.getcwd()}")
         return None
 
     target_filename = f"detection_result_{image_base}.jpg"
     image_path = os.path.join(IMAGE_DIR, target_filename)
+    print(f"찾는 이미지 파일: {image_path}")
     if not os.path.exists(image_path):
         print(f"{IMAGE_DIR} 폴더에 {target_filename} 파일이 없습니다.")
+        # 폴더 내 파일 목록 출력
+        try:
+            files = os.listdir(IMAGE_DIR)
+            print(f"폴더 내 파일 목록: {files}")
+        except Exception as e:
+            print(f"폴더 목록 조회 실패: {e}")
         return None
 
     print(f"\n===== {target_filename} 심리 분석 결과 =====")
@@ -221,14 +263,14 @@ def analyze_image_gpt(image_base):
             # RAG 컨텍스트를 포함한 최종 분석
             print("\n4단계: RAG 컨텍스트를 활용한 최종 분석 수행 중...")
             final_prompt = f"""
-아래는 심리 그림 검사의 초기 분석 결과입니다:
+                            아래는 심리 그림 검사의 초기 분석 결과입니다:
 
-{initial_analysis}
+                            {initial_analysis}
 
-위 분석 결과를 바탕으로, 제공된 참고 자료를 활용하여 더욱 정확하고 전문적인 최종 심리 분석을 제공해 주세요.
-특히 참고 자료의 전문적 해석을 반영하여 분석의 깊이를 더해주세요.
-반드시 ~입니다 체로 작성해 주세요.
-"""
+                            위 분석 결과를 바탕으로, 제공된 참고 자료를 활용하여 더욱 정확하고 전문적인 최종 심리 분석을 제공해 주세요.
+                            특히 참고 자료의 전문적 해석을 반영하여 분석의 깊이를 더해주세요.
+                            반드시 ~입니다 체로 작성해 주세요.
+                            """
             result_text_gpt = analyze_image_with_gpt(image_path, final_prompt, rag_result)
         else:
             print("관련 RAG 자료를 찾을 수 없어 초기 분석 결과를 사용합니다.")
@@ -238,19 +280,23 @@ def analyze_image_gpt(image_base):
         print(result_text_gpt)
         
     except Exception as e:
-        print(f"분석 실패: {e}")
+        print(f"분석 실패 - 상세 오류: {str(e)}")
+        print(f"오류 타입: {type(e)}")
+        import traceback
+        print("전체 오류 추적:")
+        traceback.print_exc()
         return None
 
     # 요약 해석문 생성
     print("\n5단계: 요약 해석문 생성 중...")
     SUMMARY_PROMPT = f"""
-아래의 그림 심리 분석 결과를 참고하여,
-사용자가 이해하기 쉽도록 전체적인 심리 상태와 특징을 자연스럽게 요약·정리해주는 해석문을 작성해 주세요.
-반드시 ~입니다 체로 작성해 주세요.
+        아래의 그림 심리 분석 결과를 참고하여,
+        사용자가 이해하기 쉽도록 전체적인 심리 상태와 특징을 자연스럽게 요약·정리해주는 해석문을 작성해 주세요.
+        반드시 ~입니다 체로 작성해 주세요.
 
-분석 결과:
-{result_text_gpt}
-"""
+        분석 결과:
+        {result_text_gpt}
+        """
     try:
         result_text = analyze_image_with_gpt(image_path, SUMMARY_PROMPT)
     except Exception as e:
@@ -266,17 +312,13 @@ def analyze_image_gpt(image_base):
             'keywords': rag_result['metadata'].get('keywords', [])
         })
 
-    # 최종 해석본 json 저장
-    result_json_path = os.path.join(RESULT_DIR, f"result_{image_base}.json")
+    # 결과 딕셔너리 생성 (파일 저장 없이)
     result = {
         "raw_text": result_text_gpt,
         "result_text": result_text,
         "items": enriched,
-        "rag_context": rag_result  # RAG 컨텍스트 정보 추가
+        "rag_context": rag_result
     }
-    with open(result_json_path, 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-    print(f"\n최종 해석본이 {result_json_path}에 저장되었습니다.")
     
     return result
 
