@@ -172,12 +172,6 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
         style={{ animationDelay: "1.5s" }}
       ></div>
 
-      {/* 3D Crystal with enhanced glow */}
-      <div
-        className="absolute bottom-20 right-20 w-32 h-40 bg-gradient-to-br from-cyan-400 via-blue-500 via-purple-600 to-pink-500 opacity-60 transform rotate-12 rounded-lg shadow-2xl animate-pulse"
-        style={{ animationDelay: "2s" }}
-      ></div>
-
       {/* Enhanced orbital rings */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div
@@ -201,7 +195,7 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
             {/* Inner glow effect */}
             <div className="absolute inset-4 bg-gradient-to-br from-purple-600/20 via-pink-500/10 to-cyan-400/20 rounded-full blur-xl"></div>
 
-            <div className="relative z-10 flex flex-col items-center justify-center h-full">
+            <div className="relative z-10 flex flex-col items-center justify-center h-full pt-8">
               <h1 className="text-2xl font-bold text-white mb-4 text-center drop-shadow-lg">My Moody의 HTP 검사란?</h1>
 
               <div className="text-white/90 text-sm mb-6 leading-relaxed text-center max-w-xs">
@@ -241,6 +235,31 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* V-shaped arrow pointing down with animation */}
+              <div className="mt-12 flex justify-center">
+                <div 
+                  className="animate-bounce"
+                  style={{ animationDuration: "2s" }}
+                >
+                  <svg 
+                    width="24" 
+                    height="16" 
+                    viewBox="0 0 24 16" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-white opacity-80"
+                  >
+                    <path 
+                      d="M2 2L12 12L22 2" 
+                      stroke="currentColor" 
+                      strokeWidth="3" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </div>
               </div>
             </div>
