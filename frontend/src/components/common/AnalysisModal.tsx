@@ -116,10 +116,10 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
         </div>
         
         {/* 단계별 진행 상황 */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-4 mb-6 flex flex-col items-center">
           {steps.map((step) => (
-            <div key={step.id} className="flex items-center justify-center space-x-3">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+            <div key={step.id} className="flex items-center space-x-3 w-32">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 flex-shrink-0 ${
                 step.completed 
                   ? 'bg-green-500 text-white' 
                   : step.active 
@@ -128,7 +128,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
               }`} style={{ animationDuration: step.active ? '3s' : undefined }}>
                 {step.completed ? <Check className="w-4 h-4" /> : step.id}
               </div>
-              <span className={`font-medium transition-colors duration-300 ${
+              <span className={`font-medium transition-colors duration-300 text-left flex-1 ${
                 step.completed ? 'text-green-600' : step.active ? 'text-purple-600' : 'text-gray-500'
               }`}>
                 {step.name}
@@ -144,7 +144,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
         
         {/* 안내 메시지 */}
         <div className="text-xs text-gray-400 mt-4">
-          💡 분석이 완료되면 자동으로 결과 페이지로 이동합니다
+          💡 그림 분석은 1분 정도 소요되며, <br/>분석이 완료되면 자동으로 결과 페이지로 이동합니다
         </div>
       </div>
     </Modal>
