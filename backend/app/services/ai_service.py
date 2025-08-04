@@ -128,11 +128,24 @@ class AIService:
             # 공통 규칙 프롬프트 로드
             common_rules = self.chained_prompt_manager.load_common_rules()
             
+            # 그림검사 분석 결과 컨텍스트 준비
+            user_analysis_context = ""
+            if context.get('user_analysis_result'):
+                analysis_result = context['user_analysis_result']
+                user_analysis_context = f"""
+
+[사용자 그림검사 분석 정보]
+이 사용자의 그림검사 분석 결과를 참고하여 더 개인화된 상담을 제공해주세요:
+- 주요 심리 특성: {analysis_result.get('result_text', '분석 정보 없음')}
+- 분석 요약: {analysis_result.get('raw_text', '')[:200]}...
+
+위 정보를 바탕으로 사용자의 심리 상태와 성향을 고려한 답변을 생성해주세요."""
+            
             # LLM에 보낼 메시지 구성
             llm_messages = []
             llm_messages.append(SystemMessage(content=f"""# 거북이상담소 AI 상담사 - 공통 답변 생성
 
-{common_rules}
+{common_rules}{user_analysis_context}
 
 위 규칙에 따라 사용자의 메시지에 대해 기본적이고 중립적인 상담 답변을 생성해주세요.
 이 답변은 나중에 각 페르소나의 특성에 맞게 변환될 예정입니다."""))
