@@ -9,7 +9,7 @@ export interface Persona {
 }
 
 class PersonaService {
-  private readonly BASE_PATH = '/api/v1/personas';
+  private readonly BASE_PATH = '/api/v1/persona';
 
   /**
    * 모든 활성화된 페르소나 조회

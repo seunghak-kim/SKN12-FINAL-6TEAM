@@ -239,7 +239,6 @@ const AppContent: React.FC = () => {
           path="/characters" 
           element={
             <CharactersPage
-              characters={getAvailableCharacters()}
               selectedCharacter={selectedCharacter}
               onCharacterSelect={handleCharacterSelect}
               onStartChat={handleStartChat}

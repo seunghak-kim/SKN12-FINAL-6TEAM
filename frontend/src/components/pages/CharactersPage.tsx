@@ -157,29 +157,37 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
           // 3. 가장 최근 매칭된 페르소나 조회
           try {
             const latestMatchedPersona = await testService.getLatestMatchedPersona();
-            console.log('최근 매칭된 페르소나:', latestMatchedPersona);
+            console.log('[API] 최근 매칭된 페르소나:', latestMatchedPersona);
+            console.log('[API] matchedPersonaId 설정:', latestMatchedPersona.matched_persona_id);
             setMatchedPersonaId(latestMatchedPersona.matched_persona_id);
           } catch (matchedError) {
-            console.error('매칭된 페르소나 조회 실패:', matchedError);
+            console.error('[API] 매칭된 페르소나 조회 실패:', matchedError);
           }
           
           // 4. 현재 사용자의 가장 최근 채팅 세션 조회
           try {
             const currentUser = await authService.getCurrentUser();
+            console.log('[API] 현재 사용자:', currentUser);
             if (currentUser) {
               const userSessions = await chatService.getUserSessions(currentUser.id);
+              console.log('[API] 사용자 세션 목록:', userSessions);
               if (userSessions.length > 0) {
                 // updated_at 기준으로 가장 최근 세션
                 const latestSession = userSessions.sort((a, b) => 
                   new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
                 )[0];
-                console.log('최근 채팅 세션:', latestSession);
+                console.log('[API] 최근 채팅 세션:', latestSession);
+                console.log('[API] chattingPersonaId 설정:', latestSession.persona_id);
                 setChattingPersonaId(latestSession.persona_id);
+              } else {
+                console.log('[API] 채팅 세션이 없음');
               }
             }
           } catch (chatError) {
-            console.error('채팅 세션 조회 실패:', chatError);
+            console.error('[API] 채팅 세션 조회 실패:', chatError);
           }
+        } else {
+          console.log('[API] 테스트 기록이 없어서 페르소나 조회 생략');
         }
       } catch (error) {
         console.error('❌ 테스트 상태 확인 실패:', error);
@@ -195,29 +203,36 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
   // 페르소나 ID에 따른 키워드 및 버튼 텍스트 결정
   const getPersonaStatus = (personaId: string) => {
     const id = parseInt(personaId);
-    const personaName = personas.find(p => p.persona_id === id)?.name || '';
+    const personaName = personas.find(p => p.persona_id === id)?.name || 
+                       defaultCharacters.find(c => c.id === personaId)?.name || 
+                       '';
     
     let badge = '';
     let buttonText = '';
     
-    console.log(`페르소나 ${id} (${personaName}) 상태 확인:`, {
+    // 디버깅: 상태 값들 확인
+    console.log(`[DEBUG] 페르소나 ${id} (${personaName}) 상태 확인:`, {
       chattingPersonaId,
       matchedPersonaId,
       isChattingMatch: chattingPersonaId === id,
-      isMatchedMatch: matchedPersonaId === id
+      isMatchedMatch: matchedPersonaId === id,
+      personaId,
+      id
     });
     
     if (chattingPersonaId === id) {
       badge = '대화중';
       buttonText = '이어서 대화하기';
+      console.log(`[DEBUG] 페르소나 ${id}에 '대화중' 뱃지 할당`);
     } else if (matchedPersonaId === id) {
       badge = '매칭됨';
       buttonText = `${personaName}와 대화하기`;
+      console.log(`[DEBUG] 페르소나 ${id}에 '매칭됨' 뱃지 할당`);
     } else {
       buttonText = `${personaName}와 대화하기`;
     }
     
-    console.log(`페르소나 ${id} 최종 상태:`, { badge, buttonText });
+    console.log(`[DEBUG] 페르소나 ${id} 최종 결과:`, { badge, buttonText });
     
     return { badge, buttonText };
   };
@@ -243,15 +258,24 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
 
   // 최종 캐릭터 데이터: 상태 변경에 반응하도록 useMemo 사용
   const characters: ExtendedCharacter[] = useMemo(() => {
-    console.log('캐릭터 데이터 재계산:', { matchedPersonaId, chattingPersonaId, personasLength: personas.length });
+    console.log('[CHARACTERS] 캐릭터 데이터 계산:', {
+      propCharacters: !!propCharacters,
+      personasLength: personas.length,
+      matchedPersonaId,
+      chattingPersonaId
+    });
     
     if (propCharacters) {
+      console.log('[CHARACTERS] propCharacters 사용');
       return propCharacters.map(convertToExtendedCharacter);
     } else if (personas.length > 0) {
+      console.log('[CHARACTERS] 백엔드 personas 사용');
       return personas.map(convertPersonaToExtendedCharacter);
     } else {
+      console.log('[CHARACTERS] defaultCharacters 사용');
       return defaultCharacters.map(char => {
         const status = getPersonaStatus(char.id);
+        console.log(`[CHARACTERS] ${char.name}(ID:${char.id}) 상태:`, status);
         return {
           ...char,
           badge: status.badge,
@@ -444,13 +468,14 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center mb-2">
                       <h3 className="text-2xl font-bold text-white mr-3">{character.name}</h3>
+                      {/* 실제 API 데이터 기반 뱃지 표시 */}
                       {character.badge && (
                         <span className={`px-3 py-1 rounded-full text-xs font-medium shadow-lg ${
                           character.badge === '대화중' 
                             ? 'bg-green-500/80 text-white backdrop-blur-sm border border-green-400/50' 
                             : character.badge === '매칭됨'
                             ? 'bg-orange-500/80 text-white backdrop-blur-sm border border-orange-400/50'
-                            : 'bg-white/20 backdrop-blur-sm text-white'
+                            : 'bg-blue-500/80 text-white backdrop-blur-sm border border-blue-400/50'
                         }`}>
                           {character.badge}
                         </span>
