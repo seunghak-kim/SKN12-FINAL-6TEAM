@@ -161,7 +161,7 @@ async def google_callback(
         from fastapi.responses import RedirectResponse
         
         response = RedirectResponse(
-            url=f"http://localhost:3000/auth-callback?session={session_id}&is_new={str(result.is_new_user).lower()}"
+            url=f"http://localhost:80/auth-callback?session={session_id}&is_new={str(result.is_new_user).lower()}"
         )
         
         # 쿠키에 토큰 저장 (HttpOnly, Secure 설정)
