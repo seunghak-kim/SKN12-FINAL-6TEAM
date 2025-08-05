@@ -204,13 +204,14 @@ class UserService {
   }
 
   /**
-   * 회원 탈퇴 (사용자 상태를 INACTIVE로 변경)
+   * 회원 탈퇴 (계정 완전 삭제)
    */
-  async deleteAccount(userId: number): Promise<void> {
+  async deleteAccount(userId: number): Promise<{ message: string; deleted_user_id: number }> {
     try {
-      await apiClient.delete(`/users/${userId}`);
+      const result = await apiClient.delete<{ message: string; deleted_user_id: number }>(`/users/${userId}/account`);
       // 캐시 클리어
       this.clearCache();
+      return result;
     } catch (error) {
       console.error('Failed to delete account:', error);
       throw error;

@@ -423,6 +423,62 @@ async def check_nickname_availability(
     
     return {"available": True, "message": "사용 가능한 닉네임입니다."}
 
+@router.delete("/{user_id}/account")
+async def delete_user_account(
+    user_id: int, 
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """회원탈퇴 - 사용자 계정 완전 삭제"""
+    # 권한 확인 - 본인만 삭제 가능
+    if current_user["user_id"] != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="본인의 계정만 삭제할 수 있습니다."
+        )
+    
+    # 사용자 정보 조회
+    user_info = db.query(UserInformation).filter(
+        UserInformation.user_id == user_id
+    ).first()
+    
+    if not user_info:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="사용자를 찾을 수 없습니다."
+        )
+    
+    try:
+        from sqlalchemy import text
+        
+        # 안전한 매개변수 바인딩을 사용하여 CASCADE 삭제 실행
+        if user_info.social_user_id:
+            # 소셜 사용자인 경우 - 매개변수 바인딩으로 안전하게 삭제
+            db.execute(text("DELETE FROM social_users WHERE social_user_id = :social_user_id"), 
+                      {"social_user_id": user_info.social_user_id})
+        elif user_info.regular_user_id:
+            # 일반 사용자인 경우 - 매개변수 바인딩으로 안전하게 삭제  
+            db.execute(text("DELETE FROM users WHERE user_id = :user_id"), 
+                      {"user_id": user_info.regular_user_id})
+        else:
+            # 사용자 타입을 확인할 수 없는 경우 user_informations에서 직접 삭제
+            db.execute(text("DELETE FROM user_informations WHERE user_id = :user_id"), 
+                      {"user_id": user_id})
+        
+        db.commit()
+        
+        return {
+            "message": "회원탈퇴가 완료되었습니다. 모든 데이터가 삭제되었습니다.",
+            "deleted_user_id": user_id
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"회원탈퇴 처리 중 오류가 발생했습니다: {str(e)}"
+        )
+
 @router.post("/{user_id}/upload-profile-image")
 async def upload_profile_image(
     user_id: int,

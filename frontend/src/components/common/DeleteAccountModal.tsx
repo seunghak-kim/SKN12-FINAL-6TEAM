@@ -28,14 +28,14 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
           <h3 className="text-xl font-bold text-gray-800 mb-4">정말 탈퇴하실건가요?</h3>
 
           <div className="text-gray-600 text-sm space-y-2 mb-6">
-            <p>지금 탈퇴하시면 아래 정보가 1년동안 보관됩니다.</p>
+            <p>지금 탈퇴하시면 아래 정보가 즉시 삭제됩니다.</p>
             <ul className="text-left space-y-1 mt-4">
               <li>• 모든 채팅 기록</li>
               <li>• 그림 검사 결과</li>
               <li>• 개인 프로필 정보</li>
               <li>• 페르소나 매칭 데이터</li>
             </ul>
-            <p className="text-red-500 font-medium mt-4">이 작업은 되돌릴 수 없습니다.</p>
+            <p className="text-red-500 font-medium mt-4">모든 데이터가 완전히 삭제되며 복구할 수 없습니다.</p>
           </div>
         </div>
 
