@@ -135,18 +135,15 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
         // navigate는 AnalysisModal의 onComplete에서 처리
       } else if (finalStatus.status === 'cancelled') {
         // 분석 중단 시 (모달이 닫힌 경우) - 조용히 처리
-        console.log('ℹ️ 분석이 중단되었습니다.');
         setIsAnalyzing(false);
         setShowAnalysisModal(false);
       } else if (finalStatus.status === 'failed') {
         // 분석 실패 시 에러 처리
-        console.error('❌ 분석 실패:', finalStatus.error);
         setIsAnalyzing(false);
         setShowAnalysisModal(false);
         alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      console.error('❌ 분석 시작 실패:', error);
       setIsAnalyzing(false);
       setShowAnalysisModal(false);
       alert('분석을 시작하는 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -331,7 +328,7 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
           if (currentTestId) {
             try {
               await testService.deleteDrawingTest(currentTestId);
-              console.log('분석 중단으로 인한 테스트 삭제 완료:', currentTestId);
+              console.log('분석 중단으로 인한 테스트 삭제 완료:', currentTestId);            
             } catch (error) {
               console.error('테스트 삭제 실패:', error);
             }
