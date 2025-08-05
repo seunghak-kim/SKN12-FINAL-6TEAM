@@ -135,7 +135,7 @@ class TestService {
         onProgress(status);
       }
 
-      if (status.status === 'completed' || status.status === 'failed') {
+      if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
         return status;
       }
 
@@ -226,6 +226,18 @@ class TestService {
       return await apiClient.get(`${this.BASE_PATH}/drawing-test-results/latest-matched`);
     } catch (error) {
       console.error('Failed to get latest matched persona:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 그림검사 결과 삭제
+   */
+  async deleteDrawingTest(testId: string): Promise<any> {
+    try {
+      return await apiClient.delete(`${this.BASE_PATH}/drawing-tests/${testId}`);
+    } catch (error) {
+      console.error('Failed to delete drawing test:', error);
       throw error;
     }
   }
