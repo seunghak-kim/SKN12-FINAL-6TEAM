@@ -20,11 +20,9 @@ interface ResultsPageProps {
 }
 
 const ResultsPage: React.FC<ResultsPageProps> = ({
-  characters,
   onCharacterSelect,
   onStartChat,
   onNavigate,
-  currentTestResult,
   updateTestResult
 }) => {
   const navigate = useNavigate();
@@ -48,7 +46,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     };
   }, [showImageModal]);
   const [probabilities, setProbabilities] = useState<{ [key: string]: number } | null>(null);
-  const [actualPersonalityType, setActualPersonalityType] = useState<string>('내면형');
+  const [actualPersonalityType, setActualPersonalityType] = useState<string>('');
   const [satisfaction, setSatisfaction] = useState<"like" | "dislike" | null>(null);
   const resultCardRef = useRef<HTMLDivElement>(null);
 
@@ -109,55 +107,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       setSatisfaction(feedbackType);
     }
   };
-  
-  // 성격 유형별 데이터 매핑
-  const personalityData: { [key: string]: { personaType: number; emoji: string; message: string; keywords: string[]; color: string; } } = {
-    '추진형': {
-      personaType: 1,
-      emoji: '💪',
-      message: '목표를 향해 나아가자! 어떤 장애물도 내가 극복할 수 있어. 도전이 두렵지 않아!',
-      keywords: ['목표 지향', '리더십', '적극성'],
-      color: 'red'
-    },
-    '내면형': {
-      personaType: 2, 
-      emoji: '😖',
-      message: '아무도 내 기분을 제대로 이해하지 못할 거야... 괜찮아, 혼자인 게 더 편하니까. 내 세상 안에서 나는 완전하거든.',
-      keywords: ['감정적 깊이', '내성적 성향', '공감 능력'],
-      color: 'blue'
-    },
-    '관계형': {
-      personaType: 3,
-      emoji: '🤝', 
-      message: '함께하면 더 좋은 일들이 생길 거야! 혼자보다는 다 같이 할 때 더 의미있어.',
-      keywords: ['사교성', '협력', '친화력'],
-      color: 'green'
-    },
-    '쾌락형': {
-      personaType: 4,
-      emoji: '😄',
-      message: '인생은 즐거워야 해! 재미있는 일들을 찾아보자! 매 순간이 새로운 모험이야.',
-      keywords: ['즐거움 추구', '활발함', '창의성'],
-      color: 'yellow'
-    },
-    '안정형': {
-      personaType: 5,
-      emoji: '😌',
-      message: '차분하고 안정적인 게 최고야. 평온함 속에서 행복을 찾자. 급할 건 없어.',
-      keywords: ['안정감', '신중함', '조화'],
-      color: 'purple'
-    }
-  };
 
-  // 실제 분석 결과에서 주 성격 유형 추출
-  const getMainPersonalityType = (probabilities: { [key: string]: number }) => {
-    if (!probabilities || Object.keys(probabilities).length === 0) {
-      return '내면형'; // 기본값
-    }
-    
-    return Object.entries(probabilities)
-      .sort(([,a], [,b]) => b - a)[0][0]; // 가장 높은 확률의 유형
-  };
 
   // 성격 유형을 캐릭터 이름으로 변환
   const getCharacterName = (personalityType: string) => {
@@ -168,20 +118,20 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       '쾌락형': '쾌락이',
       '안정형': '안정이'
     };
-    return typeToCharacter[personalityType] || '내면이';
+    return typeToCharacter[personalityType];
   };
 
-  // 확률 값에 따른 색상 가져오기
-  const getColorForType = (type: string) => {
-    const colorMap: { [key: string]: string } = {
-      '추진형': 'from-orange-400 to-red-500',
-      '내면형': 'from-pink-200 to-brown-300',
-      '관계형': 'from-gray-600 to-gray-800',
-      '쾌락형': 'from-yellow-400 to-orange-500',
-      '안정형': 'from-gray-100 to-gray-300'
-    };
-    return colorMap[type] || 'from-pink-200 to-brown-300';
+// 확률 값에 따른 색상 가져오기
+const getColorForType = (type: string) => {
+  const colorMap: { [key: string]: string } = {
+    '추진형': 'from-[#DC143C] to-[#FF6347]',
+    '쾌락형': 'from-[#FF6347] to-[#E6B800]',
+    '안정형': 'from-[#E6B800] to-[#3CB371]',
+    '내면형': 'from-[#3CB371] to-[#6495ED]',
+    '관계형': 'from-[#6495ED] to-[#9932CC]'
   };
+  return colorMap[type];
+};
 
   // 확률 값에 따른 캐릭터 이미지 가져오기
   const getCharacterImageForType = (type: string) => {
@@ -192,7 +142,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       '쾌락형': '../../assets/persona/쾌락이.png',
       '안정형': '../../assets/persona/안정이.png'
     };
-    return imageMap[type] || '/assets/persona/내면이.png';
+    return imageMap[type];
   };
 
   // TestInstructionPage에서 전달받은 데이터 처리
@@ -272,10 +222,12 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             setProbabilities(probabilities);
             // 실제 성격 유형 업데이트
             const mainType = getMainPersonalityType(probabilities);
+            if (mainType) {
             setActualPersonalityType(mainType);
             // 캐릭터 이름으로 변환해서 useAppState에 반영
             const characterName = getCharacterName(mainType);
             updateTestResult(characterName);
+            }
           } else {
             console.warn('Warning 확률 데이터가 비어있음');
           }
@@ -326,7 +278,14 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       const pipelinePersonaType = pipelineData?.persona_type;
 
       // persona_type만 업데이트 (summary_text는 파이프라인에서 이미 설정됨)
-      const finalPersonaType = pipelinePersonaType || personalityData[predictedPersonality]?.personaType || 2;      
+      const personalityMapping: { [key: string]: number } = {
+        '추진형': 1,
+        '내면형': 2,
+        '관계형': 3,
+        '쾌락형': 4,
+        '안정형': 5
+      };
+      const finalPersonaType = pipelinePersonaType || personalityMapping[predictedPersonality] || 2;      
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/test/drawing-test-results`, {
         method: 'POST',
         headers: {
@@ -348,7 +307,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           setAnalysisResult(pipelineData.result_text);
         }
       } else {
-        const result = await response.json();
+        await response.json();
         // 파이프라인 결과 텍스트를 사용
         if (pipelineData?.result_text) {
           setAnalysisResult(pipelineData.result_text);
@@ -370,18 +329,21 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     }
   };
 
-  const handleCharacterClick = (character: SearchResult) => {
-    onCharacterSelect(character);
-    onStartChat();
-    navigate('/chat');
-  };
 
   const handlePersonalityClick = (personalityType: string) => {
     // 성격 유형을 SearchResult 형태로 변환
+    const personalityMapping: { [key: string]: number } = {
+      '추진형': 1,
+      '내면형': 2,
+      '관계형': 3,
+      '쾌락형': 4,
+      '안정형': 5
+    };
+    
     const character: SearchResult = {
-      id: personalityData[personalityType]?.personaType.toString() || "2",
+      id: personalityMapping[personalityType]?.toString() || "2",
       name: getCharacterName(personalityType),
-      description: personalityData[personalityType]?.message || "",
+      description: analysisResult || "분석 결과를 바탕으로 대화해보세요.",
       avatar: getCharacterImageForType(personalityType)
     };
     
@@ -390,22 +352,27 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     navigate('/chat');
   };
 
+  // 실제 분석 결과에서 주 성격 유형 추출
+  const getMainPersonalityType = (probabilities: { [key: string]: number }) => {
+    if (!probabilities || Object.keys(probabilities).length === 0) {
+      return null;
+    }
+    
+    return Object.entries(probabilities)
+      .sort(([,a], [,b]) => b - a)[0][0];
+  };
+
   // 주 성격 유형의 확률 값 가져오기
   const getMainProbability = () => {
-    if (!probabilities) return 82;
+    if (!probabilities || !actualPersonalityType) return 0;
     const prob = probabilities[actualPersonalityType];
-    return prob ? Math.round(prob) : 82;
+    return prob ? Math.round(prob) : 0;
   };
 
   // 다른 성격 유형들의 확률 정렬된 배열 가져오기
   const getOtherPersonalities = () => {
-    if (!probabilities) {
-      return [
-        { type: '추진형', probability: 60 },
-        { type: '관계형', probability: 40 },
-        { type: '쾌락형', probability: 20 },
-        { type: '안정형', probability: 10 }
-      ];
+    if (!probabilities || !actualPersonalityType) {
+      return [];
     }
 
     return Object.entries(probabilities)
@@ -432,6 +399,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             <div ref={resultCardRef} className="bg-slate-600/50 rounded-2xl p-8">
               <div className="flex items-center justify-center space-x-8 mb-6">
                 {/* 왼쪽: 캐릭터 */}
+                {actualPersonalityType ? (
                 <div className={`w-32 h-32 ${getColorForType(actualPersonalityType)} flex items-center justify-center flex-shrink-0 overflow-hidden`}>
                   <img 
                     src={getCharacterImageForType(actualPersonalityType)} 
@@ -439,11 +407,20 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                     className="w-40 h-40 object-cover rounded-full"
                   />
                 </div>
+                ) : (
+                  <div className="w-32 h-32 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-gray-600 text-xs">분석 중...</span>
+                  </div>
+                )}
 
                 {/* 가운데: 페르소나 정보 */}
                 <div className="flex-1 text-center">
                   <h2 className="text-white text-2xl font-bold mb-2 text-left">
-                    당신의 페르소나는 <span className="text-pink-400">{getCharacterName(actualPersonalityType)}</span> 입니다
+                    {actualPersonalityType ? (
+                      <>당신의 페르소나는 <span className="text-pink-400">{getCharacterName(actualPersonalityType)}</span> 입니다</>
+                    ) : (
+                      <>분석 중입니다...</>
+                    )}
                   </h2>
 
                   <div className="w-full bg-gray-300 rounded-full h-3 mb-4">
@@ -453,7 +430,9 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                     ></div>
                   </div>
 
-                  <div className="text-white/90 text-sm mb-4 text-left">나와 {getMainProbability()}%만큼 가까워요!</div>
+                  <div className="text-white/90 text-sm mb-4 text-left">
+                    {actualPersonalityType ? `나와 ${getMainProbability()}%만큼 가까워요!` : '결과를 기다리는 중...'}
+                  </div>
                 </div>
 
                 {/* 오른쪽: 업로드된 이미지 */}
@@ -514,18 +493,26 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                       분석 결과를 생성하고 있습니다...
                     </span>
                   ) : (
-                    analysisResult || personalityData[actualPersonalityType]?.message || 
-                    "그림을 통해 당신의 심리 상태를 분석했습니다. 현재 감정 상태를 잘 표현하고 있으며, 이를 통해 더 나은 대화를 나눌 수 있을 것입니다."
+                    analysisResult || "그림을 통해 당신의 심리 상태를 분석했습니다. 현재 감정 상태를 잘 표현하고 있으며, 이를 통해 더 나은 대화를 나눌 수 있을 것입니다."
                   )}
                 </p>
               </div>
 
+              {actualPersonalityType ? (
               <Button
                 onClick={() => handlePersonalityClick(actualPersonalityType)}
                 className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium"
               >
                 {getCharacterName(actualPersonalityType)}와 대화하기
               </Button>
+              ) : (
+                <Button
+                  disabled
+                  className="w-full bg-gray-500 text-gray-300 py-3 rounded-full font-medium cursor-not-allowed"
+                >
+                  분석 완료 후 이용 가능
+                </Button>
+              )}
             </div>
 
             {/* 수정(따봉/붐따) 및 저장 버튼 */}
@@ -587,6 +574,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
 
 
         {/* Other character options */}
+        {getOtherPersonalities().length > 0 && (
         <div className="max-w-4xl mx-auto">
           <div className="bg-slate-700/60 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
             <h2 className="text-white text-xl font-bold text-center mb-8">다른 페르소나 결과</h2>
@@ -619,6 +607,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             </div>
           </div>
         </div>
+        )}
 
       <style>{`
         @keyframes fade-in {
