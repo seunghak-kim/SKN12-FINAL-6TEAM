@@ -178,15 +178,16 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
           <div className="bg-slate-600/40 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
             <h1 className="text-white text-xl font-bold text-center mb-8">그림 업로드</h1>
 
-            {/* Instructions */}
-            <div className="bg-slate-500/50 rounded-2xl p-6 mb-8">
-              <h2 className="text-white font-bold mb-4">필독사항</h2>
-              <div className="text-white/90 text-sm space-y-2">
-                <p>• 핸드폰 메모장, 종이, 노트 등에 아래 예시와 같이 <br/> 그린 뒤 촬영하여 올려주세요</p>
-                <p>• 집,나무, 사람 3가지 요소를 분리해서 그려야 <br/>정상적인 검사가 가능합니다</p>
-                <p>• 파일 업로드는 JPG 및 PNG로만 가능합니다</p>
-              </div>
-            </div>
+          {/* Instructions */}
+          <div className="bg-slate-500/50 rounded-2xl p-6 mb-8">
+          <h2 className="text-white font-bold mb-4">필독사항</h2>
+          <div className="text-white/90 text-sm space-y-2">
+            <p>• 핸드폰 메모장, 종이, 노트 등에 <br/>아래 예시와 같이 그린 뒤 촬영하여 올려주세요</p>
+            <p>• 집,나무, 사람 3가지 요소를 분리해서 그려야 <br/>정상적인 검사가 가능합니다</p>
+            <p>• 파일 업로드는 JPG 및 PNG로만 가능합니다</p>
+            <p>• 사진은 뒤집히거나 회전하지 않도록 <br/>올바른 방향으로 촬영해 주세요</p>
+          </div>
+          </div>
 
             {/* Upload area */}
             <div 
