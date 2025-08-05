@@ -154,7 +154,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
         {/* 단계별 진행 상황 */}
         <div className="space-y-4 mb-6 flex flex-col items-center">
           {steps.map((step) => (
-            <div key={step.id} className="flex items-center space-x-3 w-32">
+            <div key={step.id} className="flex items-center space-x-3 w-36">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 flex-shrink-0 ${
                 step.completed 
                   ? 'bg-green-500 text-white' 
