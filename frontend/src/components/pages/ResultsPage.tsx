@@ -76,7 +76,9 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `그림검사결과_${getCharacterName(actualPersonalityType)}_${new Date().toLocaleDateString('ko-KR')}.png`;
+        const today = new Date();
+        const dateString = `${today.getFullYear().toString().slice(-2)}${(today.getMonth() + 1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`;
+        link.download = `그림검사결과_${getCharacterName(actualPersonalityType)}_${dateString}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
