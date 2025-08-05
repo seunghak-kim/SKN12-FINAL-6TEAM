@@ -51,10 +51,10 @@ const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose, onAgree })
               <h3 className="font-bold text-blue-600 mb-2">3. 개인정보 보유 및 이용 기간</h3>
               <p>
                 수집된 개인정보는 상담 서비스가 진행되는 기간 동안 보유 및 이용되며,<br />
-                서비스 종결 또는 정보주체의 파기 요청 시 <strong>지체 없이 파기됩니다.</strong><br />
-                이 외의 경우에는 <strong>회원가입 탈퇴 후 1년 간</strong> 개인정보가 유지됩니다. <br />
-                재가입하시는 경우, 보관되어 있던 개인정보가 복원됩니다.<br />
-                단, 탈퇴 1년 이후 관련 법령에 따라 개인정보를 보존할 필요가 있는 경우<br />
+                <strong>회원 탈퇴 시 아래의 모든 개인정보가 즉시 삭제됩니다.</strong><br />
+                모든 채팅 기록 / 그림 검사 결과 / 개인 프로필 정보 / 페르소나 매칭 데이터<br />
+                <strong className="text-red-600">삭제된 데이터는 복구할 수 없습니다.</strong><br />
+                단, 관련 법령에 따라 개인정보를 보존할 필요가 있는 경우<br />
                 해당 법령에서 정한 기간 동안 보관할 수 있습니다.
               </p>
             </div>
