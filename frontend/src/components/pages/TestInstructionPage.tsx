@@ -83,27 +83,21 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
       // 새로운 파이프라인 API 사용
       const { testService } = await import('../../services/testService');
       
-      console.log('🚀 파이프라인 분석 시작:', selectedImage.name);
       
       // 이미지 분석 시작
       const analysisResult = await testService.analyzeImage(selectedImage, description);
-      console.log('✅ 분석 시작 응답:', analysisResult);
       
       const testId = analysisResult.test_id;
       
       // 분석 상태 폴링 시작
-      console.log('📡 상태 폴링 시작, test_id:', testId);
       await testService.pollAnalysisStatus(testId.toString(), (status) => {
-        console.log('📊 폴링 상태 업데이트:', status);
         
         // 진행률에 따른 UI 업데이트 (AnalysisModal에서 처리)
         // 여기서는 로그만 출력
         if (status.status === 'processing') {
-          console.log(`⏳ 분석 진행 중: ${status.message}`);
         }
       });
       
-      console.log('🎉 분석 완료! 결과 페이지로 이동');
       
       // 분석 완료 후 결과 페이지로 이동
       setIsAnalyzing(false);
@@ -119,7 +113,6 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
       setIsAnalyzing(false);
       
       // 분석 실패해도 결과 페이지로 이동 (0% UI 표시)
-      console.log('분석 실패했지만 결과 페이지로 이동하여 0% UI 표시');
       navigate('/results', { 
         state: { 
           testId: null, // testId가 없음을 표시
@@ -195,7 +188,7 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
             {/* Inner glow effect */}
             <div className="absolute inset-4 bg-gradient-to-br from-purple-600/20 via-pink-500/10 to-cyan-400/20 rounded-full blur-xl"></div>
 
-            <div className="relative z-10 flex flex-col items-center justify-center h-full">
+            <div className="relative z-10 flex flex-col items-center justify-center h-full pt-8">
               <h1 className="text-2xl font-bold text-white mb-4 text-center drop-shadow-lg">My Moody의 HTP 검사란?</h1>
 
               <div className="text-white/90 text-sm mb-6 leading-relaxed text-center max-w-xs">
@@ -235,6 +228,31 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* V-shaped arrow pointing down with animation */}
+              <div className="mt-12 flex justify-center">
+                <div 
+                  className="animate-bounce"
+                  style={{ animationDuration: "2s" }}
+                >
+                  <svg 
+                    width="24" 
+                    height="16" 
+                    viewBox="0 0 24 16" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-white opacity-80"
+                  >
+                    <path 
+                      d="M2 2L12 12L22 2" 
+                      stroke="currentColor" 
+                      strokeWidth="3" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </div>
               </div>
             </div>

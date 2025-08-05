@@ -250,11 +250,29 @@ def run_analysis_pipeline(
     try:
         print(f"🚀 백그라운드 분석 시작: {unique_id}")
         
+        # 분석 시작 전에 테스트가 여전히 존재하는지 확인
+        existing_test = db.query(DrawingTest).filter(
+            DrawingTest.test_id == test_id
+        ).first()
+        
+        if not existing_test:
+            print(f"⚠️ 테스트가 삭제됨 - 분석 중단: test_id={test_id}")
+            return
+        
         # 파이프라인 실행
         pipeline = get_pipeline()
         result: PipelineResult = pipeline.analyze_image(unique_id)
         
         print(f"📊 파이프라인 실행 완료: {result.status}")
+        
+        # 결과 저장 전에 다시 테스트 존재 확인
+        existing_test = db.query(DrawingTest).filter(
+            DrawingTest.test_id == test_id
+        ).first()
+        
+        if not existing_test:
+            print(f"⚠️ 테스트가 분석 중에 삭제됨 - 결과 저장 생략: test_id={test_id}")
+            return
         
         # 결과를 데이터베이스에 저장 (동기 함수로 변경)
         print(f"🔥 save_analysis_result_sync 함수 호출 시작 - test_id: {test_id}")
@@ -267,6 +285,18 @@ def run_analysis_pipeline(
         print(f"❌ 백그라운드 분석 오류: {str(e)}")
         import traceback
         traceback.print_exc()
+        
+        # 오류 발생 시에도 테스트 존재 확인
+        try:
+            existing_test = db.query(DrawingTest).filter(
+                DrawingTest.test_id == test_id
+            ).first()
+            
+            if not existing_test:
+                print(f"⚠️ 테스트가 삭제됨 - 오류 상태 저장 생략: test_id={test_id}")
+                return
+        except:
+            print(f"테스트 존재 확인 실패: {test_id}")
         
         # 오류 발생 시 데이터베이스에 오류 상태 저장
         try:
@@ -531,10 +561,17 @@ async def get_analysis_status(
         ).first()
         
         if not drawing_test:
-            raise HTTPException(
-                status_code=404,
-                detail="해당 테스트를 찾을 수 없습니다."
-            )
+            # 테스트가 삭제된 경우 (분석 중단) - 오류가 아닌 중단된 상태로 처리
+            return JSONResponse(content={
+                "test_id": test_id,
+                "status": "cancelled",
+                "message": "분석이 중단되었습니다.",
+                "steps": [],
+                "current_step": 0,
+                "completed_steps": 0,
+                "total_steps": 3,
+                "cancelled": True
+            })
         
         # 결과 조회
         test_result = db.query(DrawingTestResult).filter(

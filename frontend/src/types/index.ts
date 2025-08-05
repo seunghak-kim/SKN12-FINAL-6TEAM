@@ -168,7 +168,7 @@ export interface ApiError {
 // Pipeline API - 이미지 분석 응답
 export interface PipelineAnalysisResponse {
   test_id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   message: string;
 }
 
@@ -183,7 +183,7 @@ export interface AnalysisStep {
 // Pipeline API - 분석 상태 응답
 export interface PipelineStatusResponse {
   test_id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   message: string;
   steps?: AnalysisStep[];
   current_step?: number;
@@ -192,6 +192,7 @@ export interface PipelineStatusResponse {
   estimated_remaining?: string;
   result?: DrawingTestResult;
   error?: string;
+  cancelled?: boolean;
 }
 
 // Rating API - 평가 요청
