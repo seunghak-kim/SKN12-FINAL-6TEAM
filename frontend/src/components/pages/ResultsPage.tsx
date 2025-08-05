@@ -457,6 +457,7 @@ const getColorForType = (type: string) => {
                         src={testService.getImageUrl(testData.imageUrl)} 
                         alt="분석된 그림" 
                         className="w-32 h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                        style={{ imageOrientation: 'none' }}
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-opacity duration-200 flex items-center justify-center">
                         <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium transition-opacity duration-200">
@@ -475,6 +476,7 @@ const getColorForType = (type: string) => {
                               src={fullImageUrl}
                               alt="분석한 그림"
                               className="w-32 h-32 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                              style={{ imageOrientation: 'none' }}
                               onError={(e) => {
                                 console.error('❌ 오른쪽 이미지 로드 실패:', fullImageUrl);
                                 e.currentTarget.style.display = 'none';
@@ -662,6 +664,7 @@ const getColorForType = (type: string) => {
                 src={testService.getImageUrl(testData.imageUrl)}
                 alt="분석된 그림 확대보기"
                 className="max-w-full max-h-full object-contain rounded-lg"
+                style={{ imageOrientation: 'none' }}
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
