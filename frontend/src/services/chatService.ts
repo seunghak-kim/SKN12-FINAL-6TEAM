@@ -65,10 +65,10 @@ export class ChatService {
     }
   }
 
-  // 페르소나별 초기 인사 메시지 조회
-  async getSessionGreeting(sessionId: string): Promise<{ persona_type: string; persona_id: number; greeting: string }> {
+  // 개인화된 인사 메시지 조회 (백그라운드 처리용)
+  async getPersonalizedGreeting(sessionId: string): Promise<{ persona_type: string; persona_id: number; greeting: string }> {
     try {
-      return await apiClient.get<{ persona_type: string; persona_id: number; greeting: string }>(`/chat/sessions/${sessionId}/greeting`);
+      return await apiClient.get<{ persona_type: string; persona_id: number; greeting: string }>(`/chat/sessions/${sessionId}/personalized-greeting`);
     } catch (error) {
       throw this.handleError(error);
     }

@@ -63,7 +63,7 @@ class AIService:
             # 1단계: 공통 답변 생성 (세션 정보 포함)
             common_response, tokens_step1 = self._generate_common_response(session, messages, user_message, **context)
             
-            # 2단계: 페르소나별 변환
+            # 2단계: 페르소나별 변환 (컨텍스트 전달)
             persona_response, tokens_step2 = self._transform_to_persona(common_response, persona_type, user_message, **context)
             
             # 총 토큰 사용량 출력
@@ -204,15 +204,31 @@ class AIService:
             persona_key = persona_mapping.get(persona_type, "nemyeon")
             persona_prompt = self.chained_prompt_manager.load_persona_prompt(persona_key)
             
+            # 공통 규칙도 함께 로드
+            common_rules = self.chained_prompt_manager.load_common_rules()
+            
+            # 그림검사 분석 결과 컨텍스트 준비
+            user_analysis_context = ""
+            if context.get('user_analysis_result'):
+                analysis_result = context['user_analysis_result']
+                user_analysis_context = f"""
+
+**사용자 그림검사 분석 정보:**
+이 사용자의 그림검사 분석 결과를 참고하여 페르소나 변환 시에도 개인화된 표현을 사용해주세요:
+- 주요 심리 특성: {analysis_result.get('result_text', '분석 정보 없음')}
+- 분석 요약: {analysis_result.get('raw_text', '')[:200]}..."""
+            
             # 변환용 프롬프트 구성
             transform_prompt = f"""# 페르소나 변환 시스템
 
+{common_rules}
+
 다음은 당신의 페르소나 특성입니다:
 
-{persona_prompt}
+{persona_prompt}{user_analysis_context}
 
 ## 변환 작업
-위의 페르소나 특성에 맞게 다음 기본 답변을 자연스럽게 변환해주세요:
+위의 공통 규칙, 페르소나 특성, 그림분석 결과를 모두 반영하여 다음 기본 답변을 자연스럽게 변환해주세요:
 
 **기본 답변:**
 {common_response}
@@ -220,8 +236,8 @@ class AIService:
 **사용자 메시지:**
 {user_message}
 
-페르소나의 말투, 성격, 상담 스타일을 반영하여 답변을 변환해주세요. 
-답변의 핵심 내용과 의도는 유지하되, 표현 방식을 페르소나에 맞게 조정해주세요."""
+페르소나의 말투, 성격, 상담 스타일을 반영하고, 사용자의 심리 특성도 고려하여 답변을 변환해주세요. 
+답변의 핵심 내용과 의도는 유지하되, 표현 방식을 페르소나와 사용자에게 맞게 조정해주세요."""
             
             llm_messages = [
                 SystemMessage(content=transform_prompt),
@@ -269,47 +285,41 @@ class AIService:
                 return self._generate_personalized_greeting(persona_type, user_analysis_result)
             except Exception as e:
                 print(f"개인화된 인사 생성 실패: {e}")
-                # 실패시 기본 인사로 폴백
         
-        # 기본 인사말 (폴백용)
-        base_greetings = {
-            "내면형": "안녕... 나는 내면이야. 말보다 느낌이 먼저일 때, 조용한 마음으로 함께 있을 수 있다면 좋겠어.",
-            "추진형": "저는 당신의 고민을 함께 해결해갈 추진이에요. 지금부터 가장 중요한 얘기를 해볼까요?",
-            "관계형": "저는 당신의 고민을 함께 해결해갈 관계이에요. 지금부터 마음 속 고민을 얘기해볼까요?",
-            "안정형": "저는 당신을 안정시켜드릴 안정이에요. 지금부터 마음 속 고민을 얘기해볼까요?",
-            "쾌락형": "저는 당신의 고민을 함께 해결해갈 쾌락이에요. 지금부터 재밌는 얘기를 해볼까요?"
-        }
-        
-        return base_greetings.get(persona_type, base_greetings["내면형"])
+        # 기본 인사는 프론트엔드에서 처리하므로 빈 문자열 반환
+        return ""
 
     def _generate_personalized_greeting(self, persona_type: str, user_analysis_result: dict) -> str:
         """그림 분석 결과를 바탕으로 GPT-4o가 개인화된 첫 인사 생성"""
         
-        # 페르소나별 기본 성격 설명
-        persona_descriptions = {
-            "내면형": "내면이: 감정과 사고의 깊은 바다를 탐험하는 조력자. 비관적 성향을 가지고 있으며 깊이 있는 통찰 제공",
-            "추진형": "추진이: 목표 달성을 강력히 추진하는 전략가. 결과 지향적이고 효율성을 극대화하는 스타일",
-            "관계형": "관계이: 사람들과의 관계와 소통을 중시하는 따뜻한 상담자",
-            "안정형": "안정이: 중립과 조화를 지향하는 안전한 대화 파트너. 신중하고 부드러운 말투",
-            "쾌락형": "쾌락이: 즐거움과 활력을 추구하는 반쯤 미친 에너지 넘치는 동반자"
+        # 공통 규칙 로드
+        common_rules = self.chained_prompt_manager.load_common_rules()
+        
+        # 페르소나 매핑 및 프롬프트 로드
+        persona_mapping = {
+            "내면형": "nemyeon",
+            "추진형": "chujin", 
+            "관계형": "gwangye",
+            "안정형": "anjeong",
+            "쾌락형": "querock"
         }
         
+        persona_key = persona_mapping.get(persona_type, "nemyeon")
+        persona_prompt = self.chained_prompt_manager.load_persona_prompt(persona_key)
+        
         # GPT-4o 프롬프트 구성
-        prompt = f"""당신은 {persona_descriptions.get(persona_type, persona_descriptions['내면형'])}입니다.
+        prompt = f"""# 거북이상담소 AI 상담사 - 개인화된 첫 인사 생성
+
+{common_rules}
+
+{persona_prompt}
 
 사용자의 그림검사 분석 결과를 바탕으로 개인화된 첫 인사 메시지를 생성해주세요.
 
 **그림 분석 결과:**
 {user_analysis_result}
 
-**요구사항:**
-1. 위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나도록 하세요
-2. 해당 페르소나의 말투와 성격에 맞게 작성하세요
-3. 따뜻하고 공감적인 톤으로 첫 인사를 건네세요
-4. 150자 이내로 작성하세요
-5. 사용자가 편안하게 대화를 시작할 수 있도록 유도하세요
-
-첫 인사 메시지:"""
+위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나는 150자 이내의 첫 인사 메시지를 생성해주세요."""
 
         # GPT-4o 호출
         from langchain.schema import HumanMessage

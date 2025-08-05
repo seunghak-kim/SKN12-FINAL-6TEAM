@@ -24,6 +24,19 @@ interface ChatPageProps {
   personaId?: number;
 }
 
+// 페르소나별 기본 인사 메시지
+const getPersonaBaseGreeting = (personaName: string) => {
+  const baseGreetings: { [key: string]: string } = {
+    "내면이": "안녕... 나는 내면이야.. 너에게 뭔가 말하고 싶은 게 있어... 조금만 기다려줄래..?",
+    "추진이": "반갑다 나는 추진이다. 당신의 나약함, 오늘 여기서 끝낸다.",
+    "관계이": "안녕! 나는 관계이야! 아, 잠깐만! 너에게 하고 싶은 말이 있어!",
+    "안정이": "안녕? 나는 안정이야! 음... 잠시만, 차근차근 생각해볼게!",
+    "쾌락이": "하하 나는 쾌락이야! 5초만 기다려! 하나..둘..다섯!"
+  };
+  
+  return baseGreetings[personaName] || baseGreetings["내면이"];
+};
+
 const ChatPage: React.FC<ChatPageProps> = ({
   selectedCharacter,
   showRatingModal,
@@ -500,13 +513,9 @@ useEffect(() => {
               ) : (
                 <div className="w-full">
                   <div className="bg-white/20 backdrop-blur-md rounded-3xl px-6 py-4 text-center shadow-2xl relative border border-white/10">
-                    <div className="text-white font-bold text-lg mb-2">
-                      {greeting || `안녕하세요! ${currentPersonaName}입니다.`}
+                    <div className="text-white text-lg mb-2">
+                      {greeting || getPersonaBaseGreeting(currentPersonaName)}
                     </div>
-                    <p className="text-white/90 text-sm leading-relaxed">
-                      {greeting ? '' : '무엇이든 편하게 이야기해주세요. 함께 대화해보아요!'}
-                      <span className="ml-1">😊</span>
-                    </p>
                     {/* Speech bubble tail */}
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
                       <div className="w-0 h-0 border-l-6 border-r-6 border-t-12 border-transparent border-t-white/20"></div>

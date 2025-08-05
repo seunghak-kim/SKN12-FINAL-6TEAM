@@ -320,12 +320,12 @@ async def get_session_messages(
             detail=f"메시지 조회 중 오류가 발생했습니다: {str(e)}"
         )
 
-@router.get("/sessions/{session_id}/greeting", response_model=dict)
-async def get_initial_greeting(
+@router.get("/sessions/{session_id}/personalized-greeting", response_model=dict)
+async def get_personalized_greeting(
     session_id: UUID,
     db: Session = Depends(get_db)
 ):
-    """세션의 페르소나별 초기 인사 메시지 조회"""
+    """세션의 개인화된 인사 메시지 조회 (백그라운드 처리용)"""
     try:
         # 세션 존재 확인
         session = db.query(ChatSession).filter(
@@ -341,7 +341,7 @@ async def get_initial_greeting(
         # persona_id를 페르소나 타입으로 매핑
         persona_type = get_persona_type_from_persona_id(session.persona_id, db)
         
-        # AI 서비스에서 페르소나별 인사 메시지 가져오기
+        # AI 서비스에서 개인화된 인사 메시지 생성
         ai_service = AIService(db)
         
         # 그림 분석 결과 로드
@@ -352,7 +352,11 @@ async def get_initial_greeting(
             print(f"그림 분석 결과 로드 실패: {e}")
             user_analysis_result = None
         
-        greeting = ai_service.get_initial_greeting(persona_type, user_analysis_result)
+        # 개인화된 인사만 생성 (기본 인사는 프론트엔드에서 처리)
+        if user_analysis_result:
+            greeting = ai_service._generate_personalized_greeting(persona_type, user_analysis_result)
+        else:
+            greeting = ""  # 그림 분석 결과가 없으면 빈 문자열
         
         return {
             "persona_type": persona_type,
@@ -365,5 +369,6 @@ async def get_initial_greeting(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"인사 메시지 조회 중 오류가 발생했습니다: {str(e)}"
+            detail=f"개인화된 인사 메시지 조회 중 오류가 발생했습니다: {str(e)}"
         )
+

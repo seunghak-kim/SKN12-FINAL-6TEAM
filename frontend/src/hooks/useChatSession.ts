@@ -23,7 +23,6 @@ interface UseChatSessionReturn {
   deleteSession: (sessionId: string) => Promise<void>;
   clearError: () => void;
   clearMessages: () => void;
-  loadGreeting: (sessionId: string) => Promise<void>;
 }
 
 export const useChatSession = (): UseChatSessionReturn => {
@@ -69,13 +68,16 @@ export const useChatSession = (): UseChatSessionReturn => {
       console.log('세션 생성 성공:', newSession);
       setSession(newSession);
       
-      // 세션 생성 후 greeting 메시지 로드
+      // 세션 생성 후 백그라운드에서 개인화된 인사 로드
       try {
-        const greetingData = await chatService.getSessionGreeting(newSession.chat_sessions_id);
-        console.log('greeting 로드 성공:', greetingData);
-        setGreeting(greetingData.greeting);
+        const personalizedGreeting = await chatService.getPersonalizedGreeting(newSession.chat_sessions_id);
+        if (personalizedGreeting.greeting) {
+          console.log('개인화된 인사 로드 성공:', personalizedGreeting.greeting);
+          setGreeting(personalizedGreeting.greeting);
+        }
       } catch (greetingError) {
-        console.error('greeting 로드 실패:', greetingError);
+        console.error('개인화된 인사 로드 실패:', greetingError);
+        // 실패해도 기본 인사는 그대로 유지
       }
       
       // 세션 생성 후 기존 메시지 로드
@@ -179,16 +181,7 @@ export const useChatSession = (): UseChatSessionReturn => {
     setMessages([]);
   }, []);
 
-  // greeting 로드
-  const loadGreeting = useCallback(async (sessionId: string) => {
-    try {
-      const greetingData = await chatService.getSessionGreeting(sessionId);
-      setGreeting(greetingData.greeting);
-    } catch (error) {
-      console.error('greeting 로드 실패:', error);
-      handleError(error);
-    }
-  }, [handleError]);
+  // greeting 로드 함수 제거 (더 이상 사용하지 않음)
 
   return {
     // 상태
@@ -205,7 +198,6 @@ export const useChatSession = (): UseChatSessionReturn => {
     loadSession,
     deleteSession,
     clearError,
-    clearMessages,
-    loadGreeting
+    clearMessages
   };
 };
