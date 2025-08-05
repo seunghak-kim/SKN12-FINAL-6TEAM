@@ -60,10 +60,12 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       
       const canvas = await html2canvas.default(resultCardRef.current, {
         background: '#0F103F',
-        scale: 2, // 고화질을 위한 스케일링
         logging: false,
         useCORS: true,
-        allowTaint: true
+        allowTaint: true,
+        ignoreElements: (element) => {
+          return element.classList.contains('exclude-from-image');
+        }
       });
       
       // 캔버스를 blob으로 변환
@@ -414,7 +416,7 @@ const getColorForType = (type: string) => {
                   <img 
                     src={getCharacterImageForType(actualPersonalityType)} 
                     alt={getCharacterName(actualPersonalityType)}
-                    className="w-40 h-40 object-cover rounded-full"
+                    className="w-32 h-32 object-cover"
                   />
                 </div>
                 ) : (
@@ -425,7 +427,7 @@ const getColorForType = (type: string) => {
 
                 {/* 가운데: 페르소나 정보 */}
                 <div className="flex-1 text-center">
-                  <h2 className="text-white text-2xl font-bold mb-2 text-left">
+                  <h2 className="text-white text-2xl font-bold mb-6 text-left">
                     {actualPersonalityType ? (
                       <>당신의 페르소나는 <span className="text-pink-400">{getCharacterName(actualPersonalityType)}</span> 입니다</>
                     ) : (
@@ -511,14 +513,14 @@ const getColorForType = (type: string) => {
               {actualPersonalityType ? (
               <Button
                 onClick={() => handlePersonalityClick(actualPersonalityType)}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium"
+                className="exclude-from-image w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium"
               >
                 {getCharacterName(actualPersonalityType)}와 대화하기
               </Button>
               ) : (
                 <Button
                   disabled
-                  className="w-full bg-gray-500 text-gray-300 py-3 rounded-full font-medium cursor-not-allowed"
+                  className="exclude-from-image w-full bg-gray-500 text-gray-300 py-3 rounded-full font-medium cursor-not-allowed"
                 >
                   분석 완료 후 이용 가능
                 </Button>
@@ -600,7 +602,7 @@ const getColorForType = (type: string) => {
                     <img 
                       src={getCharacterImageForType(personality.type)} 
                       alt={getCharacterName(personality.type)}
-                      className="w-26 h-26 object-cover rounded-full"
+                      className="w-26 h-26 object-cover"
                     />
                   </div>
                   <h3 className="text-white font-bold mb-2">{getCharacterName(personality.type)}</h3>
