@@ -101,10 +101,20 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         // testId가 없어도 UI는 업데이트
         setSatisfaction(feedbackType);
       }
+      
+      // 3초 후 메시지 자동 사라짐
+      setTimeout(() => {
+        setSatisfaction(null);
+      }, 2000);
     } catch (error) {
       console.error('피드백 전송 실패:', error);
       // 에러가 발생해도 UI는 업데이트 (사용자 경험 향상)
       setSatisfaction(feedbackType);
+      
+      // 3초 후 메시지 자동 사라짐
+      setTimeout(() => {
+        setSatisfaction(null);
+      }, 2000);
     }
   };
 
