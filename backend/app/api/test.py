@@ -394,3 +394,46 @@ async def update_thumbs_feedback(
         "message": "피드백이 성공적으로 업데이트되었습니다."
     }
 
+@router.delete("/drawing-tests/{test_id}")
+async def delete_drawing_test(
+    test_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """그림 테스트 삭제"""
+    # 해당 테스트가 현재 사용자의 것인지 확인
+    test = db.query(DrawingTest).filter(
+        DrawingTest.test_id == test_id,
+        DrawingTest.user_id == current_user["user_id"]
+    ).first()
+    
+    if not test:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="테스트를 찾을 수 없습니다."
+        )
+    
+    # 관련된 테스트 결과가 있다면 먼저 삭제
+    test_result = db.query(DrawingTestResult).filter(
+        DrawingTestResult.test_id == test_id
+    ).first()
+    
+    if test_result:
+        db.delete(test_result)
+    
+    # 이미지 파일 삭제
+    if test.image_url and os.path.exists(test.image_url):
+        try:
+            os.remove(test.image_url)
+        except Exception as e:
+            print(f"이미지 파일 삭제 실패: {e}")
+    
+    # 테스트 삭제
+    db.delete(test)
+    db.commit()
+    
+    return {
+        "message": "테스트가 성공적으로 삭제되었습니다.",
+        "test_id": test_id
+    }
+
