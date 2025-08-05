@@ -3,7 +3,7 @@ import io
 import base64
 import logging
 from typing import Optional, Tuple, Dict, Union, Any
-from PIL import Image
+from PIL import Image, ImageOps
 import cv2
 import numpy as np
 from pathlib import Path
@@ -19,13 +19,20 @@ class BasicImageProcessor:
         self.logger = logging.getLogger(__name__)
 
     def load_image_pil(self, file_path: str) -> Optional[Image.Image]:
-        """PIL을 사용하여 이미지 로드"""
+        """PIL을 사용하여 이미지 로드 (EXIF 회전 정보 자동 적용)"""
         try:
             if not os.path.exists(file_path):
                 self.logger.error(f"파일이 존재하지 않습니다: {file_path}")
                 return None
                 
             with Image.open(file_path) as img:
+                # EXIF 회전 정보 자동 적용 (스마트폰 사진 회전 문제 해결)
+                try:
+                    img = ImageOps.exif_transpose(img)
+                    self.logger.debug("EXIF 회전 정보 적용 완료")
+                except Exception as e:
+                    self.logger.debug(f"EXIF 회전 정보 적용 실패 (무시 가능): {e}")
+                
                 # RGB로 변환
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
@@ -197,6 +204,14 @@ class BasicImageProcessor:
                         if len(image_bytes) > self.max_file_size:
                             return {'success': False, 'error': f'이미지 크기가 너무 큽니다. (최대 {self.max_file_size // (1024*1024)}MB)'}
                         image = Image.open(io.BytesIO(image_bytes))
+                        
+                        # EXIF 회전 정보 자동 적용 (스마트폰 사진 회전 문제 해결)
+                        try:
+                            image = ImageOps.exif_transpose(image)
+                            self.logger.debug("EXIF 회전 정보 적용 완료")
+                        except Exception as e:
+                            self.logger.debug(f"EXIF 회전 정보 적용 실패 (무시 가능): {e}")
+                        
                         if image.mode != 'RGB':
                             image = image.convert('RGB')
                     except Exception as e:
@@ -212,6 +227,14 @@ class BasicImageProcessor:
                 if len(image_data) > self.max_file_size:
                     return {'success': False, 'error': f'이미지 크기가 너무 큽니다. (최대 {self.max_file_size // (1024*1024)}MB)'}
                 image = Image.open(io.BytesIO(image_data))
+                
+                # EXIF 회전 정보 자동 적용 (스마트폰 사진 회전 문제 해결)
+                try:
+                    image = ImageOps.exif_transpose(image)
+                    self.logger.debug("EXIF 회전 정보 적용 완료")
+                except Exception as e:
+                    self.logger.debug(f"EXIF 회전 정보 적용 실패 (무시 가능): {e}")
+                
                 if image.mode != 'RGB':
                     image = image.convert('RGB')
             else:
