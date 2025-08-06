@@ -1,0 +1,1418 @@
+[
+  {
+    "label": "추진형",
+    "keyword": "현명하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "공정하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "심각하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "불안하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "옳다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "착하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "올바르다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "강하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "정확하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "충분하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "철저하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "급하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "심하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "진지하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "날카롭다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "집착하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "확실하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "완벽하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "초조하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "치열하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "엄격하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "지혜롭다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "성실하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "불편하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "자유롭다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "필요하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "당연하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "당당하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "재미있다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "평범하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "다양하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "성숙하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "새롭다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "성장하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "끊임없다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "집요하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "탁월하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "멋지다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "사소하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "다르다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "다정하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "다감하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "따듯하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "친절하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "친하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "깊다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "너그럽다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "예민하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "지나치다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "강하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "필요하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "민감하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "아프다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "불편하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "사랑스럽다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "행복하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "즐겁다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "아름답다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "사소하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "친숙하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "교만하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "거만하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "단순하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "낯설다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "불안하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "괴롭다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "자유롭다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "세심하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "충실하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "진지하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "변하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "뭉클하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "성장하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "성숙하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "섬세하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "멋지다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "복잡하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "솔직하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "원하다"
+  },
+  {
+    "label": "관계형",
+    "keyword": "좋아하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "부지런하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "원하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "좋다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "행복하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "과하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "다재다능하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "친근하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "친절하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "편리하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "유능하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "똑똑하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "꾸준하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "끊임없다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "여전하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "명확하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "독특하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "특별하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "뛰어나다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "진지하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "유익하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "필요하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "거짓되다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "무시하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "교묘하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "무리하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "힘들다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "다르다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "적응하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "기대하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "성장하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "따뜻하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "철저하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "충실하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "유용하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "확실하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "성공하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "훌륭하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "새롭다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "정확하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "완벽하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "따뜻하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "우울하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "외롭다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "강하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "고집스럽다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "심하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "특별하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "뛰어나다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "아름답다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "우아하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "다르다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "아프다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "민감하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "훌륭하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "고상하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "중요하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "세련되다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "멋지다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "차분하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "진솔하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "소중하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "섬세하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "생소하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "초연하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "까다롭다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "격렬하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "들쑥날쑥하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "예민하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "독특하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "풍부하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "슬프다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "무섭다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "그립다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "친절하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "성장하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "심각하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "괴롭다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "두렵다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "민감하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "현명하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "세다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "높다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "중요하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "흥미롭다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "새롭다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "필요하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "기대하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "교만하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "인색하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "신중하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "진지하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "재미있다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "영리하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "예리하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "날카롭다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "자세하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "초연하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "무관심하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "무신경하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "차갑다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "완고하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "탐욕스럽다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "없다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "추리하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "꼼꼼하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "바쁘다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "놀랍다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "신비롭다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "어렵다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "유명하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "단순하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "명쾌하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "냉정하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "꾸준하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "성장하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "정확하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "딱딱하다"
+  },
+  {
+    "label": "내면형",
+    "keyword": "복잡하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "불가능하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "충직하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "따뜻하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "착하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "조심스럽다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "충실하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "공손하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "상냥하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "친절하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "충성스럽다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "정직하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "올바르다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "성공하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "신중하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "진지하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "심각하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "무겁다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "결연하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "완고하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "유용하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "익숙하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "초조하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "소심하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "순수하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "우유부단하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "불안하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "걱정스럽다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "우아하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "단순하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "안전하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "섬세하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "위험하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "험난하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "두렵다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "낯설다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "만족하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "용감하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "중요하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "힘겹다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "평범하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "재미있다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "즐겁다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "흥미롭다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "신비롭다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "새롭다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "놀랍다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "신기하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "엉뚱하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "황당하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "기발하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "풍부하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "열렬하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "열광하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "치열하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "민첩하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "신속하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "산만하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "강하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "행복하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "멋지다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "특별하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "기쁘다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "명랑하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "활기차다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "발랄하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "유쾌하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "경쾌하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "힘차다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "순수하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "가볍다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "무르다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "무책임하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "다채롭다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "다양하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "대단하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "남다르다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "똑똑하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "흥분하다"
+  },
+  {
+    "label": "쾌락형",
+    "keyword": "독특하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "진지하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "솔직하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "치열하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "안전하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "뛰어나다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "위험하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "엄격하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "충직하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "둔감하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "단순하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "힘세다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "강하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "자신만만하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "대담하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "넓다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "조화롭다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "정의롭다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "정당하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "유능하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "퉁명스럽다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "무정하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "둔하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "거칠다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "과격하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "급격하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "신랄하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "용감하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "열광하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "위대하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "오만하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "씩씩하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "약하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "엄숙하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "적합하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "올바르다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "창피하다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "새롭다"
+  },
+  {
+    "label": "추진형",
+    "keyword": "어렵다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "고집스럽다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "무신경하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "상냥하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "평화롭다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "너그럽다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "여유롭다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "겸손하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "편안하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "침착하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "평온하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "조화롭다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "정의롭다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "느긋하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "지루하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "우유부단하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "장황하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "안일하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "나태하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "태만하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "초연하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "완고하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "충실하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "순수하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "단순하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "간단하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "평범하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "따뜻하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "안전하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "급격하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "적절하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "연결하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "간결하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "진솔하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "깔끔하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "다양하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "필요하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "여전하다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "남다르다"
+  },
+  {
+    "label": "안정형",
+    "keyword": "어렵다"
+  }
+]
