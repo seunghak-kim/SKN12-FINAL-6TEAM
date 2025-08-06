@@ -167,11 +167,19 @@ async def analyze_drawing_image(
         
         # 이미지를 JPG 형식으로 변환하여 저장
         import PIL.Image as PILImage
+        from PIL import ImageOps
         import io
         
         # 업로드된 파일을 PIL Image로 로드
         image_data = await upload_file.read()
         pil_image = PILImage.open(io.BytesIO(image_data))
+        
+        # EXIF 회전 정보 자동 적용 (스마트폰 사진 회전 문제 해결)
+        try:
+            pil_image = ImageOps.exif_transpose(pil_image)
+            print(f"✅ EXIF 회전 정보 적용 완료")
+        except Exception as e:
+            print(f"⚠️ EXIF 회전 정보 적용 실패 (무시 가능): {e}")
         
         # RGB 모드로 변환 (RGBA 등 다른 모드 처리)
         if pil_image.mode != 'RGB':

@@ -104,7 +104,7 @@ async def get_user_sessions(
         sessions = db.query(ChatSession).filter(
             ChatSession.user_id == user_id,
             ChatSession.is_active == True
-        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).distinct().order_by(ChatSession.updated_at.desc()).all()
+        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).group_by(ChatSession.chat_sessions_id).order_by(ChatSession.updated_at.desc()).all()
         
         return [
             ChatSessionResponse(

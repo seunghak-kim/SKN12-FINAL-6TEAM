@@ -15,7 +15,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onNavigate, onSetCha
   const navigate = useNavigate();
   
   const navItems = [
-    { name: "메인", screen: "main", route: "/main" },
+    { name: "MY MOODY", screen: "main", route: "/main" },
     { name: "그림검사", screen: "test", route: "/test" },
     { name: "페르소나 소개 ", screen: "characters", route: "/characters" },
     { name: "챗봇", screen: "chat", route: "/chat" },
