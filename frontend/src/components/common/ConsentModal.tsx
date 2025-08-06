@@ -21,12 +21,12 @@ const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose, onAgree })
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} className="max-w-lg w-full max-h-[85vh] h-auto">
-      <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-6">
-        <div className="mb-6">
+      <div className="px-4 sm:px-5 md:px-6 lg:px-7 py-4">
+        <div className="mb-4">
           <h2 className="text-xl font-bold text-gray-800 text-left">HTP 심리검사 면책 및 개인정보 활용 동의서</h2>
         </div>
 
-          <div className="space-y-6 text-sm text-gray-700 leading-relaxed max-h-[50vh] overflow-y-auto pr-2 text-left">
+          <div className="space-y-4 text-sm text-gray-700 leading-relaxed max-h-[50vh] overflow-y-auto text-left">
             <div>
               <h3 className="font-bold text-blue-600 mb-2">1. 검사의 목적 및 활용</h3>
               <p>
@@ -52,8 +52,8 @@ const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose, onAgree })
               <p>
                 수집된 개인정보는 상담 서비스가 진행되는 기간 동안 보유 및 이용되며,<br />
                 <strong>회원 탈퇴 시 아래의 모든 개인정보가 즉시 삭제됩니다.</strong><br />
-                모든 채팅 기록 / 그림 검사 결과 / 개인 프로필 정보 / 페르소나 매칭 데이터<br />
-                <strong className="text-red-600">삭제된 데이터는 복구할 수 없습니다.</strong><br />
+                : 채팅 기록 / 그림 검사 결과 / 개인 프로필 정보 / 페르소나 매칭 데이터<br />
+                <strong className="text-red-600">또한, 삭제된 데이터는 복구할 수 없습니다.</strong><br />
                 단, 관련 법령에 따라 개인정보를 보존할 필요가 있는 경우<br />
                 해당 법령에서 정한 기간 동안 보관할 수 있습니다.
               </p>
@@ -76,14 +76,14 @@ const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose, onAgree })
                 <strong>확정적인 진단이 아니며</strong> 상담의 참고 자료로 활용될 뿐입니다.<br />
                 또한 <strong>LLM 기반</strong>으로 결과가 생성되기 때문에, <br />
                 <strong>같은 그림이라도 답변이 다를 수 있습니다.</strong><br />
-<strong>검사 결과의 해석이나 이를 기반으로 한 어떠한 결정에 대해서도 <br />
+                <strong>검사 결과의 해석이나 이를 기반으로 한 어떠한 결정에 대해서도 <br />
                 본 서비스는 법적 책임을 지지 않습니다.</strong><br />
                 
               </p>
             </div>
           </div>
 
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-6 p-3 bg-gray-50 rounded-lg">
             <div className="flex items-start space-x-3 mb-2">
               <input
                 type="checkbox"
@@ -101,7 +101,7 @@ const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose, onAgree })
             </div>
           </div>
 
-          <div className="flex space-x-4 mt-6">
+          <div className="flex space-x-4 mt-4">
             <Button onClick={onClose} variant="outline" className="flex-1 py-3 rounded-full bg-transparent">
               취소하기
             </Button>
