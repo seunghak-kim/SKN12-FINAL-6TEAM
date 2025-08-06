@@ -15,17 +15,30 @@ import { Input } from "../../components/ui/input"
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface ChatPageProps {
-selectedCharacter?: SearchResult | null
-showRatingModal?: boolean
-onShowRating?: () => void
-onCloseRatingModal?: () => void
-onNavigate?: (screen: string) => void
-onInitializeChat?: () => void
-onShowSatisfaction?: () => void
-// 새로 추가된 props
-userId?: number
-personaId?: number
+  selectedCharacter: SearchResult | null;
+  showRatingModal: boolean;
+  onShowRating: () => void;
+  onCloseRatingModal: () => void;
+  onNavigate?: (screen: string) => void;
+  onInitializeChat?: () => void;
+  onShowSatisfaction?: () => void;
+  // 새로 추가된 props
+  userId?: number;
+  personaId?: number;
 }
+
+// 페르소나별 기본 인사 메시지
+const getPersonaBaseGreeting = (personaName: string) => {
+  const baseGreetings: { [key: string]: string } = {
+    "내면이": "안녕... 나는 내면이야.. 너에게 뭔가 말하고 싶은 게 있어... 조금만 기다려줄래..?",
+    "추진이": "반갑다 나는 추진이다. 당신의 나약함, 오늘 여기서 끝낸다.",
+    "관계이": "안녕! 나는 관계이야! 아, 잠깐만! 너에게 하고 싶은 말이 있어!",
+    "안정이": "안녕? 나는 안정이야! 음... 잠시만, 차근차근 생각해볼게!",
+    "쾌락이": "하하 나는 쾌락이야! 5초만 기다려! 하나..둘..다섯!"
+  };
+  
+  return baseGreetings[personaName] || baseGreetings["내면이"];
+};
 
 // 커스텀 원형 스피너 컴포넌트
 const CircularSpinner: React.FC<{ className?: string }> = ({ className = "" }) => {
@@ -102,20 +115,20 @@ useEffect(() => {
   setShowChatPanel(false)
 }, [])
 
-// FastAPI 연동을 위한 훅 사용 (Hook들은 early return 이전에 호출되어야 함)
-const {
-  session,
-  messages: chatMessages,
-  isLoading,
-  isSending,
-  error,
-  greeting,
-  createSession,
-  sendMessage,
-  loadSession,
-  clearError,
-  clearMessages,
-} = useChatSession()
+  // FastAPI 연동을 위한 훅 사용 (Hook들은 early return 이전에 호출되어야 함)
+  const {
+    session,
+    messages: chatMessages,
+    isLoading,
+    isSending,
+    error,
+    greeting,
+    createSession,
+    sendMessage,
+    loadSession,
+    clearError,
+    clearMessages
+  } = useChatSession();
 
 // 실제 사용자 ID 가져오기
 const [realUserId, setRealUserId] = useState<number | null>(null)
@@ -251,45 +264,6 @@ useEffect(() => {
   loadLatestPersona()
 }, [])
 
-// 초기 메시지를 한 번만 생성하고 저장
-const [initialMessage] = useState(() => {
-  const characterMessages: { [key: string]: string[] } = {
-    추진이: [
-      "안녕하세요! 오늘 달성하고 싶은 목표가 있나요?",
-      "무엇을 이루고 싶으신지 말해보세요. 함께 효율적인 방법을 찾아보죠!",
-      "성공을 향한 첫 걸음을 내딛어보세요. 어떤 도전이 기다리고 있나요?",
-      "목표가 명확하면 길이 보입니다. 무엇부터 시작할까요?",
-    ],
-    내면이: [
-      "안녕하세요. 오늘 하루는 어떠셨나요?",
-      "마음이 편안한 곳에서 이야기해보세요. 무엇이든 들어드릴게요.",
-      "혼자서 힘드셨을 텐데, 이제는 함께 이야기 나눠요.",
-      "당신의 감정을 이해하고 공감해드리고 싶어요.",
-    ],
-    관계이: [
-      "안녕하세요. 어떤 문제를 해결하고 싶으신가요?",
-      "상황을 차근차근 분석해보겠습니다. 자세히 말씀해주세요.",
-      "논리적으로 접근해보죠. 핵심 문제가 무엇인지 파악해보세요.",
-      "체계적으로 정리하면 해답이 보일 거예요.",
-    ],
-    쾌락이: [
-      "안녕하세요! 새로운 아이디어가 떠오르는 시간이에요!",
-      "상상력을 발휘해서 색다른 관점으로 접근해볼까요?",
-      "창의적인 해결책을 함께 찾아보겠습니다!",
-      "틀에 박힌 생각에서 벗어나 자유롭게 이야기해보세요.",
-    ],
-    안정이: [
-      "안녕하세요. 평온한 마음으로 이야기를 나눠보아요.",
-      "차분하게 생각해보면서 함께 해결책을 찾아보겠습니다.",
-      "서두르지 말고 천천히 이야기해주세요.",
-      "마음의 평화를 찾는 것이 가장 중요해요.",
-    ],
-  }
-
-  const characterName = selectedCharacter?.name || currentPersonaName || "내면이"
-  const messages = characterMessages[characterName] || characterMessages["내면이"]
-  return messages[Math.floor(Math.random() * messages.length)]
-})
 
 // 모든 useEffect들을 early return 이전에 위치시킴
 useEffect(() => {
