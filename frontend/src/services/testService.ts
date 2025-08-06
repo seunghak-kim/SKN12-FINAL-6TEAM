@@ -61,51 +61,18 @@ class TestService {
         formData.append('description', description);
       }
 
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-      const endpoint = `${apiUrl}${this.PIPELINE_PATH}/analyze-image`;
-      
-      console.log('📡 API 요청 시작:', endpoint);
+      console.log('📡 API 요청 시작:', `${this.PIPELINE_PATH}/analyze-image`);
 
-      // FormData를 사용할 때는 Content-Type을 자동으로 설정되도록 해야 함
-      // AbortController로 타임아웃 제어 (5분으로 증가)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        console.log('⏰ 요청 타임아웃');
-        controller.abort();
-      }, 300000); // 5분
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: formData,
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
+      const result = await apiClient.postFormData<PipelineAnalysisResponse>(
+        `${this.PIPELINE_PATH}/analyze-image`,
+        formData
+      );
 
-      console.log('📨 응답 수신:', { 
-        status: response.status, 
-        statusText: response.statusText,
-        ok: response.ok 
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('❌ API 오류 응답:', errorData);
-        throw new Error(`API 요청 실패: ${response.status} - ${errorData}`);
-      }
-
-      const result = await response.json();
       console.log('✅ 분석 시작 성공:', result);
       return result;
     } catch (error) {
       console.error('❌ 이미지 분석 요청 실패:', error);
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new Error('요청 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.');
-        }
         throw new Error(`분석 요청 실패: ${error.message}`);
       }
       throw error;
