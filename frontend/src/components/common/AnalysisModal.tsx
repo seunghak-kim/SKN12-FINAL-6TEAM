@@ -208,7 +208,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, analysisStatus, o
         <div className="text-xs text-gray-400 mt-4">
           {analysisStatus?.status === 'completed' 
             ? '🎉 분석이 완료되었습니다! 위 버튼을 눌러 결과를 확인하세요.'
-            : '💡 그림 분석은 1분 정도 소요되며, 분석이 완료되면 버튼이 나타납니다'
+            : '💡 그림 분석은 1~2분 정도 소요되며, 분석이 완료되면 버튼이 나타납니다'
           }
         </div>
       </div>
