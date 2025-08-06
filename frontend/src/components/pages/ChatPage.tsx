@@ -37,7 +37,7 @@ const getPersonaBaseGreeting = (personaName: string) => {
     "쾌락이": "하하 나는 쾌락이야! 5초만 기다려! 하나..둘..다섯!"
   };
   
-  return baseGreetings[personaName] || baseGreetings["내면이"];
+  return baseGreetings[personaName];
 };
 
 // 커스텀 원형 스피너 컴포넌트
@@ -84,6 +84,7 @@ const [showChatPanel, setShowChatPanel] = useState(false)
 const [hasMounted, setHasMounted] = useState(false)
 const [isVisible, setIsVisible] = useState(false)
 const [showSatisfactionModal, setShowSatisfactionModal] = useState(false)
+const [imageLoaded, setImageLoaded] = useState(false)
 
 // location.state에서 캐릭터 정보 가져오기 (ResultDetailPage에서 전달된 정보)
 const stateSelectedCharacter = location.state?.selectedCharacter as SearchResult | undefined
@@ -224,7 +225,7 @@ const actualPersonaId =
   latestPersonaId
 
 const currentPersonaName = selectedCharacter?.name || getPersonaName(actualPersonaId)
-const currentAvatarPath = selectedCharacter?.avatar || getCharacterAvatar(actualPersonaId)
+const currentAvatarPath = getCharacterAvatar(actualPersonaId)
 const currentCharacterSize = getCharacterSize(actualPersonaId)
 const currentBackgroundStyle = getBackgroundStyle(actualPersonaId)
 
@@ -263,6 +264,11 @@ useEffect(() => {
   loadCurrentUser()
   loadLatestPersona()
 }, [])
+
+// actualPersonaId가 변경될 때 이미지 로딩 상태 리셋
+useEffect(() => {
+  setImageLoaded(false)
+}, [actualPersonaId])
 
 
 // 모든 useEffect들을 early return 이전에 위치시킴
@@ -612,24 +618,29 @@ return (
       <div className="h-full flex flex-col justify-center items-center px-4 relative">
         {/* Character with loading spinner */}
         <div className="flex justify-center items-center relative mb-4">
-          <img
-            src={currentAvatarPath || "/placeholder.svg"}
-            alt={currentPersonaName}
-            className={`${currentCharacterSize} object-contain`}
-          />
-          {/* 원형 스피너 - 캐릭터 머리 위에 위치 */}
+          {actualPersonaId && imageLoaded ? (
+            <img
+              src={currentAvatarPath}
+              alt={currentPersonaName}
+              className={`${currentCharacterSize} object-contain transition-opacity duration-300`}
+              onLoad={() => setImageLoaded(true)}
+            />
+          ) : (
+            <div className={`${currentCharacterSize} flex items-center justify-center`}>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white"></div>
+              {actualPersonaId && (
+                <img
+                  src={currentAvatarPath}
+                  alt={currentPersonaName}
+                  className="hidden"
+                  onLoad={() => setImageLoaded(true)}
+                />
+              )}
+            </div>
+          )}
+          {/* 원형 스피너 - 캐릭터 이미지 위쪽 중앙에 위치 */}
           {isSending && (
-            <div
-              className={`absolute left-1/2 ${
-                actualPersonaId === 4 ? "transform -translate-x-3/4" : "transform -translate-x-1/4"
-              } ${
-                actualPersonaId === 4
-                  ? "top-16" // 쾌락이는 훨씬 아래로
-                  : actualPersonaId === 5
-                    ? "top-12" // 안정이도 훨씬 아래로
-                    : "-top-8" // 다른 캐릭터들은 기본 위치
-              }`}
-            >
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-4">
               <CircularSpinner />
             </div>
           )}
@@ -651,19 +662,17 @@ return (
               </div>
             ) : (
               <div className="w-full">
-                <div className="bg-white/20 backdrop-blur-md rounded-3xl px-8 py-6 text-center shadow-2xl relative border border-white/10">
-                  <h2 className="text-white font-bold text-xl mb-3">안녕! 반가워, 어떻게 지내?</h2>
-                  <p className="text-white/90 text-base leading-relaxed">
-                    무슨 일이 있는지, 어떤 생각들이 있는지 나에게 말해줘. 듣고 싶어!
-                    <span className="ml-1">😊</span>
-                  </p>
+                <div className="bg-white/20 backdrop-blur-md rounded-3xl px-6 py-4 text-center shadow-2xl relative border border-white/10">
+                  <div className="text-white text-lg mb-2">
+                    {greeting || getPersonaBaseGreeting(currentPersonaName)}
+                  </div>
                   {/* Speech bubble tail */}
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                    <div className="w-0 h-0 border-l-8 border-r-8 border-t-16 border-transparent border-t-white/20"></div>
+                    <div className="w-0 h-0 border-l-6 border-r-6 border-t-12 border-transparent border-t-white/20"></div>
                   </div>
                 </div>
               </div>
-            )
+            );
           })()}
         </div>
 
