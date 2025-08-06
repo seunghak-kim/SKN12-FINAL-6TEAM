@@ -145,7 +145,7 @@ const getPersonaName = (personaType: number | null): string => {
     4: "쾌락이",
     5: "안정이",
   }
-  return personaType && nameMap[personaType] ? nameMap[personaType] : "알 수 없음"
+  return personaType && nameMap[personaType] ? nameMap[personaType] : ""
 }
 
 const getCharacterAvatar = (personaId: number | null): string => {
@@ -156,8 +156,8 @@ const getCharacterAvatar = (personaId: number | null): string => {
     4: "쾌락이",
     5: "안정이",
   }
-  const name = personaId && nameMap[personaId] ? nameMap[personaId] : "알 수 없음"
-  return `/assets/persona/${name}.png`
+  const name = personaId && nameMap[personaId] ? nameMap[personaId] : ""
+  return name ? `/assets/persona/${name}.png` : ""
 }
 
 // 캐릭터 크기를 결정하는 함수 수정
@@ -217,23 +217,29 @@ const getBackgroundStyle = (personaId: number | null): React.CSSProperties => {
   }
 }
 
-// 세션 데이터를 최우선으로 하고, 없으면 선택된 캐릭터, 그 다음 최신 페르소나, 그 다음 기타 값들 사용
-const actualPersonaId =
-  session?.persona_id ||
+// 세션이 있으면 세션의 persona_id를 최우선 사용
+const actualPersonaId = session?.persona_id ||
   (selectedCharacter ? Number.parseInt(selectedCharacter.id) : null) ||
   personaId ||
-  latestPersonaId
+  latestPersonaId ||
+  null  // 마지막에는 null로 설정
 
-const currentPersonaName = selectedCharacter?.name || getPersonaName(actualPersonaId)
+// 세션이 있으면 세션의 persona_id를 기반으로 이름 결정
+const currentPersonaName = session?.persona_id 
+  ? getPersonaName(session.persona_id)
+  : (selectedCharacter?.name || getPersonaName(actualPersonaId))
+
 const currentAvatarPath = getCharacterAvatar(actualPersonaId)
 const currentCharacterSize = getCharacterSize(actualPersonaId)
 const currentBackgroundStyle = getBackgroundStyle(actualPersonaId)
 
 console.log('ChatPage - 페르소나 정보:', {
+  sessionPersonaId: session?.persona_id,
   actualPersonaId,
   currentPersonaName,
   currentAvatarPath,
-  selectedCharacter
+  selectedCharacter,
+  hasSession: !!session
 });
 
 // 컴포넌트 마운트 시 실제 사용자 정보 및 최신 페르소나 로드
@@ -253,11 +259,15 @@ useEffect(() => {
   const loadLatestPersona = async () => {
     try {
       const result = await testService.getLatestMatchedPersona()
+      console.log('loadLatestPersona 결과:', result);
       if (result.matched_persona_id) {
         setLatestPersonaId(result.matched_persona_id)
+      } else {
+        console.log('matched_persona_id가 없음 - latestPersonaId를 null로 유지');
       }
     } catch (error) {
       console.error("최신 페르소나 로드 실패:", error)
+      // 에러 발생시에도 null로 유지
     }
   }
 
@@ -295,10 +305,11 @@ useEffect(() => {
 
         if (sessionId) {
           // 기존 세션 로드
+          console.log('ChatPage - 기존 세션 로드:', sessionId);
           await loadSession(sessionId)
         } else if (selectedCharacter && currentUserId !== null) {
-          // 새 세션 생성
-          // 사용자 인증 상태 재확인 (좀 더 관대하게)
+          // 새 세션 생성 (URL에 sessionId가 없을 때만)
+          // 사용자 인증 상태 재확인
           if (!authService.isAuthenticated() && !localStorage.getItem("access_token")) {
             console.error("사용자가 로그인되어 있지 않습니다.")
             alert("로그인이 필요합니다. 다시 로그인해주세요.")
@@ -307,12 +318,19 @@ useEffect(() => {
           }
 
           if (actualPersonaId !== null) {
+            console.log('ChatPage - 새 세션 생성:', actualPersonaId);
             await createSession({
               user_id: currentUserId,
               persona_id: actualPersonaId,
               session_name: `${currentPersonaName}와의 대화`,
             })
           }
+        } else {
+          console.log('ChatPage - 세션 초기화 조건 미충족:', {
+            selectedCharacter: !!selectedCharacter,
+            currentUserId,
+            actualPersonaId
+          });
         }
       } catch (error) {
         console.error("세션 초기화 실패:", error)
@@ -426,6 +444,12 @@ const handleSendMessage = async () => {
   if (inputMessage.trim() === "" || isSending || isChatEnded) return
 
   const messageToSend = inputMessage.trim()
+  
+  console.log('ChatPage - 메시지 전송 시도:', {
+    messageToSend,
+    session: session?.chat_sessions_id,
+    isSending
+  });
 
   // 즉시 입력창 비우기
   setInputMessage("")
@@ -446,10 +470,17 @@ const handleSendMessage = async () => {
   // FastAPI를 통해 메시지 전송
   if (session) {
     try {
+      console.log('ChatPage - sendMessage 호출 시작');
       await sendMessage(messageToSend)
+      console.log('ChatPage - sendMessage 호출 완료');
     } catch (error) {
-      console.error("메시지 전송 실패:", error)
+      console.error("ChatPage - 메시지 전송 실패:", error)
+      // 에러 발생시 사용자에게 알림
+      alert("메시지 전송에 실패했습니다. 다시 시도해주세요.");
     }
+  } else {
+    console.error('ChatPage - 세션이 없습니다');
+    alert("세션이 생성되지 않았습니다. 페이지를 새로고침해주세요.");
   }
 }
 
@@ -618,24 +649,29 @@ return (
       <div className="h-full flex flex-col justify-center items-center px-4 relative">
         {/* Character with loading spinner */}
         <div className="flex justify-center items-center relative mb-4">
-          {actualPersonaId && imageLoaded ? (
+          {actualPersonaId && currentAvatarPath && imageLoaded ? (
             <img
               src={currentAvatarPath}
-              alt={currentPersonaName}
+              alt={currentPersonaName || "캐릭터"}
               className={`${currentCharacterSize} object-contain transition-opacity duration-300`}
               onLoad={() => setImageLoaded(true)}
             />
-          ) : (
+          ) : actualPersonaId && currentAvatarPath ? (
             <div className={`${currentCharacterSize} flex items-center justify-center`}>
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white"></div>
-              {actualPersonaId && (
-                <img
-                  src={currentAvatarPath}
-                  alt={currentPersonaName}
-                  className="hidden"
-                  onLoad={() => setImageLoaded(true)}
-                />
-              )}
+              <img
+                src={currentAvatarPath}
+                alt={currentPersonaName || "캐릭터"}
+                className="hidden"
+                onLoad={() => setImageLoaded(true)}
+              />
+            </div>
+          ) : (
+            <div className={`w-95 h-95 flex items-center justify-center`}>
+              <div className="text-white/50 text-center">
+                <div className="text-6xl mb-4">🤖</div>
+                <p>캐릭터 로딩 중...</p>
+              </div>
             </div>
           )}
           {/* 원형 스피너 - 캐릭터 이미지 위쪽 중앙에 위치 */}
@@ -660,7 +696,7 @@ return (
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : currentPersonaName ? (
               <div className="w-full">
                 <div className="bg-white/20 backdrop-blur-md rounded-3xl px-6 py-4 text-center shadow-2xl relative border border-white/10">
                   <div className="text-white text-lg mb-2">
@@ -672,7 +708,7 @@ return (
                   </div>
                 </div>
               </div>
-            );
+            ) : null;
           })()}
         </div>
 
@@ -682,7 +718,7 @@ return (
             <Input
               ref={inputRef}
               type="text"
-              placeholder={`${currentPersonaName}에게 고민을 이야기해보세요`}
+              placeholder={currentPersonaName ? `${currentPersonaName}에게 고민을 이야기해보세요` : "고민을 이야기해보세요"}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}

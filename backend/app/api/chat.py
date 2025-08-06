@@ -365,20 +365,29 @@ async def get_personalized_greeting(
         # AI 서비스에서 개인화된 인사 메시지 생성
         ai_service = AIService(db)
         
-        # 그림 분석 결과 로드
+        # 그림 분석 결과를 DB에서 직접 로드
         try:
             from prompt_chaining import load_latest_analysis_result
-            user_analysis_result = load_latest_analysis_result()
-        except Exception:
+            print(f"[개인화 인사] DB에서 그림 분석 결과 로드 시도 - 사용자: {user_nickname}, 사용자ID: {session.user_id}")
+            user_analysis_result = load_latest_analysis_result(user_id=session.user_id, db_session=db)
+            print(f"[개인화 인사] DB 조회 결과: {user_analysis_result is not None}")
+            if user_analysis_result:
+                print(f"[개인화 인사] 분석 결과 - test_id: {user_analysis_result.test_id}, persona_type: {user_analysis_result.persona_type}")
+        except Exception as e:
+            print(f"[개인화 인사] DB에서 그림 분석 결과 로드 실패: {e}")
             user_analysis_result = None
         
         # 개인화된 인사만 생성 (기본 인사는 프론트엔드에서 처리)
         try:
             if user_analysis_result:
+                print(f"[개인화 인사] AI 서비스로 개인화된 인사 생성 요청")
                 greeting = ai_service._generate_personalized_greeting(persona_type, user_analysis_result, user_nickname)
+                print(f"[개인화 인사] 생성된 인사: {greeting}")
             else:
+                print(f"[개인화 인사] 그림 분석 결과 없음 - 빈 인사 반환")
                 greeting = ""  # 그림 분석 결과가 없으면 빈 문자열
-        except Exception:
+        except Exception as e:
+            print(f"[개인화 인사] 인사 생성 오류: {e}")
             greeting = ""  # 오류 발생 시 빈 문자열
         
         return {

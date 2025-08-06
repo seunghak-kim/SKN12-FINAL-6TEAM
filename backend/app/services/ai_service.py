@@ -307,14 +307,46 @@ class AIService:
         # 기본 인사는 프론트엔드에서 처리하므로 빈 문자열 반환
         return ""
 
-    def _generate_personalized_greeting(self, persona_type: str, user_analysis_result: dict, user_nickname: str = "사용자") -> str:
-        """그림 분석 결과를 바탕으로 GPT-4o가 개인화된 첫 인사 생성"""
+    def _generate_personalized_greeting(self, persona_type: str, user_analysis_result, user_nickname: str = "사용자") -> str:
+        """DB에서 가져온 그림 분석 결과를 바탕으로 GPT-4o가 개인화된 첫 인사 생성"""
+        
+        # DB 결과를 텍스트로 변환
+        if user_analysis_result and hasattr(user_analysis_result, 'summary_text'):
+            analysis_text = user_analysis_result.summary_text
+            
+            # 성격 유형 정보 추가
+            persona_mapping = {
+                1: "추진형",
+                2: "내면형", 
+                3: "관계형",
+                4: "쾌락형",
+                5: "안정형"
+            }
+            predicted_personality = persona_mapping.get(user_analysis_result.persona_type, "내면형")
+            
+            # 확률 정보 추가
+            scores = {
+                "추진형": float(user_analysis_result.dog_scores or 0.0),
+                "내면형": float(user_analysis_result.cat_scores or 0.0),
+                "관계형": float(user_analysis_result.rabbit_scores or 0.0),
+                "쾌락형": float(user_analysis_result.bear_scores or 0.0),
+                "안정형": float(user_analysis_result.turtle_scores or 0.0)
+            }
+            
+            analysis_summary = f"""
+그림 분석 결과:
+- 분석된 성격 유형: {predicted_personality}
+- 심리 분석: {analysis_text}
+- 성격 점수 분포: {scores}
+            """.strip()
+        else:
+            analysis_summary = "그림 분석 결과가 없습니다."
         
         # 공통 규칙 로드
         common_rules = self.chained_prompt_manager.load_common_rules()
         
         # 페르소나 매핑 및 프롬프트 로드
-        persona_mapping = {
+        persona_mapping_prompt = {
             "내면형": "nemyeon",
             "추진형": "chujin", 
             "관계형": "gwangye",
@@ -322,32 +354,32 @@ class AIService:
             "쾌락형": "querock"
         }
         
-        persona_key = persona_mapping.get(persona_type, "nemyeon")
+        persona_key = persona_mapping_prompt.get(persona_type, "nemyeon")
         persona_prompt = self.chained_prompt_manager.load_persona_prompt(persona_key)
         
         # GPT-4o 프롬프트 구성
         prompt = f"""# 거북이상담소 AI 상담사 - 개인화된 첫 인사 생성
 
-        {common_rules}
+{common_rules}
 
-        {persona_prompt}
+{persona_prompt}
 
-        **중요한 말투 규칙:**
-        - 절대 존댓말을 사용하지 마세요 ("안녕하세요" 금지)
-        - 위의 페르소나 특성과 말투 규칙을 정확히 따라주세요
+**중요한 말투 규칙:**
+- 절대 존댓말을 사용하지 마세요 ("안녕하세요" 금지)
+- 위의 페르소나 특성과 말투 규칙을 정확히 따라주세요
 
-        ## 호칭 규칙
-        답변할 때 다음 호칭 규칙을 반드시 따르세요:
-        - '사용자', '너', '당신', '귀하' 대신 '{user_nickname}님' 사용
-        - 자연스럽고 친근한 톤으로 대화
-        - 예: "당신이 원하는..." → "{user_nickname}님이 원하시는..."
+## 호칭 규칙
+답변할 때 다음 호칭 규칙을 반드시 따르세요:
+- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}님' 사용
+- 자연스럽고 친근한 톤으로 대화
+- 예: "당신이 원하는..." → "{user_nickname}님이 원하시는..."
 
-        사용자의 그림검사 분석 결과를 바탕으로 개인화된 첫 인사 메시지를 생성해주세요.
+사용자의 그림검사 분석 결과를 바탕으로 개인화된 첫 인사 메시지를 생성해주세요.
 
-        **그림 분석 결과:**
-        {user_analysis_result}
+**그림 분석 결과:**
+{analysis_summary}
 
-        위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나는 150자 이내의 첫 인사 메시지를 생성해주세요."""
+위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나는 150자 이내의 첫 인사 메시지를 생성해주세요."""
 
         # GPT-4o 호출
         from langchain.schema import HumanMessage
@@ -355,7 +387,7 @@ class AIService:
         response = self.llm.invoke([HumanMessage(content=prompt)])
         greeting = response.content.strip()
         
-        print(f"[AI] 개인화된 인사 생성: {greeting}")
+        print(f"[AI] DB 기반 개인화된 인사 생성: {greeting}")
         return greeting
     
     def _manage_conversation_history(self, session: ChatSession, messages: list) -> ChatSession:
