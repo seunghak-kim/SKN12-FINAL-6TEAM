@@ -227,59 +227,42 @@ class HTPAnalysisPipeline:
             result.error_message = str(e)
             return False
     
-    def _execute_stage_2(self, result: PipelineResult, max_retries: int = 5) -> bool:
-        """2단계: GPT-4 Vision 심리 분석 (재시도 로직 포함)
+    def _execute_stage_2(self, result: PipelineResult) -> bool:
+        """2단계: GPT-4 Vision 심리 분석
         
         Args:
             result: 결과 저장 객체
-            max_retries: 최대 재시도 횟수
             
         Returns:
             bool: 성공 여부
         """
-        for attempt in range(max_retries):
-            try:
-                if attempt == 0:
-                    self.logger.info(f"[{attempt + 1}/{max_retries}] GPT-4 Vision 심리 분석 시작...")
-                else:
-                    self.logger.info(f"[{attempt + 1}/{max_retries}] GPT-4 Vision 심리 분석 재시도... (시도 {attempt + 1}/{max_retries})")
+        try:
+            self.logger.info("[2/3] GPT-4 Vision 심리 분석 시작...")
+            
+            # GPT 분석 실행
+            analysis_result = analyze_image_gpt(result.image_base)
+            
+            # 분석 결과 직접 처리 (파일 확인 불필요)
+            if analysis_result:
+                result.analysis_success = True
+                result.psychological_analysis = analysis_result
+                self.logger.info("심리 분석 완료 (직접 반환)")
                 
-                # GPT 분석 실행 (함수 내부에서 자체 재시도 포함)
-                analysis_result = analyze_image_gpt(result.image_base, max_retries=5)
-                
-                # 분석 결과 직접 처리 (파일 확인 불필요)
-                if analysis_result:
-                    result.analysis_success = True
-                    result.psychological_analysis = analysis_result
-                    self.logger.info("심리 분석 완료 (직접 반환)")
-                    
-                    # GPT 응답 검증
-                    if self._validate_gpt_response(analysis_result):
-                        return True
-                    else:
-                        self.logger.warning(f"GPT 응답이 불완전합니다. (시도 {attempt + 1}/{max_retries})")
-                        if attempt == max_retries - 1:
-                            self.logger.error("모든 재시도가 실패했습니다. 기본 처리를 수행합니다.")
-                            # 마지막 시도에서도 실패하면 결과를 그대로 반환 (fallback 처리)
-                            return True
-                        continue
+                # GPT 응답 검증
+                if self._validate_gpt_response(analysis_result):
+                    return True
                 else:
-                    self.logger.error(f"심리 분석 결과를 받지 못했습니다. (시도 {attempt + 1}/{max_retries})")
-                    if attempt == max_retries - 1:
-                        return False
-                    continue
-                    
-            except Exception as e:
-                self.logger.error(f"심리 분석 단계 오류 (시도 {attempt + 1}/{max_retries}): {str(e)}")
-                if attempt == max_retries - 1:
-                    result.error_stage = "analysis"
-                    result.error_message = str(e)
+                    self.logger.warning("GPT 응답이 불완전합니다.")
                     return False
-                # 재시도 전 잠시 대기
-                import time
-                time.sleep(1)
+            else:
+                self.logger.error("심리 분석 결과를 받지 못했습니다.")
+                return False
                 
-        return False
+        except Exception as e:
+            self.logger.error(f"심리 분석 단계 오류: {str(e)}")
+            result.error_stage = "analysis"
+            result.error_message = str(e)
+            return False
     
     def _validate_gpt_response(self, analysis_data: Dict) -> bool:
         """GPT 응답 검증
@@ -297,24 +280,12 @@ class HTPAnalysisPipeline:
                 self.logger.error(f"GPT 응답에 필수 필드가 없습니다: {field}")
                 return False
         
-        # 확장된 오류 응답 패턴 확인
+        # 오류 응답 패턴 확인
         error_patterns = [
             "I'm sorry. I can't help with this request",
-            "I'm unable to",
-            "I can't",
-            "I can't provide an analysis",
             "사람객체를 찾을 수 없다",
             "분석할 수 없습니다",
-            "분석하기 어렵습니다",
-            "정확하게 분석하기 어렵습니다",
-            "죄송합니다",
-            "죄송하지만",
-            "인식을 하기 굉장히 어렵습니다",
-            "이미지를 분석하기 어렵습니다",
-            "추가 정보나 설명을 제공해 주시면",
-            "이미지를 분석할 수 없습니다",
-            "하지만 일반적인",
-            "예를 들어 설명할 수 있습니다"
+            "죄송합니다"
         ]
         
         raw_text = analysis_data.get('raw_text', '').lower()
@@ -342,11 +313,15 @@ class HTPAnalysisPipeline:
                 # 심리 분석 결과에서 텍스트 추출
                 analysis_text = ""
                 if hasattr(result, 'psychological_analysis') and result.psychological_analysis:
-                    analysis_text = result.psychological_analysis.get('raw_text', '')
+                    # 먼저 result_text를 시도하고, 없으면 raw_text 사용
+                    analysis_text = result.psychological_analysis.get('result_text') or result.psychological_analysis.get('raw_text', '')
                 
                 if not analysis_text:
                     self.logger.error("심리 분석 텍스트를 찾을 수 없습니다.")
+                    self.logger.error(f"psychological_analysis 내용: {result.psychological_analysis}")
                     return False
+                
+                self.logger.info(f"키워드 분류용 텍스트 길이: {len(analysis_text)}자")
                 
                 # 키워드 기반 성격 유형 예측 실행 (직접 텍스트 사용)
                 from keyword_classifier import run_keyword_prediction_from_data
@@ -398,6 +373,9 @@ class HTPAnalysisPipeline:
         Returns:
             PipelineResult: 분석 결과
         """
+        import time
+        start_time = time.time()
+        
         # 이미지 파일명 정규화
         image_base = Path(image_input).stem
         if not image_base:
@@ -410,7 +388,7 @@ class HTPAnalysisPipeline:
             timestamp=datetime.now()
         )
         
-        self.logger.info(f"이미지 분석 시작: {image_base}")
+        self.logger.info(f"🚀 이미지 분석 시작: {image_base} - {datetime.now().strftime('%H:%M:%S')}")
         
         try:
             # 이미지 파일 경로 구성
@@ -423,26 +401,37 @@ class HTPAnalysisPipeline:
                 return result
             
             # 1단계: 객체 탐지
+            stage_start = time.time()
             if not self._execute_stage_1(image_path, result):
                 result.status = PipelineStatus.ERROR
                 return result
+            stage_time = time.time() - stage_start
+            self.logger.info(f"✅ 1단계 완료: {stage_time:.2f}초")
             
-            # 2단계: 심리 분석 (재시도 로직 포함)
-            if not self._execute_stage_2(result, max_retries=5):
+            # 2단계: 심리 분석
+            stage_start = time.time()
+            if not self._execute_stage_2(result):
                 result.status = PipelineStatus.ERROR
                 return result
+            stage_time = time.time() - stage_start
+            self.logger.info(f"✅ 2단계 완료: {stage_time:.2f}초")
             
             # 3단계: 성격 분류
+            stage_start = time.time()
             if not self._execute_stage_3(result):
                 result.status = PipelineStatus.ERROR
                 return result
+            stage_time = time.time() - stage_start
+            self.logger.info(f"✅ 3단계 완료: {stage_time:.2f}초")
             
             # 모든 단계 성공
+            total_time = time.time() - start_time
             result.status = PipelineStatus.SUCCESS
-            self.logger.info(f"이미지 분석 완료: {image_base} -> {result.personality_type}")
+            self.logger.info(f"🎉 이미지 분석 완료: {image_base} -> {result.personality_type} (총 {total_time:.2f}초)")
             
         except Exception as e:
-            self.logger.error(f"파이프라인 실행 중 예상치 못한 오류: {str(e)}")
+            total_time = time.time() - start_time
+            self.logger.error(f"❌ 파이프라인 실행 중 예상치 못한 오류 ({total_time:.2f}초): {str(e)}")
             result.status = PipelineStatus.ERROR
             result.error_message = str(e)
             result.traceback = traceback.format_exc()

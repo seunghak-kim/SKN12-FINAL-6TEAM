@@ -167,19 +167,11 @@ async def analyze_drawing_image(
         
         # 이미지를 JPG 형식으로 변환하여 저장
         import PIL.Image as PILImage
-        from PIL import ImageOps
         import io
         
         # 업로드된 파일을 PIL Image로 로드
         image_data = await upload_file.read()
         pil_image = PILImage.open(io.BytesIO(image_data))
-        
-        # EXIF 회전 정보 자동 적용 (스마트폰 사진 회전 문제 해결)
-        try:
-            pil_image = ImageOps.exif_transpose(pil_image)
-            print(f"✅ EXIF 회전 정보 적용 완료")
-        except Exception as e:
-            print(f"⚠️ EXIF 회전 정보 적용 실패 (무시 가능): {e}")
         
         # RGB 모드로 변환 (RGBA 등 다른 모드 처리)
         if pil_image.mode != 'RGB':
@@ -250,29 +242,11 @@ def run_analysis_pipeline(
     try:
         print(f"🚀 백그라운드 분석 시작: {unique_id}")
         
-        # 분석 시작 전에 테스트가 여전히 존재하는지 확인
-        existing_test = db.query(DrawingTest).filter(
-            DrawingTest.test_id == test_id
-        ).first()
-        
-        if not existing_test:
-            print(f"⚠️ 테스트가 삭제됨 - 분석 중단: test_id={test_id}")
-            return
-        
         # 파이프라인 실행
         pipeline = get_pipeline()
         result: PipelineResult = pipeline.analyze_image(unique_id)
         
         print(f"📊 파이프라인 실행 완료: {result.status}")
-        
-        # 결과 저장 전에 다시 테스트 존재 확인
-        existing_test = db.query(DrawingTest).filter(
-            DrawingTest.test_id == test_id
-        ).first()
-        
-        if not existing_test:
-            print(f"⚠️ 테스트가 분석 중에 삭제됨 - 결과 저장 생략: test_id={test_id}")
-            return
         
         # 결과를 데이터베이스에 저장 (동기 함수로 변경)
         print(f"🔥 save_analysis_result_sync 함수 호출 시작 - test_id: {test_id}")
@@ -285,18 +259,6 @@ def run_analysis_pipeline(
         print(f"❌ 백그라운드 분석 오류: {str(e)}")
         import traceback
         traceback.print_exc()
-        
-        # 오류 발생 시에도 테스트 존재 확인
-        try:
-            existing_test = db.query(DrawingTest).filter(
-                DrawingTest.test_id == test_id
-            ).first()
-            
-            if not existing_test:
-                print(f"⚠️ 테스트가 삭제됨 - 오류 상태 저장 생략: test_id={test_id}")
-                return
-        except:
-            print(f"테스트 존재 확인 실패: {test_id}")
         
         # 오류 발생 시 데이터베이스에 오류 상태 저장
         try:
@@ -561,17 +523,10 @@ async def get_analysis_status(
         ).first()
         
         if not drawing_test:
-            # 테스트가 삭제된 경우 (분석 중단) - 오류가 아닌 중단된 상태로 처리
-            return JSONResponse(content={
-                "test_id": test_id,
-                "status": "cancelled",
-                "message": "분석이 중단되었습니다.",
-                "steps": [],
-                "current_step": 0,
-                "completed_steps": 0,
-                "total_steps": 3,
-                "cancelled": True
-            })
+            raise HTTPException(
+                status_code=404,
+                detail="해당 테스트를 찾을 수 없습니다."
+            )
         
         # 결과 조회
         test_result = db.query(DrawingTestResult).filter(

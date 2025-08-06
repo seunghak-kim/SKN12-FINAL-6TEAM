@@ -26,7 +26,7 @@ try:
     opensearch_modules_dir = os.path.join(os.path.dirname(__file__), '../opensearch_modules')
     os.chdir(opensearch_modules_dir)
     
-    opensearch_client = OpenSearchEmbeddingClient()
+    opensearch_client = OpenSearchEmbeddingClient(host='3.39.30.211')
     RAG_INDEX_NAME = "psychology_analysis"
     
     # 작업 디렉토리 복구
@@ -151,134 +151,66 @@ PROMPT = '''
 
 openai.api_key = OPENAI_API_KEY
 
-def analyze_image_with_gpt(image_path, prompt, rag_context=None, max_retries=5):
-    """GPT-4 Vision을 사용하여 이미지 분석 (재시도 로직 포함)
-    
-    Args:
-        image_path (str): 분석할 이미지 파일 경로
-        prompt (str): GPT에게 전달할 프롬프트
-        rag_context (dict): RAG 검색 결과 (선택사항)
-        max_retries (int): 최대 재시도 횟수
-        
-    Returns:
-        str: GPT 분석 결과 텍스트
-    """
-    # 거부 응답 패턴 정의
-    rejection_patterns = [
-        "I'm unable to",
-        "I can't provide an analysis",
-        "I'm sorry",
-        "죄송합니다",
-        "죄송하지만",
-        "분석할 수 없습니다",
-        "분석하기 어렵습니다",
-        "정확하게 분석하기 어렵습니다",
-        "인식을 하기 굉장히 어렵습니다",
-        "이미지를 분석하기 어렵습니다",
-        "추가 정보나 설명을 제공해 주시면",
-        "하지만 일반적인",
-        "예를 들어 설명할 수 있습니다"
-    ]
-    
-    for attempt in range(max_retries):
-        try:
-            # 재시도 시 프롬프트 강화
-            if attempt > 0:
-                enhanced_prompt = f"""
-{prompt}
-
-[중요] 이전 시도에서 이미지 분석이 거부되었습니다. 
-이번에는 반드시 이미지의 시각적 요소들을 관찰하여 HTP 심리검사 분석을 수행해주세요.
-이미지가 흐리거나 불분명하더라도 보이는 요소들(선, 모양, 크기, 위치 등)을 바탕으로 분석해주세요.
-완전한 거부보다는 관찰 가능한 요소라도 분석해주시기 바랍니다.
-"""
+def analyze_image_with_gpt(image_path, prompt, rag_context=None):
+    try:
+        with open(image_path, "rb") as img_file:
+            img_bytes = img_file.read()
+            print(f"이미지 파일 크기: {len(img_bytes)} bytes")
+            
+            # 파일 확장자에 따른 MIME 타입 결정
+            _, ext = os.path.splitext(image_path.lower())
+            if ext in ['.jpg', '.jpeg']:
+                mime_type = "image/jpeg"
+            elif ext == '.png':
+                mime_type = "image/png"
+            elif ext == '.gif':
+                mime_type = "image/gif"
+            elif ext == '.webp':
+                mime_type = "image/webp"
             else:
-                enhanced_prompt = prompt
+                mime_type = "image/jpeg"  # 기본값
+            
+            img_base64 = base64.b64encode(img_bytes).decode("utf-8")
+            data_url = f"data:{mime_type};base64,{img_base64}"
+            print(f"MIME 타입: {mime_type}")
+            print(f"Base64 길이: {len(img_base64)}")
+            
+            # 메시지 컨텐츠 구성
+            content = [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": data_url}}
+            ]
+            
+            # RAG 컨텍스트 추가
+            if rag_context:
+                rag_text = f"\n\n[참고 자료]\n문서: {rag_context['document']} - {rag_context['element']}\n내용: {rag_context['text']}"
+                content.append({"type": "text", "text": rag_text})
 
-            with open(image_path, "rb") as img_file:
-                img_bytes = img_file.read()
-                print(f"이미지 파일 크기: {len(img_bytes)} bytes")
-                
-                # 파일 확장자에 따른 MIME 타입 결정
-                _, ext = os.path.splitext(image_path.lower())
-                if ext in ['.jpg', '.jpeg']:
-                    mime_type = "image/jpeg"
-                elif ext == '.png':
-                    mime_type = "image/png"
-                elif ext == '.gif':
-                    mime_type = "image/gif"
-                elif ext == '.webp':
-                    mime_type = "image/webp"
-                else:
-                    mime_type = "image/jpeg"  # 기본값
-                
-                img_base64 = base64.b64encode(img_bytes).decode("utf-8")
-                data_url = f"data:{mime_type};base64,{img_base64}"
-                print(f"MIME 타입: {mime_type}")
-                print(f"Base64 길이: {len(img_base64)}")
-
-                # 메시지 컨텐츠 구성
-                content = [
-                    {"type": "text", "text": enhanced_prompt},
-                    {"type": "image_url", "image_url": {"url": data_url}}
-                ]
-
-                # RAG 컨텍스트 추가
-                if rag_context:
-                    rag_text = f"\n\n[참고 자료]\n문서: {rag_context['document']} - {rag_context['element']}\n내용: {rag_context['text']}"
-                    content.append({"type": "text", "text": rag_text})
-
-                print(f"GPT API 호출 시작... (시도 {attempt + 1}/{max_retries})")
-                response = openai.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": "당신은 HTP(House-Tree-Person) 심리검사 전문 분석가입니다. 제공된 그림은 심리검사 목적으로 그려진 그림이며, 실제 인물의 신원 식별이 아닌 심리적 특성 분석을 위한 것입니다. 그림의 시각적 요소들을 통해 심리 상태를 분석해 주세요. 개인의 정체성이나 신원을 파악하려는 것이 아니라, 그림 표현 방식을 통한 심리 분석임을 명심하세요. 이미지가 제대로 보이지 않으면 '이미지를 인식할 수 없습니다'라고 응답하지 말고, 다시 시도해보거나 이미지 파일 문제일 수 있다고 안내해주세요."},
-                        {
-                            "role": "user",
-                            "content": content
-                        }
-                    ],
-                    max_tokens=2000,
-                )
-                print("GPT API 호출 완료")
-                
-                result_text = response.choices[0].message.content.strip()
-                
-                # 거부 응답 패턴 확인
-                is_rejection = False
-                for pattern in rejection_patterns:
-                    if pattern.lower() in result_text.lower():
-                        is_rejection = True
-                        print(f"거부 응답 패턴 감지: '{pattern}' (시도 {attempt + 1}/{max_retries})")
-                        break
-                
-                # 거부 응답이 아니거나 마지막 시도라면 결과 반환
-                if not is_rejection or attempt == max_retries - 1:
-                    if is_rejection and attempt == max_retries - 1:
-                        print(f"경고: 모든 재시도가 실패했습니다. 마지막 응답을 반환합니다.")
-                    return result_text
-                
-                # 재시도 전 잠시 대기
-                import time
-                time.sleep(2)
-                
-        except Exception as e:
-            print(f"GPT API 호출 실패 (시도 {attempt + 1}/{max_retries}): {e}")
-            if attempt == max_retries - 1:
-                raise
-            # 재시도 전 잠시 대기
-            import time
-            time.sleep(2)
-    
-    return "분석을 완료할 수 없습니다."
+            print("GPT API 호출 시작...")
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "당신은 HTP(House-Tree-Person) 심리검사 전문 분석가입니다. 제공된 그림은 심리검사 목적으로 그려진 그림이며, 실제 인물의 신원 식별이 아닌 심리적 특성 분석을 위한 것입니다. 그림의 시각적 요소들을 통해 심리 상태를 분석해 주세요. 개인의 정체성이나 신원을 파악하려는 것이 아니라, 그림 표현 방식을 통한 심리 분석임을 명심하세요. 이미지가 제대로 보이지 않으면 '이미지를 인식할 수 없습니다'라고 응답하지 말고, 다시 시도해보거나 이미지 파일 문제일 수 있다고 안내해주세요."},
+                    {
+                        "role": "user",
+                        "content": content
+                    }
+                ],
+                max_tokens=2000,
+            )
+            print("GPT API 호출 완료")
+            return response.choices[0].message.content.strip()
+        
+    except Exception as e:
+        print(f"GPT API 호출 실패: {e}")
+        raise
 
 
-def analyze_image_gpt(image_base, max_retries=5):
+def analyze_image_gpt(image_base):
     """GPT와 OpenSearch RAG를 사용하여 이미지 분석을 수행하는 함수
     
     Args:
         image_base (str): 분석할 이미지의 기본 파일명 (예: test4)
-        max_retries (int): GPT API 호출 시 최대 재시도 횟수
         
     Returns:
         dict: 분석 결과를 포함한 딕셔너리
@@ -311,7 +243,7 @@ def analyze_image_gpt(image_base, max_retries=5):
     try:
         # 1차 GPT 해석 (초기 분석)
         print("1단계: 초기 심리 분석 수행 중...")
-        initial_analysis = analyze_image_with_gpt(image_path, PROMPT, max_retries=max_retries)
+        initial_analysis = analyze_image_with_gpt(image_path, PROMPT)
         print("\n[초기 분석 결과]")
         print(initial_analysis)
         
@@ -339,13 +271,13 @@ def analyze_image_gpt(image_base, max_retries=5):
                             특히 참고 자료의 전문적 해석을 반영하여 분석의 깊이를 더해주세요.
                             반드시 ~입니다 체로 작성해 주세요.
                             """
-            result_text_gpt = analyze_image_with_gpt(image_path, final_prompt, rag_result, max_retries=max_retries)
-            
-            print("\n[최종 분석 결과]")
-            print(result_text_gpt)
+            result_text_gpt = analyze_image_with_gpt(image_path, final_prompt, rag_result)
         else:
-            print("관련 RAG 자료를 찾을 수 없어 초기 분석 결과를 최종 결과로 사용합니다.")
+            print("관련 RAG 자료를 찾을 수 없어 초기 분석 결과를 사용합니다.")
             result_text_gpt = initial_analysis
+        
+        print("\n[최종 분석 결과]")
+        print(result_text_gpt)
         
     except Exception as e:
         print(f"분석 실패 - 상세 오류: {str(e)}")
@@ -366,7 +298,7 @@ def analyze_image_gpt(image_base, max_retries=5):
         {result_text_gpt}
         """
     try:
-        result_text = analyze_image_with_gpt(image_path, SUMMARY_PROMPT, max_retries=max_retries)
+        result_text = analyze_image_with_gpt(image_path, SUMMARY_PROMPT)
     except Exception as e:
         print(f"요약 해석문 생성 실패: {e}")
         result_text = "(요약 해석문 생성 실패)"
