@@ -60,11 +60,15 @@ class AIService:
             if len(messages) >= 10:
                 session = self._manage_conversation_history(session, messages)
             
+            # 컨텍스트에 user_nickname 추가 (context에서 가져오거나 기본값 사용)
+            user_nickname = context.get('user_nickname', '사용자')
+            context_with_nickname = {**context, 'user_nickname': user_nickname}
+            
             # 1단계: 공통 답변 생성 (세션 정보 포함)
-            common_response, tokens_step1 = self._generate_common_response(session, messages, user_message, **context)
+            common_response, tokens_step1 = self._generate_common_response(session, messages, user_message, **context_with_nickname)
             
             # 2단계: 페르소나별 변환 (컨텍스트 전달)
-            persona_response, tokens_step2 = self._transform_to_persona(common_response, persona_type, user_message, **context)
+            persona_response, tokens_step2 = self._transform_to_persona(common_response, persona_type, user_message, **context_with_nickname)
             
             # 총 토큰 사용량 출력
             total_tokens = {
@@ -132,6 +136,9 @@ class AIService:
             # 공통 규칙 프롬프트 로드
             common_rules = self.chained_prompt_manager.load_common_rules()
             
+            # 사용자 닉네임 가져오기
+            user_nickname = context.get('user_nickname', '사용자')
+            
             # 그림검사 분석 결과 컨텍스트 준비
             user_analysis_context = ""
             if context.get('user_analysis_result'):
@@ -160,6 +167,10 @@ class AIService:
             llm_messages.append(SystemMessage(content=f"""# 거북이상담소 AI 상담사 - 공통 답변 생성
 
 {common_rules}{user_analysis_context}{conversation_context}
+
+## 호칭 규칙
+답변할 때 다음 호칭 규칙을 반드시 따르세요:
+- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}' 사용
 
 위 규칙에 따라 사용자의 메시지에 대해 기본적이고 중립적인 상담 답변을 생성해주세요.
 이 답변은 나중에 각 페르소나의 특성에 맞게 변환될 예정입니다."""))
@@ -218,6 +229,9 @@ class AIService:
 - 주요 심리 특성: {analysis_result.get('result_text', '분석 정보 없음')}
 - 분석 요약: {analysis_result.get('raw_text', '')[:200]}..."""
             
+            # 사용자 닉네임 가져오기
+            user_nickname = context.get('user_nickname', '사용자')
+            
             # 변환용 프롬프트 구성
             transform_prompt = f"""# 페르소나 변환 시스템
 
@@ -226,6 +240,10 @@ class AIService:
 다음은 당신의 페르소나 특성입니다:
 
 {persona_prompt}{user_analysis_context}
+
+## 호칭 규칙
+답변할 때 다음 호칭 규칙을 반드시 따르세요:
+- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}님' 사용
 
 ## 변환 작업
 위의 공통 규칙, 페르소나 특성, 그림분석 결과를 모두 반영하여 다음 기본 답변을 자연스럽게 변환해주세요:
@@ -289,7 +307,7 @@ class AIService:
         # 기본 인사는 프론트엔드에서 처리하므로 빈 문자열 반환
         return ""
 
-    def _generate_personalized_greeting(self, persona_type: str, user_analysis_result: dict) -> str:
+    def _generate_personalized_greeting(self, persona_type: str, user_analysis_result: dict, user_nickname: str = "사용자") -> str:
         """그림 분석 결과를 바탕으로 GPT-4o가 개인화된 첫 인사 생성"""
         
         # 공통 규칙 로드
@@ -317,6 +335,12 @@ class AIService:
         **중요한 말투 규칙:**
         - 절대 존댓말을 사용하지 마세요 ("안녕하세요" 금지)
         - 위의 페르소나 특성과 말투 규칙을 정확히 따라주세요
+
+        ## 호칭 규칙
+        답변할 때 다음 호칭 규칙을 반드시 따르세요:
+        - '사용자', '너', '당신', '귀하' 대신 '{user_nickname}님' 사용
+        - 자연스럽고 친근한 톤으로 대화
+        - 예: "당신이 원하는..." → "{user_nickname}님이 원하시는..."
 
         사용자의 그림검사 분석 결과를 바탕으로 개인화된 첫 인사 메시지를 생성해주세요.
 

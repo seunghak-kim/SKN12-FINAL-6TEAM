@@ -11,7 +11,7 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 
-interface ChatPageProps {
+interface ChatPageProps { 
   selectedCharacter: SearchResult | null;
   showRatingModal: boolean;
   onShowRating: () => void;
@@ -91,8 +91,7 @@ useEffect(() => {
     sendMessage,
     loadSession,
     clearError,
-    clearMessages,
-    loadGreeting
+    clearMessages
   } = useChatSession();
 
   // 실제 사용자 ID 가져오기

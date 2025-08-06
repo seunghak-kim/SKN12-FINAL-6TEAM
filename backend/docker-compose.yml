@@ -22,7 +22,7 @@ services:
       - 9200:9200
       - 9600:9600
     networks:
-      - opensearch-net
+      - frontback-network
 
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:latest
@@ -36,7 +36,7 @@ services:
       - OPENSEARCH_USERNAME=admin
       - OPENSEARCH_PASSWORD=MyStrongPassword123!
     networks:
-      - opensearch-net
+      - frontback-network
 
   postgres:
     image: postgres:15
@@ -50,7 +50,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - opensearch-net
+      - frontback-network
 
   backend:
     build: .
@@ -66,11 +66,11 @@ services:
       - opensearch-node1
       - postgres
     networks:
-      - opensearch-net
+      - frontback-network
 
 volumes:
   opensearch-data1:
   postgres-data:
 
 networks:
-  opensearch-net:
+  frontback-network:
