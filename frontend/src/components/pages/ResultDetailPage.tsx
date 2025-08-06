@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navigation from '../common/Navigation';
 import { ArrowLeft, Loader, ChevronLeft } from 'lucide-react';
-import { TestResult } from '../../types';
+import { TestResult, SearchResult } from '../../types';
 import { testService } from '../../services/testService';
 import { Button } from "../../components/ui/button";
 
@@ -16,11 +16,13 @@ interface ResultDetailPageProps {
   testResults: TestResult[];
   onNavigate?: (screen: string) => void;
   onStartChat?: (characterName: string) => void;
+  onCharacterSelect?: (character: SearchResult) => void;
 }
 
 const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
   onNavigate,
-  onStartChat
+  onStartChat,
+  onCharacterSelect
 }) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -58,11 +60,11 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
 
           // 분류 모델에서 나온 5유형 확률 데이터 설정
           const personalityData: PersonalityType[] = [
-            { name: "추진이", percentage: foundResult.result?.personality_scores?.추진이 || 0, color: "from-orange-500 to-red-600" },
-            { name: "내면이", percentage: foundResult.result?.personality_scores?.내면이 || 0, color: "from-gray-500 to-gray-700" },
-            { name: "관계이", percentage: foundResult.result?.personality_scores?.관계이 || 0, color: "from-purple-500 to-pink-600" },
-            { name: "쾌락이", percentage: foundResult.result?.personality_scores?.쾌락이 || 0, color: "from-yellow-500 to-orange-600" },
-            { name: "안정이", percentage: foundResult.result?.personality_scores?.안정이 || 0, color: "from-blue-500 to-purple-600" },
+            { name: "추진이", percentage: foundResult.result?.personality_scores?.추진이 || 0, color: "from-[#DC143C] to-[#FF6347]" },
+            { name: "내면이", percentage: foundResult.result?.personality_scores?.내면이 || 0, color: "from-[#3CB371] to-[#6495ED]" },
+            { name: "관계이", percentage: foundResult.result?.personality_scores?.관계이 || 0, color: "from-[#6495ED] to-[#9932CC]" },
+            { name: "쾌락이", percentage: foundResult.result?.personality_scores?.쾌락이 || 0, color: "from-[#FF6347] to-[#E6B800]" },
+            { name: "안정이", percentage: foundResult.result?.personality_scores?.안정이 || 0, color: "from-[#E6B800] to-[#3CB371]" },
           ];
 
           setPersonalityTypes(personalityData);
@@ -157,22 +159,22 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
 
   const getCharacterColor = (characterName: string) => {
     const colorMap: { [key: string]: string } = {
-      '추진이': 'from-orange-400 to-red-500',
-      '내면이': 'from-pink-200 to-brown-300',
-      '관계이': 'from-gray-600 to-gray-800',
-      '쾌락이': 'from-yellow-400 to-orange-500',
-      '안정이': 'from-gray-100 to-gray-300'
+      '추진이': 'from-[#DC143C] to-[#FF6347]',
+      '내면이': 'from-[#3CB371] to-[#6495ED]',
+      '관계이': 'from-[#6495ED] to-[#9932CC]',
+      '쾌락이': 'from-[#FF6347] to-[#E6B800]',
+      '안정이': 'from-[#E6B800] to-[#3CB371]'
     };
     return colorMap[characterName] || 'from-gray-400 to-gray-600';
   };
 
   const getCharacterDescription = (character: string): string => {
     switch (character) {
-      case '추진이': return '목표 달성과 성공을 추구하며, 효율적이고 실용적인 해결책을 제시합니다.';
-      case '내면이': return '깊이 있는 자기 성찰과 개인적 성장에 집중합니다. 당신의 내면 세계를 탐구하고 진정한 자아를 발견하는 여정을 함께해요.';
-      case '관계이': return '타인과의 조화로운 관계 형성에 뛰어납니다. 소통의 어려움을 해결하고 더 깊은 인간관계를 만들어가는 방법을 알려드려요.';
-      case '쾌락이': return '삶의 즐거움과 다양한 경험을 추구합니다. 새로운 관점으로 문제를 바라보고 창의적이고 흥미진진한 해결방안을 제안해드려요.';
-      case '안정이': return '평화롭고 안정적인 환경을 선호하며, 갈등을 조화롭게 해결하는 데 능숙합니다. 마음의 평온을 찾고 균형 잡힌 삶을 추구해요.';
+      case '추진이': return '당신은 목표 달성과 성공을 추구하는 사람입니다. \n효율적이고 실용적인 해결책을 중시하는 추진이와 성장해보아요.';
+      case '내면이': return '당신은 깊이 있는 생각과 자기 성찰에 뛰어난 능력을 가지고 있습니다. \n당신의 내면 세계를 탐구하고 진정한 자아를 발견하는 여정을 함께해요.';
+      case '관계이': return '당신은 타인과의 조화로운 관계 형성에 뛰어납니다. \n관계이와 더 깊은 관계를 만들어가보아요.';
+      case '쾌락이': return '당신은 삶의 즐거움과 다양한 경험을 추구합니다. 새로운 관점으로 \n문제를 바라보고 창의적이고 흥미진진한 해결방안을 찾아보아요.';
+      case '안정이': return '당신은 평화롭고 안정적인 환경을 선호하며, 갈등을 조화롭게 \n해결하는 데 능숙합니다. 마음의 평온을 찾고 균형 잡힌 삶을 추구해요.';
       default: return '당신만의 특별한 성격 유형입니다.';
     }
   };
@@ -219,6 +221,44 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
     }
   };
 
+  // 캐릭터 ID 매핑 함수
+  const getCharacterId = (characterName: string): string => {
+    const idMap: { [key: string]: string } = {
+      '추진이': '1',
+      '내면이': '2',
+      '관계이': '3',
+      '쾌락이': '4',
+      '안정이': '5'
+    };
+    return idMap[characterName] || '2';
+  };
+
+  // 대화하기 버튼 클릭 핸들러 - 올바른 캐릭터 정보를 전달하여 채팅 페이지로 이동
+  const handleChatClick = () => {
+    const characterId = getCharacterId(testResult.characterMatch);
+    
+    // SearchResult 객체 생성
+    const searchResult: SearchResult = {
+      id: characterId,
+      name: testResult.characterMatch,
+      description: getCharacterDescription(testResult.characterMatch),
+      avatar: getCharacterImage(testResult.characterMatch),
+    };
+
+    console.log('ResultDetailPage - 대화하기 버튼 클릭:', {
+      characterMatch: testResult.characterMatch,
+      characterId,
+      searchResult
+    });
+
+    // 채팅 페이지로 이동하면서 캐릭터 정보를 state로 전달
+    navigate("/chat", {
+      state: {
+        selectedCharacter: searchResult
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0F103F] via-[#1a1b4a] to-[#2a2b5a] relative overflow-hidden">
       <Navigation onNavigate={onNavigate} activeTab="mypage" />
@@ -260,7 +300,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
                     onClick={() => setSelectedImageIndex(0)}
                   >
                     <img
-                      src={testService.getImageUrl(testResult.images[0])}
+                      src={testService.getImageUrl(testResult.images[0]) || "/placeholder.svg"}
                       alt="분석된 그림"
                       className="w-32 h-32 object-cover rounded-2xl"
                     />
@@ -286,7 +326,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
               <div className="text-center">
                 <div className="flex flex-col items-center justify-center mx-auto mb-6">
                   <img
-                    src={getCharacterImage(testResult.characterMatch)}
+                    src={getCharacterImage(testResult.characterMatch) || "/placeholder.svg"}
                     alt={testResult.characterMatch}
                     className="w-40 h-40 object-contain"
                   />
@@ -314,7 +354,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
             {/* Character Description */}
             <div className="mt-8">
               <div className="bg-slate-600/50 rounded-2xl p-6 mb-8">
-                <p className="text-white/90 text-lg italic mb-4">"{getCharacterDescription(testResult.characterMatch)}"</p>
+                <p className="text-white/90 text-lg italic mb-4 whitespace-pre-line">"{getCharacterDescription(testResult.characterMatch)}"</p>
                 
                 <h3 className="text-white font-bold mb-4">{testResult.characterMatch}의 특징</h3>
                 <ul className="text-white/90 text-sm space-y-2 text-left max-w-md mx-auto">
@@ -327,7 +367,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
 
             <div className="mt-8 text-center">
               <Button
-                onClick={() => onNavigate?.("chatbot")}
+                onClick={handleChatClick}
                 className={`bg-gradient-to-r ${getCharacterColor(testResult.characterMatch)} hover:opacity-90 text-white px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300`}
               >
                 {testResult.characterMatch}와 대화하기
@@ -345,7 +385,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
         >
           <div className="relative max-w-4xl max-h-full">
             <img 
-              src={testService.getImageUrl(testResult.images[selectedImageIndex])} 
+              src={testService.getImageUrl(testResult.images[selectedImageIndex]) || "/placeholder.svg"} 
               alt={`분석된 그림 ${selectedImageIndex + 1}`}
               className="max-w-full max-h-full object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
@@ -364,3 +404,6 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
 };
 
 export default ResultDetailPage;
+
+
+
