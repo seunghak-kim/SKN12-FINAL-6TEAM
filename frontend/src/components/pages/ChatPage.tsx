@@ -728,7 +728,19 @@ return (
             <Button
               onClick={handleSendMessage}
               disabled={isSending || inputMessage.trim() === ""}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-6 rounded-full font-medium text-base"
+              className={`bg-gradient-to-r text-white px-8 py-6 rounded-full font-medium text-base transition-all duration-200 ${
+                actualPersonaId === 1 
+                  ? 'from-[#DC143C] to-[#FF6347] hover:from-[#B22222] hover:to-[#FF4500]'
+                  : actualPersonaId === 2
+                  ? 'from-[#3CB371] to-[#6495ED] hover:from-[#2E8B57] hover:to-[#4169E1]'
+                  : actualPersonaId === 3
+                  ? 'from-[#6495ED] to-[#9932CC] hover:from-[#4169E1] hover:to-[#8B008B]'
+                  : actualPersonaId === 4
+                  ? 'from-[#FF6347] to-[#E6B800] hover:from-[#FF4500] hover:to-[#DAA520]'
+                  : actualPersonaId === 5
+                  ? 'from-[#E6B800] to-[#3CB371] hover:from-[#DAA520] hover:to-[#2E8B57]'
+                  : 'from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+              }`}
             >
               {isSending ? "전송 중..." : "전송"}
             </Button>
