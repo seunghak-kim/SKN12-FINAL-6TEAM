@@ -16,6 +16,9 @@ from ..schemas.chat import (
     SendMessageResponse,
 )
 
+from ..utils.drawing import get_latest_drawing_summary
+
+
 class ConversationMemory:
     """대화 메모리 관리 클래스 - 데이터베이스 기반"""
     
@@ -256,4 +259,12 @@ class ChatService:
             return True
         return False
     
-   
+
+    def generate_prompt(self, user_id: int, user_message: str, prompt_template: str) -> str:
+        # ① 그림 검사 요약 불러오기
+        summary = get_latest_drawing_summary(user_id, self.db) or "아직 그림검사 결과가 없어요!"
+
+        # ② 프롬프트에 삽입
+        filled_prompt = prompt_template.replace("{summary}", summary)
+
+        return filled_prompt
