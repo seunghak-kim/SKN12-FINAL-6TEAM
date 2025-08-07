@@ -68,10 +68,10 @@ __pycache__/
 /backend/llm/logs/
 
 # 이미지 파일들 (필요한 경우 주석 처리)
-# *.jpg
-# *.jpeg
-# *.png
-# *.gif
+*.jpg
+*.jpeg
+*.png
+*.gif
 
 # 추가 무시 패턴 (성능 최적화)
 *.log
