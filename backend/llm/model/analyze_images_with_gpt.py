@@ -7,6 +7,8 @@ import json
 import numpy as np
 from openai import OpenAI
 import re
+from PIL import Image, ImageOps
+import io
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../opensearch_modules'))
@@ -152,55 +154,112 @@ PROMPT = '''
 
 openai.api_key = OPENAI_API_KEY
 
-def analyze_image_with_gpt(image_path, prompt, rag_context=None):
+def optimize_image_for_gpt(image_path: str, max_size: tuple = (1024, 1024), quality: int = 85) -> tuple:
+    """
+    GPT Vision API 호출을 위해 이미지를 최적화
+    
+    Args:
+        image_path (str): 원본 이미지 경로
+        max_size (tuple): 최대 크기 (width, height)
+        quality (int): JPEG 압축 품질 (1-100)
+        
+    Returns:
+        tuple: (optimized_base64_string, compression_info)
+    """
     try:
+        # 원본 파일 크기 확인
+        original_size = os.path.getsize(image_path)
+        
+        # 이미지 로드
+        with Image.open(image_path) as img:
+            # EXIF 회전 정보 적용
+            img = ImageOps.exif_transpose(img)
+            
+            # RGB로 변환
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            
+            # 원본 크기 저장
+            original_dimensions = img.size
+            
+            # 크기 조정 (종횡비 유지)
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            # 메모리 버퍼에 압축하여 저장
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=quality, optimize=True)
+            
+            # Base64 인코딩
+            compressed_bytes = buffer.getvalue()
+            compressed_base64 = base64.b64encode(compressed_bytes).decode('utf-8')
+            
+            # 압축 정보
+            compression_info = {
+                'original_file_size': original_size,
+                'compressed_size': len(compressed_bytes),
+                'compression_ratio': round((1 - len(compressed_bytes) / original_size) * 100, 1),
+                'original_dimensions': original_dimensions,
+                'compressed_dimensions': img.size,
+                'base64_length': len(compressed_base64),
+                'quality': quality
+            }
+            
+            return compressed_base64, compression_info
+            
+    except Exception as e:
+        print(f"이미지 최적화 실패: {e}")
+        # 실패 시 원본 방식 사용
         with open(image_path, "rb") as img_file:
             img_bytes = img_file.read()
-            print(f"이미지 파일 크기: {len(img_bytes)} bytes")
-            
-            # 파일 확장자에 따른 MIME 타입 결정
-            _, ext = os.path.splitext(image_path.lower())
-            if ext in ['.jpg', '.jpeg']:
-                mime_type = "image/jpeg"
-            elif ext == '.png':
-                mime_type = "image/png"
-            elif ext == '.gif':
-                mime_type = "image/gif"
-            elif ext == '.webp':
-                mime_type = "image/webp"
-            else:
-                mime_type = "image/jpeg"  # 기본값
-            
-            img_base64 = base64.b64encode(img_bytes).decode("utf-8")
-            data_url = f"data:{mime_type};base64,{img_base64}"
-            print(f"MIME 타입: {mime_type}")
-            print(f"Base64 길이: {len(img_base64)}")
-            
-            # 메시지 컨텐츠 구성
-            content = [
-                {"type": "text", "text": prompt},
-                {"type": "image_url", "image_url": {"url": data_url}}
-            ]
-            
-            # RAG 컨텍스트 추가
-            if rag_context:
-                rag_text = f"\n\n[참고 자료]\n문서: {rag_context['document']} - {rag_context['element']}\n내용: {rag_context['text']}"
-                content.append({"type": "text", "text": rag_text})
+            return base64.b64encode(img_bytes).decode("utf-8"), {
+                'original_file_size': len(img_bytes),
+                'compressed_size': len(img_bytes),
+                'compression_ratio': 0,
+                'error': str(e)
+            }
 
-            print("GPT API 호출 시작...")
-            response = openai.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "당신은 HTP(House-Tree-Person) 심리검사 전문 분석가입니다. 제공된 그림은 심리검사 목적으로 그려진 그림이며, 실제 인물의 신원 식별이 아닌 심리적 특성 분석을 위한 것입니다. 그림의 시각적 요소들을 통해 심리 상태를 분석해 주세요. 개인의 정체성이나 신원을 파악하려는 것이 아니라, 그림 표현 방식을 통한 심리 분석임을 명심하세요. 이미지가 제대로 보이지 않으면 '이미지를 인식할 수 없습니다'라고 응답하지 말고, 다시 시도해보거나 이미지 파일 문제일 수 있다고 안내해주세요."},
-                    {
-                        "role": "user",
-                        "content": content
-                    }
-                ],
-                max_tokens=2000,
-            )
-            print("GPT API 호출 완료")
-            return response.choices[0].message.content.strip()
+def analyze_image_with_gpt(image_path, prompt, rag_context=None):
+    try:
+        # 🚀 이미지 압축 최적화 적용
+        img_base64, compression_info = optimize_image_for_gpt(image_path, max_size=(1024, 1024), quality=85)
+        
+        # 압축 결과 로그
+        print(f"이미지 파일 크기: {compression_info['original_file_size']} bytes")
+        if 'error' not in compression_info:
+            print(f"압축 후 크기: {compression_info['compressed_size']} bytes")
+            print(f"압축률: {compression_info['compression_ratio']}%")
+            print(f"원본 크기: {compression_info['original_dimensions']}")
+            print(f"압축 후 크기: {compression_info['compressed_dimensions']}")
+        
+        data_url = f"data:image/jpeg;base64,{img_base64}"
+        print(f"MIME 타입: image/jpeg")
+        print(f"Base64 길이: {len(img_base64)}")
+        
+        # 메시지 컨텐츠 구성
+        content = [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": data_url}}
+        ]
+        
+        # RAG 컨텍스트 추가
+        if rag_context:
+            rag_text = f"\n\n[참고 자료]\n문서: {rag_context['document']} - {rag_context['element']}\n내용: {rag_context['text']}"
+            content.append({"type": "text", "text": rag_text})
+
+        print("GPT API 호출 시작...")
+        response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "당신은 HTP(House-Tree-Person) 심리검사 전문 분석가입니다. 제공된 그림은 심리검사 목적으로 그려진 그림이며, 실제 인물의 신원 식별이 아닌 심리적 특성 분석을 위한 것입니다. 그림의 시각적 요소들을 통해 심리 상태를 분석해 주세요. 개인의 정체성이나 신원을 파악하려는 것이 아니라, 그림 표현 방식을 통한 심리 분석임을 명심하세요. 이미지가 제대로 보이지 않으면 '이미지를 인식할 수 없습니다'라고 응답하지 말고, 다시 시도해보거나 이미지 파일 문제일 수 있다고 안내해주세요."},
+                {
+                    "role": "user",
+                    "content": content
+                }
+            ],
+            max_tokens=2000,
+        )
+        print("GPT API 호출 완료")
+        return response.choices[0].message.content.strip()
         
     except Exception as e:
         print(f"GPT API 호출 실패: {e}")
