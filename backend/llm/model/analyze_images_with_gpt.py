@@ -9,6 +9,7 @@ from openai import OpenAI
 import re
 from PIL import Image, ImageOps
 import io
+from datetime import datetime
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../opensearch_modules'))
@@ -246,7 +247,10 @@ def analyze_image_with_gpt(image_path, prompt, rag_context=None):
             rag_text = f"\n\n[참고 자료]\n문서: {rag_context['document']} - {rag_context['element']}\n내용: {rag_context['text']}"
             content.append({"type": "text", "text": rag_text})
 
-        print("GPT API 호출 시작...")
+        import time
+        gpt_start_time = time.time()
+        gpt_start_datetime = datetime.now()
+        print(f"🤖 [TIMING] GPT API 호출 시작: {gpt_start_datetime.strftime('%H:%M:%S.%f')[:-3]}")
         response = openai.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -258,7 +262,11 @@ def analyze_image_with_gpt(image_path, prompt, rag_context=None):
             ],
             max_tokens=2000,
         )
-        print("GPT API 호출 완료")
+        gpt_end_time = time.time()
+        gpt_duration = gpt_end_time - gpt_start_time
+        gpt_end_datetime = datetime.now()
+        print(f"✅ [TIMING] GPT API 호출 완료: {gpt_end_datetime.strftime('%H:%M:%S.%f')[:-3]}")
+        print(f"⏱️  [TIMING] GPT API 소요시간: {gpt_duration:.2f}초")
         return response.choices[0].message.content.strip()
         
     except Exception as e:
@@ -300,6 +308,13 @@ def analyze_image_gpt(image_base):
         return None
 
     print(f"\n===== {target_filename} 심리 분석 결과 =====")
+    
+    # 분석 시작 시간 기록
+    import time
+    analysis_start_time = time.time()
+    analysis_start_datetime = datetime.now()
+    print(f"🚀 [TIMING] 심리 분석 전체 시작: {analysis_start_datetime.strftime('%H:%M:%S.%f')[:-3]}")
+    
     try:
         # 1차 GPT 해석 (초기 분석)
         print("1단계: 초기 심리 분석 수행 중...")
@@ -340,6 +355,14 @@ def analyze_image_gpt(image_base):
         print(result_text_gpt)
         
     except Exception as e:
+        # 오류 시간 기록
+        error_time = time.time()
+        error_duration = error_time - analysis_start_time if 'analysis_start_time' in locals() else 0
+        error_datetime = datetime.now()
+        print(f"❌ [TIMING] 심리 분석 오류 발생: {error_datetime.strftime('%H:%M:%S.%f')[:-3]}")
+        if error_duration > 0:
+            print(f"⏱️  [TIMING] 오류까지 소요시간: {error_duration:.2f}초 ({error_duration/60:.1f}분)")
+        
         print(f"분석 실패 - 상세 오류: {str(e)}")
         print(f"오류 타입: {type(e)}")
         import traceback
@@ -379,6 +402,13 @@ def analyze_image_gpt(image_base):
         "items": enriched,
         "rag_context": rag_result
     }
+    
+    # 분석 완료 시간 기록
+    analysis_end_time = time.time()
+    analysis_duration = analysis_end_time - analysis_start_time
+    analysis_end_datetime = datetime.now()
+    print(f"✅ [TIMING] 심리 분석 전체 완료: {analysis_end_datetime.strftime('%H:%M:%S.%f')[:-3]}")
+    print(f"⏱️  [TIMING] 심리 분석 총 소요시간: {analysis_duration:.2f}초 ({analysis_duration/60:.1f}분)")
     
     return result
 

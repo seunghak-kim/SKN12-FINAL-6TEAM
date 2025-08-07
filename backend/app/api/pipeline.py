@@ -102,7 +102,9 @@ async def analyze_drawing_image(
     # 성능 측정 시작
     import time
     start_time = time.time()
-    print(f"🕐 [PERFORMANCE] 그림 분석 시작 - 시작 시간: {start_time:.3f}초")
+    start_datetime = datetime.fromtimestamp(start_time)
+    print(f"🚀 [PERFORMANCE] 그림 분석 시작")
+    print(f"🕐 [PERFORMANCE] 시작시간: {start_datetime.strftime('%H:%M:%S.%f')[:-3]} ({start_time:.3f}초)")
     
     # file 또는 image 중 하나를 사용 (프론트엔드 호환성)
     upload_file = file or image
@@ -242,26 +244,46 @@ def run_analysis_pipeline(
     """
     # 백그라운드 태스크용 새 DB 세션 생성 (HTTP 요청 세션과 독립적)
     from ..database import SessionLocal
+    import time  # time 모듈 import 추가
     db = SessionLocal()
     
     try:
-        print(f"🚀 백그라운드 분석 시작: {unique_id}")
+        analysis_start_time = time.time()
+        analysis_start_datetime = datetime.fromtimestamp(analysis_start_time)
+        print(f"🚀 [PERFORMANCE] 백그라운드 분석 시작: {unique_id}")
+        print(f"🕐 [PERFORMANCE] 분석 시작시간: {analysis_start_datetime.strftime('%H:%M:%S.%f')[:-3]} ({analysis_start_time:.3f}초)")
         
         # 파이프라인 실행
         pipeline = get_pipeline()
         result: PipelineResult = pipeline.analyze_image(unique_id)
         
-        print(f"📊 파이프라인 실행 완료: {result.status}")
+        analysis_end_time = time.time()
+        analysis_duration = analysis_end_time - analysis_start_time
+        analysis_end_datetime = datetime.fromtimestamp(analysis_end_time)
+        print(f"📊 [PERFORMANCE] 파이프라인 실행 완료: {result.status}")
+        print(f"🕐 [PERFORMANCE] 분석 완료시간: {analysis_end_datetime.strftime('%H:%M:%S.%f')[:-3]} ({analysis_end_time:.3f}초)")
+        print(f"⏱️  [PERFORMANCE] 분석 소요시간: {analysis_duration:.2f}초 ({analysis_duration/60:.1f}분)")
         
         # 결과를 데이터베이스에 저장 (동기 함수로 변경)
         print(f"🔥 save_analysis_result_sync 함수 호출 시작 - test_id: {test_id}")
         save_analysis_result_sync(result, test_id, description, db)
         print(f"🔥 save_analysis_result_sync 함수 호출 완료 - test_id: {test_id}")
         
-        print(f"✅ 분석 완료 및 저장: {unique_id}")
+        total_end_time = time.time() 
+        total_duration = total_end_time - analysis_start_time
+        total_end_datetime = datetime.fromtimestamp(total_end_time)
+        print(f"✅ [PERFORMANCE] 분석 완료 및 저장: {unique_id}")
+        print(f"🕐 [PERFORMANCE] 최종 완료시간: {total_end_datetime.strftime('%H:%M:%S.%f')[:-3]} ({total_end_time:.3f}초)")
+        print(f"⏱️  [PERFORMANCE] 총 소요시간 (분석+저장): {total_duration:.2f}초 ({total_duration/60:.1f}분)")
         
     except Exception as e:
-        print(f"❌ 백그라운드 분석 오류: {str(e)}")
+        error_time = time.time()
+        error_duration = error_time - analysis_start_time if 'analysis_start_time' in locals() else 0
+        error_datetime = datetime.fromtimestamp(error_time)
+        print(f"❌ [PERFORMANCE] 백그라운드 분석 오류: {str(e)}")
+        print(f"🕐 [PERFORMANCE] 오류시간: {error_datetime.strftime('%H:%M:%S.%f')[:-3]} ({error_time:.3f}초)")
+        if error_duration > 0:
+            print(f"⏱️  [PERFORMANCE] 오류까지 소요시간: {error_duration:.2f}초 ({error_duration/60:.1f}분)")
         import traceback
         traceback.print_exc()
         
