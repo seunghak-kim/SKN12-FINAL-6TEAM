@@ -207,6 +207,12 @@ async def send_message(
         
         # 사용자 닉네임 가져오기
         user_nickname = "사용자"  # 기본값
+
+        # 그림 요약 결과 불러오기
+        from app.utils.drawing import get_latest_drawing_analysis
+        drawing_analysis = get_latest_drawing_analysis(session.user_id, db)
+        summary_dict = drawing_analysis
+
         try:
             if session.user_id:
                 user = db.query(UserInformation).filter(UserInformation.user_id == session.user_id).first()
@@ -221,7 +227,9 @@ async def send_message(
             session_id=session_id, 
             user_message=message_request.content,
             persona_type=persona_type,
-            user_nickname=user_nickname
+            user_nickname=user_nickname,
+            user_analysis_result=summary_dict,
+            persona_type_for_analysis=persona_type
         )
         
         # AI 서비스에서 이미 메시지를 저장했으므로 최근 메시지들을 다시 가져옴

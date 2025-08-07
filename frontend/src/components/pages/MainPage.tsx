@@ -204,15 +204,15 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
               감정 위로를 위한 AI 심리 분석 서비스
             </div>
             <div className="flex justify-center space-x-8 mb-6">
-              <a href="#" className="text-white/50 hover:text-white/80 transition-colors duration-300 text-sm">
+              <span className="text-white/50 text-sm cursor-default">
                 이용약관
-              </a>
-              <a href="#" className="text-white/50 hover:text-white/80 transition-colors duration-300 text-sm">
+              </span>
+              <span className="text-white/50 text-sm cursor-default">
                 개인정보처리방침
-              </a>
-              <a href="#" className="text-white/50 hover:text-white/80 transition-colors duration-300 text-sm">
+              </span>
+              <span className="text-white/50 text-sm cursor-default">
                 고객지원
-              </a>
+              </span>
             </div>
             <div className="text-white/40 text-xs mb-2">
               대표: 이정민 | leejm2157@gmail.com

@@ -688,23 +688,23 @@ return (
             const lastBotMessage = chatMessages.filter((msg) => msg.type !== "user").pop()
             return lastBotMessage ? (
               <div className="w-full">
-                <div className="bg-white/20 backdrop-blur-md rounded-3xl px-8 py-6 text-center shadow-2xl relative border border-white/10">
+                <div className="bg-black/35 backdrop-blur-md rounded-3xl px-8 py-6 text-center shadow-2xl relative border border-white/10">
                   <p className="text-white text-lg leading-relaxed">{lastBotMessage.content}</p>
                   {/* Speech bubble tail */}
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                    <div className="w-0 h-0 border-l-8 border-r-8 border-t-16 border-transparent border-t-white/20"></div>
+                    <div className="w-0 h-0 border-l-8 border-r-8 border-t-16 border-transparent border-t-black/35"></div>
                   </div>
                 </div>
               </div>
             ) : currentPersonaName ? (
               <div className="w-full">
-                <div className="bg-white/20 backdrop-blur-md rounded-3xl px-6 py-4 text-center shadow-2xl relative border border-white/10">
+                <div className="bg-black/35 backdrop-blur-md rounded-3xl px-6 py-4 text-center shadow-2xl relative border border-white/10">
                   <div className="text-white text-lg mb-2">
                     {greeting || getPersonaBaseGreeting(currentPersonaName)}
                   </div>
                   {/* Speech bubble tail */}
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                    <div className="w-0 h-0 border-l-6 border-r-6 border-t-12 border-transparent border-t-white/20"></div>
+                    <div className="w-0 h-0 border-l-6 border-r-6 border-t-12 border-transparent border-t-black/35"></div>
                   </div>
                 </div>
               </div>
@@ -766,38 +766,40 @@ return (
             <h3 className="text-white font-bold text-lg">채팅 기록</h3>
           </div>
 
-          {/* 채팅 메시지 영역 */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-            {chatMessages.length > 0 ? (
-              chatMessages.map((message, index) => (
-                <div key={index} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className="flex flex-col max-w-[80%]">
-                    <div
-                      className={`px-4 py-3 rounded-2xl ${
-                        message.type === "user"
-                          ? "bg-blue-500/90 text-white rounded-br-md shadow-lg"
-                          : "bg-white/90 text-gray-800 rounded-bl-md shadow-lg"
-                      }`}
-                    >
-                      {message.content}
-                    </div>
-                    <div
-                      className={`text-xs text-white/70 mt-1 ${message.type === "user" ? "text-right" : "text-left"}`}
-                    >
-                      {message.timestamp}
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center text-white/70 py-8">
-                <div className="text-white/50 text-6xl mb-4">💬</div>
-                <p className="text-lg font-medium">대화를 시작해보세요</p>
-                <p className="text-sm mt-2">첫 메시지를 보내보세요!</p>
-              </div>
-            )}
-            <div ref={sidebarMessagesEndRef} />
-          </div>
+                     {/* 채팅 메시지 영역 */}
+           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 flex flex-col-reverse">
+             {chatMessages.length > 0 ? (
+               <div className="space-y-4">
+                 {chatMessages.map((message, index) => (
+                   <div key={index} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+                     <div className="flex flex-col max-w-[80%]">
+                       <div
+                         className={`px-4 py-3 rounded-2xl ${
+                           message.type === "user"
+                             ? "bg-blue-500/90 text-white rounded-br-md shadow-lg"
+                             : "bg-white/90 text-gray-800 rounded-bl-md shadow-lg"
+                         }`}
+                       >
+                         {message.content}
+                       </div>
+                       <div
+                         className={`text-xs text-white/70 mt-1 ${message.type === "user" ? "text-right" : "text-left"}`}
+                       >
+                         {message.timestamp}
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             ) : (
+               <div className="text-center text-white/70 py-8">
+                 <div className="text-white/50 text-6xl mb-4">💬</div>
+                 <p className="text-lg font-medium">대화를 시작해보세요</p>
+                 <p className="text-sm mt-2">첫 메시지를 보내보세요!</p>
+               </div>
+             )}
+             <div ref={sidebarMessagesEndRef} />
+           </div>
 
           {/* 하단 버튼 */}
           <div className="px-4 py-8 border-t border-white/30 flex-shrink-0 space-y-2 mt-6">

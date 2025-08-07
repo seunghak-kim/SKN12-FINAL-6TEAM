@@ -40,6 +40,82 @@ class AIService:
         """페르소나별 시스템 프롬프트 생성"""
         return self.prompt_manager.get_persona_prompt(persona_type, **context)
     
+    def _process_drawing_analysis_for_querock(self, analysis_result: Dict[str, Any]) -> str:
+        """쾌락이 특성에 맞게 그림검사 결과를 처리"""
+        if not analysis_result.get('has_result'):
+            return "아직 그림검사를 해보지 않으셨군요! 혹시 관심이 있으시다면, 당신의 내면세계를 더 깊이 탐험해볼 수 있는 재미있는 방법이 있어요."
+        
+        scores = analysis_result.get('personality_scores', {})
+        querock_score = scores.get('쾌락이', 0.0)
+        
+        # 점수를 100으로 나누어 올바른 퍼센트 표시
+        querock_percentage = querock_score / 100
+        
+        if querock_score > 0.7:
+            return f"당신의 그림에서 보이는 창의적인 에너지가 정말 인상적이에요! 쾌락이 점수가 {querock_percentage:.2%}로 높게 나온 걸 보니, 새로운 경험을 추구하는 모험가의 마음이 강하시군요! 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
+        elif querock_score > 0.4:
+            return f"그림에서 다양한 색채와 형태를 사용하신 걸 보니, 새로운 경험을 추구하시는 분이시군요! 쾌락이 점수가 {querock_percentage:.2%}로 나타났어요. 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
+        else:
+            return f"그림에서 보이는 다른 성향들도 있지만, 그 이면에는 새로운 경험을 추구하는 모험가의 마음이 숨어있을지도 몰라요. 쾌락이 점수는 {querock_percentage:.2%}로 나타났어요. 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
+    
+    def _process_drawing_analysis_for_persona(self, analysis_result: Dict[str, Any], persona_type: str) -> str:
+        """페르소나별로 그림검사 결과를 처리"""
+        if not analysis_result.get('has_result'):
+            return "아직 그림검사를 해보지 않으셨군요! 혹시 관심이 있으시다면, 당신의 내면세계를 더 깊이 탐험해볼 수 있는 재미있는 방법이 있어요."
+        
+        scores = analysis_result.get('personality_scores', {})
+        
+        # 페르소나별 특성에 맞는 해석
+        persona_mapping = {
+            "쾌락형": ("쾌락이", "창의적이고 새로운 경험을 추구하는"),
+            "내면형": ("내면이", "깊이 있는 사고와 내적 성장을 중시하는"),
+            "추진형": ("추진이", "목표 지향적이고 실행력이 뛰어난"),
+            "관계형": ("관계이", "사람들과의 관계를 중시하는"),
+            "안정형": ("안정이", "안정감과 균형을 추구하는")
+        }
+        
+        target_persona, description = persona_mapping.get(persona_type, ("쾌락이", "창의적인"))
+        target_score = scores.get(target_persona, 0.0)
+        
+        # 점수를 100으로 나누어 올바른 퍼센트 표시
+        target_percentage = target_score / 100
+        
+        if target_score > 0.7:
+            return f"당신의 그림에서 보이는 {description} 특성이 정말 인상적이에요! {target_persona} 점수가 {target_percentage:.2%}로 높게 나온 걸 보니, 이런 성향이 강하시군요! 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
+        elif target_score > 0.4:
+            return f"그림에서 {description} 면모가 보이시네요! {target_persona} 점수가 {target_percentage:.2%}로 나타났어요. 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
+        else:
+            return f"그림에서 보이는 다른 성향들도 있지만, 그 이면에는 {description} 마음이 숨어있을지도 몰라요. {target_persona} 점수는 {target_percentage:.2%}로 나타났어요. 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
+    
+    def _generate_drawing_context(self, analysis_result: Dict[str, Any], persona_type: str) -> str:
+        """그림검사 결과를 컨텍스트로 변환"""
+        if not analysis_result.get('has_result'):
+            return """
+[그림검사 정보]
+아직 그림검사 결과가 없습니다. 사용자가 그림검사에 관심을 보이면 안내해주세요.
+"""
+        
+        scores = analysis_result.get('personality_scores', {})
+        summary = analysis_result.get('summary', '')
+        
+        # 페르소나별 특화된 해석
+        if persona_type == "쾌락형":
+            interpretation = self._process_drawing_analysis_for_querock(analysis_result)
+        else:
+            interpretation = self._process_drawing_analysis_for_persona(analysis_result, persona_type)
+        
+        return f"""
+[그림검사 분석 결과]
+{interpretation}
+
+[상세 분석 정보]
+- 분석 요약: {summary}
+- 성격 점수: {', '.join([f'{k}: {(v/100):.2%}' for k, v in scores.items() if v > 0])}
+- 주요 특성: {max(scores.items(), key=lambda x: x[1])[0] if scores else '분석 중'}
+
+위 정보를 바탕으로 사용자의 심리 상태와 성향을 고려한 개인화된 상담을 제공해주세요.
+"""
+    
     def process_message(self, session_id: UUID, user_message: str, persona_type: str = "내면형", **context) -> str:
         """2단계 체이닝으로 페르소나 챗봇 메시지 처리"""
         try:
@@ -143,7 +219,14 @@ class AIService:
             user_analysis_context = ""
             if context.get('user_analysis_result'):
                 analysis_result = context['user_analysis_result']
-                user_analysis_context = f"""
+                # 새로운 상세 분석 결과 처리
+                if isinstance(analysis_result, dict) and 'has_result' in analysis_result:
+                    # 새로운 형식의 분석 결과
+                    persona_type_for_analysis = context.get('persona_type_for_analysis', context.get('persona_type', '내면형'))
+                    user_analysis_context = self._generate_drawing_context(analysis_result, persona_type_for_analysis)
+                else:
+                    # 기존 형식의 분석 결과 (호환성 유지)
+                    user_analysis_context = f"""
 
 [사용자 그림검사 분석 정보]
 이 사용자의 그림검사 분석 결과를 참고하여 더 개인화된 상담을 제공해주세요:
@@ -222,12 +305,7 @@ class AIService:
             user_analysis_context = ""
             if context.get('user_analysis_result'):
                 analysis_result = context['user_analysis_result']
-                user_analysis_context = f"""
-
-**사용자 그림검사 분석 정보:**
-이 사용자의 그림검사 분석 결과를 참고하여 페르소나 변환 시에도 개인화된 표현을 사용해주세요:
-- 주요 심리 특성: {analysis_result.get('result_text', '분석 정보 없음')}
-- 분석 요약: {analysis_result.get('raw_text', '')[:200]}..."""
+                user_analysis_context = self._generate_drawing_context(analysis_result, persona_type)
             
             # 사용자 닉네임 가져오기
             user_nickname = context.get('user_nickname', '사용자')

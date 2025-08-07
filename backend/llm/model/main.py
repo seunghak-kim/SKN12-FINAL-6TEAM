@@ -417,7 +417,7 @@ class HTPAnalysisPipeline:
             timestamp=datetime.now()
         )
         
-        self.logger.info(f"🚀 이미지 분석 시작: {image_base} - {datetime.now().strftime('%H:%M:%S')}")
+        self.logger.info(f"🚀 [TIMING] 이미지 분석 시작: {image_base} - 시작시간: {datetime.now().strftime('%H:%M:%S')} ({start_time:.3f}초)")
         
         try:
             # 이미지 파일 경로 구성
@@ -434,33 +434,44 @@ class HTPAnalysisPipeline:
             if not self._execute_stage_1(image_path, result):
                 result.status = PipelineStatus.ERROR
                 return result
-            stage_time = time.time() - stage_start
-            self.logger.info(f"✅ 1단계 완료: {stage_time:.2f}초")
+            stage_end = time.time()
+            stage_time = stage_end - stage_start
+            self.logger.info(f"✅ [TIMING] 1단계 (객체탐지) 완료: {stage_time:.2f}초")
             
             # 2단계: 심리 분석 (재시도 로직 포함)
             if not self._execute_stage_2(result, max_retries=5):
 
                 result.status = PipelineStatus.ERROR
                 return result
-            stage_time = time.time() - stage_start
-            self.logger.info(f"✅ 2단계 완료: {stage_time:.2f}초")
+            stage_end = time.time()
+            stage_time = stage_end - stage_start
+            self.logger.info(f"✅ [TIMING] 2단계 (심리분석) 완료: {stage_time:.2f}초")
             
             # 3단계: 성격 분류
             stage_start = time.time()
             if not self._execute_stage_3(result):
                 result.status = PipelineStatus.ERROR
                 return result
-            stage_time = time.time() - stage_start
-            self.logger.info(f"✅ 3단계 완료: {stage_time:.2f}초")
+            stage_end = time.time()
+            stage_time = stage_end - stage_start
+            self.logger.info(f"✅ [TIMING] 3단계 (성격분류) 완료: {stage_time:.2f}초")
             
             # 모든 단계 성공
-            total_time = time.time() - start_time
+            end_time = time.time()
+            total_time = end_time - start_time
             result.status = PipelineStatus.SUCCESS
-            self.logger.info(f"🎉 이미지 분석 완료: {image_base} -> {result.personality_type} (총 {total_time:.2f}초)")
+            self.logger.info(f"✅ [TIMING] 이미지 분석 완료: {image_base} -> {result.personality_type}")
+            self.logger.info(f"🕐 [TIMING] 시작시간: {datetime.fromtimestamp(start_time).strftime('%H:%M:%S.%f')[:-3]}")
+            self.logger.info(f"🕐 [TIMING] 완료시간: {datetime.fromtimestamp(end_time).strftime('%H:%M:%S.%f')[:-3]}")
+            self.logger.info(f"⏱️  [TIMING] 총 소요시간: {total_time:.2f}초 ({total_time/60:.1f}분)")
             
         except Exception as e:
-            total_time = time.time() - start_time
-            self.logger.error(f"❌ 파이프라인 실행 중 예상치 못한 오류 ({total_time:.2f}초): {str(e)}")
+            end_time = time.time()
+            total_time = end_time - start_time
+            self.logger.error(f"❌ [TIMING] 파이프라인 실행 중 예상치 못한 오류: {str(e)}")
+            self.logger.error(f"🕐 [TIMING] 시작시간: {datetime.fromtimestamp(start_time).strftime('%H:%M:%S.%f')[:-3]}")
+            self.logger.error(f"🕐 [TIMING] 오류시간: {datetime.fromtimestamp(end_time).strftime('%H:%M:%S.%f')[:-3]}")
+            self.logger.error(f"⏱️  [TIMING] 오류까지 소요시간: {total_time:.2f}초 ({total_time/60:.1f}분)")
             result.status = PipelineStatus.ERROR
             result.error_message = str(e)
             result.traceback = traceback.format_exc()
