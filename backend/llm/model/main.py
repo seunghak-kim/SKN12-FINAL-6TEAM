@@ -245,7 +245,7 @@ class HTPAnalysisPipeline:
                     self.logger.info(f"[{attempt + 1}/{max_retries}] GPT-4 Vision 심리 분석 재시도... (시도 {attempt + 1}/{max_retries})")
                 
                 # GPT 분석 실행 (함수 내부에서 자체 재시도 포함)
-                analysis_result = analyze_image_gpt(result.image_base, max_retries=5)
+                analysis_result = analyze_image_gpt(result.image_base)
                 
                 # 분석 결과 직접 처리 (파일 확인 불필요)
                 if analysis_result:
