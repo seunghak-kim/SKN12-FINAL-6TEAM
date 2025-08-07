@@ -141,12 +141,16 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
           
           {/* Demo Video Section */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-2xl mx-auto mb-12 shadow-xl">
-            <div className="w-full h-auto">
-              <img 
-                src="/assets/gif/tutorial-video.gif" 
-                alt="서비스 시연 영상" 
-                className="w-full h-auto rounded-lg shadow-lg"
-              />
+            <div className="w-full aspect-video">
+              <iframe
+                className="w-full h-full rounded-lg shadow-lg"
+                src="https://www.youtube.com/embed/6-NgecbgQgw?autoplay=1&mute=1&loop=1&playlist=6-NgecbgQgw&controls=0&showinfo=0&modestbranding=1"
+                title="서비스 시연 영상"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
 

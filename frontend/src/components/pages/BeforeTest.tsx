@@ -1,27 +1,29 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navigation from '../common/Navigation';
-import { FileImage, MessageCircle, ArrowRight } from 'lucide-react';
+"use client"
+
+import type React from "react"
+import { useNavigate } from "react-router-dom"
+import Navigation from "../common/Navigation"
+import { MessageCircle, ArrowRight } from "lucide-react"
 
 interface BeforeTestProps {
-  onNavigate?: (screen: string) => void;
+  onNavigate?: (screen: string) => void
 }
 
 const BeforeTest: React.FC<BeforeTestProps> = ({ onNavigate }) => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleGoToTest = () => {
     if (onNavigate) {
-      onNavigate('test');
+      onNavigate("test")
     } else {
-      navigate('/test-instruction');
+      navigate("/test-instruction")
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0F103F] via-[#1a1b4a] via-[#2a2b5a] to-[#3a3b6a] relative overflow-hidden">
       <Navigation activeTab="chat" onNavigate={onNavigate} />
-      
+
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto text-center">
           {/* 헤더 */}
@@ -31,39 +33,35 @@ const BeforeTest: React.FC<BeforeTestProps> = ({ onNavigate }) => {
                 <MessageCircle className="w-12 h-12 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-4">
-              페르소나 챗봇과 대화하기
-            </h1>
-            <p className="text-xl text-white/80">
-              개인 맞춤형 상담을 위해 먼저 그림 검사를 진행해주세요
-            </p>
+            <h1 className="text-4xl font-bold text-white mb-4">페르소나 챗봇과 대화하기</h1>
+            <p className="text-xl text-white/80">개인 맞춤형 상담을 위해 먼저 그림 검사를 진행해주세요</p>
           </div>
 
           {/* 프로세스 안내 */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8">
             <h3 className="text-xl font-semibold text-white mb-6">검사 진행 과정</h3>
-            <div className="flex items-center justify-center space-x-4 text-white/90">
+            <div className="flex items-start justify-center space-x-4 text-white/90">
               <div className="text-center">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto">
                   <span className="font-semibold">1</span>
                 </div>
                 <p className="text-sm">그림 그리기</p>
               </div>
-              <ArrowRight className="w-4 h-4 text-white/60" />
+              <ArrowRight className="w-4 h-4 text-white/60 mt-4" />
               <div className="text-center">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto">
                   <span className="font-semibold">2</span>
                 </div>
                 <p className="text-sm">LLM 기반 그림 분석</p>
               </div>
-              <ArrowRight className="w-4 h-4 text-white/60" />
+              <ArrowRight className="w-4 h-4 text-white/60 mt-4" />
               <div className="text-center">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto">
                   <span className="font-semibold">3</span>
                 </div>
                 <p className="text-sm">페르소나 챗봇 매칭</p>
               </div>
-              <ArrowRight className="w-4 h-4 text-white/60" />
+              <ArrowRight className="w-4 h-4 text-white/60 mt-4" />
               <div className="text-center">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto">
                   <span className="font-semibold">4</span>
@@ -81,13 +79,11 @@ const BeforeTest: React.FC<BeforeTestProps> = ({ onNavigate }) => {
             >
               <span>그림 검사 시작하기</span>
             </button>
-            
-
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default BeforeTest;
+export default BeforeTest

@@ -108,30 +108,55 @@ def validate_prompt_system() -> dict:
     return manager.validate_files()
 
 
-def load_latest_analysis_result(user_id: int = None):
-    """가장 최근의 그림 분석 결과를 로드합니다."""
-    import json
-    from pathlib import Path
+def load_latest_analysis_result(user_id: int = None, db_session=None):
+    """가장 최근의 그림 분석 결과를 DB에서 직접 로드합니다."""
     try:
-        results_dir = Path(__file__).parent / "llm" / "detection_results" / "results"
-        if not results_dir.exists():
-            return None
+        # DB 세션이 제공되지 않았을 때만 새로 생성
+        if db_session is None:
+            try:
+                from .app.database import SessionLocal
+                from .app.models.test import DrawingTestResult, DrawingTest
+            except ImportError:
+                # 상대 import 실패시 절대 import 시도
+                import sys
+                import os
+                sys.path.append(os.path.join(os.path.dirname(__file__), 'app'))
+                from app.database import SessionLocal
+                from app.models.test import DrawingTestResult, DrawingTest
+            db = SessionLocal()
+            should_close = True
+        else:
+            db = db_session
+            should_close = False
+            try:
+                from .app.models.test import DrawingTestResult, DrawingTest
+            except ImportError:
+                from app.models.test import DrawingTestResult, DrawingTest
         
-        # 가장 최근 수정된 JSON 파일 찾기
-        json_files = list(results_dir.glob("result_*.json"))
-        if not json_files:
-            return None
-        
-        # 가장 최근 파일 선택
-        latest_file = max(json_files, key=lambda f: f.stat().st_mtime)
-        
-        with open(latest_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        return data
+        try:
+            # 사용자별 가장 최근 그림분석 결과 조회
+            query = db.query(DrawingTestResult).join(DrawingTest)
+            
+            if user_id:
+                # 특정 사용자의 결과만 조회
+                query = query.filter(DrawingTest.user_id == user_id)
+            
+            # 가장 최근 결과 선택
+            latest_result = query.order_by(DrawingTestResult.created_at.desc()).first()
+            
+            if not latest_result:
+                print(f"그림 분석 결과 없음 - user_id: {user_id}")
+                return None
+            
+            print(f"DB에서 그림 분석 결과 로드 성공 - test_id: {latest_result.test_id}, persona_type: {latest_result.persona_type}")
+            return latest_result
+            
+        finally:
+            if should_close:
+                db.close()
         
     except Exception as e:
-        print(f"그림 분석 결과 로드 실패: {e}")
+        print(f"DB에서 그림 분석 결과 로드 실패: {e}")
         return None
 
 

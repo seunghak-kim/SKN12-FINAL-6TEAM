@@ -27,6 +27,7 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const [currentTestId, setCurrentTestId] = useState<string | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
 
   // 컴포넌트 마운트 시 동의 상태 확인
   useEffect(() => {
@@ -42,6 +43,8 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
 
     checkConsentStatus();
   }, []);
+
+
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file);

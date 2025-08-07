@@ -16,7 +16,7 @@ const AuthCallbackPage: React.FC = () => {
         console.log('Auth callback params:', { isNew, sessionId });
         
         // 쿠키에서 토큰을 가져오기 위해 백엔드 API 호출
-        const response = await fetch('http://localhost:8000/auth/get-token', {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/auth/get-token`, {
           method: 'GET',
           credentials: 'include', // 쿠키 포함
         });

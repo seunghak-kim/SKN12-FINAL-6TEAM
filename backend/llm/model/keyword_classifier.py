@@ -550,4 +550,4 @@ if __name__ == "__main__":
         # 예시 실행
         example_keywords = ["사회불안", "정서불안", "애정결핍", "불안감", "관심 요구"]
         result = predict_personality_from_keywords(example_keywords)
-        print(f"예시 키워드 예측 결과: {result}") 
+        print(f"예시 키워드 예측 결과: {result}")

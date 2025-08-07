@@ -342,11 +342,15 @@ class HTPAnalysisPipeline:
                 # 심리 분석 결과에서 텍스트 추출
                 analysis_text = ""
                 if hasattr(result, 'psychological_analysis') and result.psychological_analysis:
-                    analysis_text = result.psychological_analysis.get('raw_text', '')
+                    # 먼저 result_text를 시도하고, 없으면 raw_text 사용
+                    analysis_text = result.psychological_analysis.get('result_text') or result.psychological_analysis.get('raw_text', '')
                 
                 if not analysis_text:
                     self.logger.error("심리 분석 텍스트를 찾을 수 없습니다.")
+                    self.logger.error(f"psychological_analysis 내용: {result.psychological_analysis}")
                     return False
+                
+                self.logger.info(f"키워드 분류용 텍스트 길이: {len(analysis_text)}자")
                 
                 # 키워드 기반 성격 유형 예측 실행 (직접 텍스트 사용)
                 from keyword_classifier import run_keyword_prediction_from_data
@@ -398,6 +402,9 @@ class HTPAnalysisPipeline:
         Returns:
             PipelineResult: 분석 결과
         """
+        import time
+        start_time = time.time()
+        
         # 이미지 파일명 정규화
         image_base = Path(image_input).stem
         if not image_base:
@@ -410,7 +417,7 @@ class HTPAnalysisPipeline:
             timestamp=datetime.now()
         )
         
-        self.logger.info(f"이미지 분석 시작: {image_base}")
+        self.logger.info(f"🚀 이미지 분석 시작: {image_base} - {datetime.now().strftime('%H:%M:%S')}")
         
         try:
             # 이미지 파일 경로 구성
@@ -423,26 +430,37 @@ class HTPAnalysisPipeline:
                 return result
             
             # 1단계: 객체 탐지
+            stage_start = time.time()
             if not self._execute_stage_1(image_path, result):
                 result.status = PipelineStatus.ERROR
                 return result
+            stage_time = time.time() - stage_start
+            self.logger.info(f"✅ 1단계 완료: {stage_time:.2f}초")
             
             # 2단계: 심리 분석 (재시도 로직 포함)
             if not self._execute_stage_2(result, max_retries=5):
+
                 result.status = PipelineStatus.ERROR
                 return result
+            stage_time = time.time() - stage_start
+            self.logger.info(f"✅ 2단계 완료: {stage_time:.2f}초")
             
             # 3단계: 성격 분류
+            stage_start = time.time()
             if not self._execute_stage_3(result):
                 result.status = PipelineStatus.ERROR
                 return result
+            stage_time = time.time() - stage_start
+            self.logger.info(f"✅ 3단계 완료: {stage_time:.2f}초")
             
             # 모든 단계 성공
+            total_time = time.time() - start_time
             result.status = PipelineStatus.SUCCESS
-            self.logger.info(f"이미지 분석 완료: {image_base} -> {result.personality_type}")
+            self.logger.info(f"🎉 이미지 분석 완료: {image_base} -> {result.personality_type} (총 {total_time:.2f}초)")
             
         except Exception as e:
-            self.logger.error(f"파이프라인 실행 중 예상치 못한 오류: {str(e)}")
+            total_time = time.time() - start_time
+            self.logger.error(f"❌ 파이프라인 실행 중 예상치 못한 오류 ({total_time:.2f}초): {str(e)}")
             result.status = PipelineStatus.ERROR
             result.error_message = str(e)
             result.traceback = traceback.format_exc()

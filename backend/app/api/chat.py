@@ -104,7 +104,7 @@ async def get_user_sessions(
         sessions = db.query(ChatSession).filter(
             ChatSession.user_id == user_id,
             ChatSession.is_active == True
-        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).distinct().order_by(ChatSession.updated_at.desc()).all()
+        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).group_by(ChatSession.chat_sessions_id).order_by(ChatSession.updated_at.desc()).all()
         
         return [
             ChatSessionResponse(
@@ -205,12 +205,23 @@ async def send_message(
         # persona_id를 페르소나 타입으로 매핑
         persona_type = get_persona_type_from_persona_id(session.persona_id, db)
         
-        # AI 서비스를 통한 메시지 처리 (페르소나 타입 포함)
+        # 사용자 닉네임 가져오기
+        user_nickname = "사용자"  # 기본값
+        try:
+            if session.user_id:
+                user = db.query(UserInformation).filter(UserInformation.user_id == session.user_id).first()
+                if user and user.nickname:
+                    user_nickname = user.nickname
+        except Exception:
+            user_nickname = "사용자"  # 오류 시 기본값
+        
+        # AI 서비스를 통한 메시지 처리 (페르소나 타입과 사용자 닉네임 포함)
         ai_service = AIService(db)
         ai_response_content = ai_service.process_message(
             session_id=session_id, 
             user_message=message_request.content,
-            persona_type=persona_type
+            persona_type=persona_type,
+            user_nickname=user_nickname
         )
         
         # AI 서비스에서 이미 메시지를 저장했으므로 최근 메시지들을 다시 가져옴
@@ -341,22 +352,43 @@ async def get_personalized_greeting(
         # persona_id를 페르소나 타입으로 매핑
         persona_type = get_persona_type_from_persona_id(session.persona_id, db)
         
+        # 사용자 닉네임 가져오기
+        user_nickname = "사용자"  # 기본값
+        try:
+            if session.user_id:
+                user = db.query(UserInformation).filter(UserInformation.user_id == session.user_id).first()
+                if user and user.nickname:
+                    user_nickname = user.nickname
+        except Exception:
+            user_nickname = "사용자"  # 오류 시 기본값
+        
         # AI 서비스에서 개인화된 인사 메시지 생성
         ai_service = AIService(db)
         
-        # 그림 분석 결과 로드
+        # 그림 분석 결과를 DB에서 직접 로드
         try:
             from prompt_chaining import load_latest_analysis_result
-            user_analysis_result = load_latest_analysis_result()
+            print(f"[개인화 인사] DB에서 그림 분석 결과 로드 시도 - 사용자: {user_nickname}, 사용자ID: {session.user_id}")
+            user_analysis_result = load_latest_analysis_result(user_id=session.user_id, db_session=db)
+            print(f"[개인화 인사] DB 조회 결과: {user_analysis_result is not None}")
+            if user_analysis_result:
+                print(f"[개인화 인사] 분석 결과 - test_id: {user_analysis_result.test_id}, persona_type: {user_analysis_result.persona_type}")
         except Exception as e:
-            print(f"그림 분석 결과 로드 실패: {e}")
+            print(f"[개인화 인사] DB에서 그림 분석 결과 로드 실패: {e}")
             user_analysis_result = None
         
         # 개인화된 인사만 생성 (기본 인사는 프론트엔드에서 처리)
-        if user_analysis_result:
-            greeting = ai_service._generate_personalized_greeting(persona_type, user_analysis_result)
-        else:
-            greeting = ""  # 그림 분석 결과가 없으면 빈 문자열
+        try:
+            if user_analysis_result:
+                print(f"[개인화 인사] AI 서비스로 개인화된 인사 생성 요청")
+                greeting = ai_service._generate_personalized_greeting(persona_type, user_analysis_result, user_nickname)
+                print(f"[개인화 인사] 생성된 인사: {greeting}")
+            else:
+                print(f"[개인화 인사] 그림 분석 결과 없음 - 빈 인사 반환")
+                greeting = ""  # 그림 분석 결과가 없으면 빈 문자열
+        except Exception as e:
+            print(f"[개인화 인사] 인사 생성 오류: {e}")
+            greeting = ""  # 오류 발생 시 빈 문자열
         
         return {
             "persona_type": persona_type,

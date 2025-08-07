@@ -70,10 +70,15 @@ export const useChatSession = (): UseChatSessionReturn => {
       
       // 세션 생성 후 백그라운드에서 개인화된 인사 로드
       try {
+        console.log('개인화된 인사 API 호출 시작:', newSession.chat_sessions_id);
         const personalizedGreeting = await chatService.getPersonalizedGreeting(newSession.chat_sessions_id);
+        console.log('개인화된 인사 API 응답:', personalizedGreeting);
+        
         if (personalizedGreeting.greeting) {
-          console.log('개인화된 인사 로드 성공:', personalizedGreeting.greeting);
+          console.log('개인화된 인사 설정:', personalizedGreeting.greeting);
           setGreeting(personalizedGreeting.greeting);
+        } else {
+          console.log('개인화된 인사가 비어있음 - 기본 인사 유지');
         }
       } catch (greetingError) {
         console.error('개인화된 인사 로드 실패:', greetingError);
@@ -106,7 +111,13 @@ export const useChatSession = (): UseChatSessionReturn => {
     setError(null);
     
     try {
+      console.log('useChatSession - 세션 로드 시작:', sessionId);
       const sessionDetail = await chatService.getSessionDetail(sessionId);
+      console.log('useChatSession - 세션 로드 완료:', {
+        sessionId: sessionDetail.chat_sessions_id,
+        personaId: sessionDetail.persona_id,
+        sessionName: sessionDetail.session_name
+      });
       setSession(sessionDetail);
       
       // 메시지 변환 및 설정
@@ -115,6 +126,7 @@ export const useChatSession = (): UseChatSessionReturn => {
       );
       setMessages(frontendMessages);
     } catch (error) {
+      console.error('useChatSession - 세션 로드 실패:', error);
       handleError(error);
     } finally {
       setIsLoading(false);
@@ -129,12 +141,24 @@ export const useChatSession = (): UseChatSessionReturn => {
     setError(null);
     
     try {
+      console.log('메시지 전송 시작:', {
+        sessionId: session.chat_sessions_id,
+        content: content.trim()
+      });
+
       const messageRequest: SendMessageRequest = {
         content: content.trim(),
         enable_tts: false
       };
       
       const response = await chatService.sendMessage(session.chat_sessions_id, messageRequest);
+      
+      console.log('메시지 전송 응답:', response);
+      
+      // 응답이 제대로 왔는지 확인
+      if (!response || !response.user_message || !response.assistant_message) {
+        throw new Error('서버 응답이 올바르지 않습니다.');
+      }
       
       // 새로운 메시지들을 프론트엔드 형식으로 변환
       const userMessage = ChatService.convertToFrontendMessage(response.user_message);
@@ -143,11 +167,14 @@ export const useChatSession = (): UseChatSessionReturn => {
       // 메시지 목록에 추가
       setMessages(prev => [...prev, userMessage, assistantMessage]);
       
+      console.log('메시지 추가 완료:', { userMessage, assistantMessage });
+      
       // 세션 정보 업데이트 (필요한 경우)
       if (response.session_updated) {
         await loadSession(session.chat_sessions_id);
       }
     } catch (error) {
+      console.error('메시지 전송 실패:', error);
       handleError(error);
     } finally {
       setIsSending(false);
