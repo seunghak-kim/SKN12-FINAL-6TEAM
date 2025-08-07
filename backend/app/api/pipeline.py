@@ -99,6 +99,11 @@ async def analyze_drawing_image(
     Returns:
         JSON: 분석 작업 시작 응답 및 작업 ID
     """
+    # 성능 측정 시작
+    import time
+    start_time = time.time()
+    print(f"🕐 [PERFORMANCE] 그림 분석 시작 - 시작 시간: {start_time:.3f}초")
+    
     # file 또는 image 중 하나를 사용 (프론트엔드 호환성)
     upload_file = file or image
     
