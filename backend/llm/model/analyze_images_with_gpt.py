@@ -12,6 +12,7 @@ sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../opensearch_modules'))
 
 from opensearch_client import OpenSearchEmbeddingClient
+opensearch_client = OpenSearchEmbeddingClient(host='3.39.30.211')
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
