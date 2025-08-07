@@ -99,6 +99,12 @@ CREATE UNIQUE INDEX "social_users_social_id_key" ON "social_users" ("social_id")
 
 CREATE UNIQUE INDEX "drawing_test_results_test_id_key" ON "drawing_test_results" ("test_id");
 
+-- 성능 최적화를 위한 추가 인덱스
+-- 그림 분석 결과 조회 성능 향상
+CREATE INDEX "idx_drawing_tests_user_id" ON "drawing_tests" ("user_id");
+CREATE INDEX "idx_drawing_test_results_created_at" ON "drawing_test_results" ("created_at" DESC);
+CREATE INDEX "idx_drawing_tests_user_submitted" ON "drawing_tests" ("user_id", "submitted_at" DESC);
+
 ALTER TABLE "user_informations" ADD CONSTRAINT "user_informations_regular_user_id_fkey" FOREIGN KEY ("regular_user_id") REFERENCES "users" ("user_id") ON DELETE CASCADE;
 
 ALTER TABLE "user_informations" ADD CONSTRAINT "user_informations_social_user_id_fkey" FOREIGN KEY ("social_user_id") REFERENCES "social_users" ("social_user_id") ON DELETE CASCADE;
