@@ -40,25 +40,74 @@ const getPersonaBaseGreeting = (personaName: string) => {
   return baseGreetings[personaName];
 };
 
-// 커스텀 원형 스피너 컴포넌트
-const CircularSpinner: React.FC<{ className?: string }> = ({ className = "" }) => {
-return (
-  <div className={`relative ${className}`}>
-    <div className="animate-spin">
-      <div className="w-12 h-12 relative">
-        {/* 8개의 원을 원형으로 배치 */}
-        <div className="absolute top-0 left-1/2 w-2 h-2 bg-white rounded-full transform -translate-x-1/2 opacity-100"></div>
-        <div className="absolute top-1 right-1 w-2 h-2 bg-white rounded-full opacity-90"></div>
-        <div className="absolute top-1/2 right-0 w-2 h-2 bg-white rounded-full transform -translate-y-1/2 opacity-80"></div>
-        <div className="absolute bottom-1 right-1 w-2 h-2 bg-white rounded-full opacity-70"></div>
-        <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-white rounded-full transform -translate-x-1/2 opacity-60"></div>
-        <div className="absolute bottom-1 left-1 w-2 h-2 bg-white rounded-full opacity-50"></div>
-        <div className="absolute top-1/2 left-0 w-2 h-2 bg-white rounded-full transform -translate-y-1/2 opacity-40"></div>
-        <div className="absolute top-1 left-1 w-2 h-2 bg-white rounded-full opacity-30"></div>
+// 캐릭터 말하는 애니메이션 컴포넌트
+const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = ({ className = "", personaId }) => {
+  // 캐릭터별 GIF 파일 매핑
+  const getTalkingGif = (personaId: number | undefined) => {
+    switch (personaId) {
+      case 1: // 추진이
+        return "/assets/추진이 gif.gif";
+      case 2: // 내면이
+        return "/assets/persona/내면이 gif.gif";
+      case 3: // 관계이
+        return "/assets/관계이 gif.gif";
+      default:
+        // 다른 캐릭터들은 기본 애니메이션 사용
+        return null;
+    }
+  };
+
+  // 캐릭터별 크기 설정 (getCharacterSize와 동일)
+  const getGifSize = (personaId: number | undefined) => {
+    switch (personaId) {
+      case 4: // 쾌락이
+        return "w-[450px] h-[450px]";
+      case 2: // 내면이
+        return "w-[480px] h-[480px]";
+      case 3: // 관계이
+        return "w-[800px] h-[800px]"; 
+      case 1: // 추진이
+        return "w-[796px] h-[796px]";
+      default:
+        return "w-95 h-95";
+    }
+  };
+
+  const gifSrc = getTalkingGif(personaId);
+  const gifSize = getGifSize(personaId);
+
+  // GIF가 있는 캐릭터는 GIF 표시, 없는 캐릭터는 기본 애니메이션
+  if (gifSrc) {
+    return (
+      <div className={`relative overflow-visible ${className}`}>
+        <img 
+          src={gifSrc}
+          alt="캐릭터 말하는 애니메이션"
+          className={`${gifSize} object-contain max-w-none max-h-none`}
+        />
       </div>
-    </div>
-  </div>
-)
+    );
+  } else {
+    // 기본 말풍선 애니메이션
+    return (
+      <div className={`relative ${className}`}>
+        <div className="w-20 h-20 flex items-center justify-center">
+          <div className="relative">
+            <div className="w-16 h-12 bg-white/30 rounded-2xl flex items-center justify-center animate-pulse">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+              <div className="w-0 h-0 border-l-4 border-r-4 border-t-8 border-transparent border-t-white/30"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
 const ChatPage: React.FC<ChatPageProps> = ({
@@ -643,17 +692,17 @@ return (
 
     {/* Main chat interface - Compact layout optimized for viewport */}
     <div
-      className={`relative z-10 transition-all duration-300 ${showChatPanel ? "mr-96" : ""}`}
+      className={`relative z-10 transition-all duration-300 overflow-visible ${showChatPanel ? "mr-96" : ""}`}
       style={{ height: "calc(100vh - 100px)", paddingTop: "20px", paddingBottom: "20px" }}
     >
-      <div className="h-full flex flex-col justify-center items-center px-4 relative">
-        {/* Character with loading spinner */}
-        <div className="flex justify-center items-center relative mb-4">
+      <div className="h-full flex flex-col justify-center items-center px-4 relative overflow-visible">
+        {/* Character with talking animation */}
+        <div className="flex justify-center items-center relative mb-4 overflow-visible">
           {actualPersonaId && currentAvatarPath && imageLoaded ? (
             <img
               src={currentAvatarPath}
               alt={currentPersonaName || "캐릭터"}
-              className={`${currentCharacterSize} object-contain transition-opacity duration-300`}
+              className={`${currentCharacterSize} object-contain transition-opacity duration-300 ${isSending ? 'opacity-0' : 'opacity-100'}`}
               onLoad={() => setImageLoaded(true)}
             />
           ) : actualPersonaId && currentAvatarPath ? (
@@ -674,12 +723,14 @@ return (
               </div>
             </div>
           )}
-          {/* 원형 스피너 - 캐릭터 이미지 위쪽 중앙에 위치 */}
-          {isSending && (
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-4">
-              <CircularSpinner />
+          
+          {/* 응답 생성 중일 때 GIF 애니메이션 표시 */}
+          {isSending && actualPersonaId && currentAvatarPath && imageLoaded && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 overflow-visible">
+              <TalkingAnimation personaId={actualPersonaId} />
             </div>
           )}
+
         </div>
 
         {/* Latest bot message - positioned to avoid overlapping with input */}
