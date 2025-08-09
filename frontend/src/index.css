@@ -72,3 +72,38 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* 캐릭터 떠오르는 애니메이션 */
+@keyframes characterFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-character-float {
+  animation: characterFloat 5s ease-in-out infinite;
+}
+
+/* 캐릭터별 다른 애니메이션 지연 시간 */
+.animate-character-float-delayed-1 {
+  animation: characterFloat 5s ease-in-out infinite;
+  animation-delay: -1s;
+}
+
+.animate-character-float-delayed-2 {
+  animation: characterFloat 5s ease-in-out infinite;
+  animation-delay: -1s;
+}
+
+.animate-character-float-delayed-3 {
+  animation: characterFloat 5s ease-in-out infinite;
+  animation-delay: -1s;
+}
+
+.animate-character-float-delayed-4 {
+  animation: characterFloat 5s ease-in-out infinite;
+  animation-delay: -1s;
+}

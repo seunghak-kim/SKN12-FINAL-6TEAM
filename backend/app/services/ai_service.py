@@ -116,6 +116,35 @@ class AIService:
 위 정보를 바탕으로 사용자의 심리 상태와 성향을 고려한 개인화된 상담을 제공해주세요.
 """
     
+    def _detect_character_reference(self, user_message: str) -> Optional[str]:
+        """사용자 메시지에서 다른 캐릭터에 대한 언급을 감지"""
+        character_names = self.prompt_manager.get_all_character_names()
+        
+        for character in character_names:
+            if character in user_message:
+                return character
+        return None
+    
+    def _get_character_context(self, current_persona: str, referenced_character: str) -> str:
+        """참조된 캐릭터에 대한 컨텍스트 정보 생성"""
+        character_info = self.prompt_manager.get_character_info(current_persona, referenced_character)
+        
+        if character_info:
+            return f"""
+## 캐릭터 상호작용 컨텍스트
+
+사용자가 '{referenced_character}'에 대해 질문했습니다. 다음 정보를 바탕으로 답변해주세요:
+
+{character_info}
+
+**답변 가이드라인:**
+- {referenced_character}의 특성과 말투를 정확히 설명해주세요
+- 현재 당신({self.prompt_manager.persona_names.get(current_persona, '')})의 관점에서 {referenced_character}을 어떻게 보는지 포함해주세요
+- {referenced_character}가 그런 특성을 가지게 된 이유나 배경을 에니어그램 관점에서 설명해주세요
+- 따뜻하고 이해하기 쉽게 설명해주세요
+"""
+        return ""
+    
     def process_message(self, session_id: UUID, user_message: str, persona_type: str = "내면형", **context) -> str:
         """2단계 체이닝으로 페르소나 챗봇 메시지 처리"""
         try:
@@ -139,6 +168,12 @@ class AIService:
             # 컨텍스트에 user_nickname 추가 (context에서 가져오거나 기본값 사용)
             user_nickname = context.get('user_nickname', '사용자')
             context_with_nickname = {**context, 'user_nickname': user_nickname}
+            
+            # 캐릭터 간 상호작용 감지
+            referenced_character = self._detect_character_reference(user_message)
+            if referenced_character:
+                character_context = self._get_character_context(persona_type, referenced_character)
+                context_with_nickname['character_interaction'] = character_context
             
             # 1단계: 공통 답변 생성 (세션 정보 포함)
             common_response, tokens_step1 = self._generate_common_response(session, messages, user_message, **context_with_nickname)
@@ -245,11 +280,20 @@ class AIService:
 
 위 요약은 이전 대화의 핵심 내용입니다. 이를 참고하여 대화의 연속성을 유지해주세요."""
             
+            # 캐릭터 상호작용 컨텍스트 준비
+            character_interaction_context = ""
+            if 'character_interaction' in kwargs and kwargs['character_interaction']:
+                character_interaction_context = f"""
+
+{kwargs['character_interaction']}
+
+위 캐릭터 정보를 바탕으로 사용자의 질문에 답변해주세요."""
+            
             # LLM에 보낼 메시지 구성
             llm_messages = []
             llm_messages.append(SystemMessage(content=f"""# 거북이상담소 AI 상담사 - 공통 답변 생성
 
-{common_rules}{user_analysis_context}{conversation_context}
+{common_rules}{user_analysis_context}{conversation_context}{character_interaction_context}
 
 ## 호칭 규칙
 답변할 때 다음 호칭 규칙을 반드시 따르세요:

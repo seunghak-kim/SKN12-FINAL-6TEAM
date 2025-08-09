@@ -22,11 +22,24 @@ class PersonaPromptManager:
             "쾌락형": "querock_persona.md"
         }
         
+        # 캐릭터 이름 매핑
+        self.persona_names = {
+            "내면형": "내면이",
+            "추진형": "추진이", 
+            "관계형": "관계이",
+            "안정형": "안정이",
+            "쾌락형": "쾌락이"
+        }
+        
         # 프롬프트 템플릿 캐시
         self._template_cache: Dict[str, PromptTemplate] = {}
         
+        # 캐릭터 지식 베이스 캐시
+        self._character_knowledge: Optional[str] = None
+        
         # 초기화 시 모든 템플릿 로드
         self._load_all_templates()
+        self._load_character_knowledge()
     
     def _load_all_templates(self):
         """모든 페르소나 템플릿을 미리 로드하여 캐싱"""
@@ -111,6 +124,78 @@ class PersonaPromptManager:
                 # 최후의 수단으로 기본 템플릿 생성
                 default_template = self._create_default_template(persona_type)
                 return default_template.template
+    
+    def _load_character_knowledge(self):
+        """캐릭터 지식 베이스 로드"""
+        try:
+            knowledge_file = os.path.join(self.prompts_dir, "character_knowledge.md")
+            with open(knowledge_file, "r", encoding="utf-8") as f:
+                self._character_knowledge = f.read()
+            logger.info("캐릭터 지식 베이스 로드 성공")
+        except Exception as e:
+            logger.warning(f"캐릭터 지식 베이스 로드 실패: {e}")
+            self._character_knowledge = ""
+    
+    def get_character_info(self, current_persona: str, target_character: str) -> str:
+        """특정 캐릭터에 대한 정보를 현재 페르소나 관점에서 반환"""
+        if not self._character_knowledge:
+            return ""
+        
+        # 캐릭터 이름을 페르소나 타입으로 변환
+        target_persona_type = None
+        for persona_type, name in self.persona_names.items():
+            if name == target_character:
+                target_persona_type = persona_type
+                break
+        
+        if not target_persona_type:
+            return ""
+        
+        # 현재 페르소나가 해당 캐릭터를 어떻게 보는지 정보 추출
+        current_name = self.persona_names.get(current_persona, "")
+        if not current_name:
+            return ""
+        
+        try:
+            # 캐릭터 기본 정보 추출
+            target_info_section = f"## 🌟 {target_character}" if target_character == "쾌락이" else f"## 🌊 {target_character}" if target_character == "내면이" else f"## 🤝 {target_character}" if target_character == "관계이" else f"## 🏔️ {target_character}" if target_character == "안정이" else f"## 🚀 {target_character}"
+            
+            lines = self._character_knowledge.split('\n')
+            target_info = ""
+            current_section = ""
+            
+            for line in lines:
+                if line.startswith("## ") and target_character in line:
+                    current_section = "target_info"
+                    target_info += line + "\n"
+                elif line.startswith("## ") and current_section == "target_info":
+                    break
+                elif current_section == "target_info":
+                    target_info += line + "\n"
+            
+            # 현재 캐릭터가 타겟 캐릭터를 보는 관점 추출
+            perspective_section = f"### {current_name} 👀 다른 캐릭터들"
+            perspective_info = ""
+            current_section = ""
+            
+            for line in lines:
+                if perspective_section in line:
+                    current_section = "perspective"
+                elif line.startswith("### ") and current_section == "perspective":
+                    break
+                elif current_section == "perspective" and f"**{target_character}**" in line:
+                    perspective_info = line + "\n"
+                    break
+            
+            return f"{target_info.strip()}\n\n### {current_name}의 관점에서:\n{perspective_info.strip()}"
+            
+        except Exception as e:
+            logger.error(f"캐릭터 정보 추출 실패: {e}")
+            return ""
+    
+    def get_all_character_names(self) -> list:
+        """모든 캐릭터 이름 목록 반환"""
+        return list(self.persona_names.values())
     
     def get_available_personas(self) -> list:
         """사용 가능한 페르소나 타입 목록 반환"""

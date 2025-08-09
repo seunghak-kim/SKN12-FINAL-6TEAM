@@ -40,6 +40,25 @@ const getPersonaBaseGreeting = (personaName: string) => {
   return baseGreetings[personaName];
 };
 
+// 캐릭터별 떠오르는 애니메이션 스타일 결정 함수
+const getFloatAnimationStyle = (personaId: number | null): React.CSSProperties => {
+  const getDelay = () => {
+    switch (personaId) {
+      case 1: return '-0.6s'; // 추진이
+      case 2: return '-1.2s'; // 내면이
+      case 3: return '-1.8s'; // 관계이
+      case 4: return '-2.4s'; // 쾌락이
+      case 5: return '0s';    // 안정이
+      default: return '0s';
+    }
+  };
+
+  return {
+    animation: `characterFloat 3s ease-in-out infinite`,
+    animationDelay: getDelay(),
+  };
+};
+
 // 캐릭터 말하는 애니메이션 컴포넌트
 const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = ({ className = "", personaId }) => {
   // 캐릭터별 GIF 파일 매핑
@@ -84,6 +103,7 @@ const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = (
           src={gifSrc}
           alt="캐릭터 말하는 애니메이션"
           className={`${gifSize} object-contain max-w-none max-h-none`}
+          style={getFloatAnimationStyle(personaId)}
         />
       </div>
     );
@@ -703,6 +723,7 @@ return (
               src={currentAvatarPath}
               alt={currentPersonaName || "캐릭터"}
               className={`${currentCharacterSize} object-contain transition-opacity duration-300 ${isSending ? 'opacity-0' : 'opacity-100'}`}
+              style={getFloatAnimationStyle(actualPersonaId)}
               onLoad={() => setImageLoaded(true)}
             />
           ) : actualPersonaId && currentAvatarPath ? (
