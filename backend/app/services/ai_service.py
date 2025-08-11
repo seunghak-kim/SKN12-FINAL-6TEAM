@@ -263,44 +263,45 @@ class AIService:
                     # 기존 형식의 분석 결과 (호환성 유지)
                     user_analysis_context = f"""
 
-[사용자 그림검사 분석 정보]
-이 사용자의 그림검사 분석 결과를 참고하여 더 개인화된 상담을 제공해주세요:
-- 주요 심리 특성: {analysis_result.get('result_text', '분석 정보 없음')}
-- 분석 요약: {analysis_result.get('raw_text', '')[:200]}...
+                    [사용자 그림검사 분석 정보]
+                    이 사용자의 그림검사 분석 결과를 참고하여 더 개인화된 상담을 제공해주세요:
+                    - 주요 심리 특성: {analysis_result.get('result_text', '분석 정보 없음')}
+                    - 분석 요약: {analysis_result.get('raw_text', '')[:200]}...
 
-위 정보를 바탕으로 사용자의 심리 상태와 성향을 고려한 답변을 생성해주세요."""
-            
-            # 대화 요약 컨텍스트 준비
-            conversation_context = ""
-            if session.conversation_summary:
-                conversation_context = f"""
+                    위 정보를 바탕으로 사용자의 심리 상태와 성향을 고려한 답변을 생성해주세요."""
+                                
+                    # 대화 요약 컨텍스트 준비
+                    conversation_context = ""
+                    if session.conversation_summary:
+                        conversation_context = f"""
 
-[과거 대화 요약]
-{session.conversation_summary}
+                    [과거 대화 요약]
+                    {session.conversation_summary}
 
-위 요약은 이전 대화의 핵심 내용입니다. 이를 참고하여 대화의 연속성을 유지해주세요."""
+                    위 요약은 이전 대화의 핵심 내용입니다. 이를 참고하여 대화의 연속성을 유지해주세요."""
             
             # 캐릭터 상호작용 컨텍스트 준비
             character_interaction_context = ""
             if 'character_interaction' in kwargs and kwargs['character_interaction']:
                 character_interaction_context = f"""
 
-{kwargs['character_interaction']}
+            {kwargs['character_interaction']}
 
-위 캐릭터 정보를 바탕으로 사용자의 질문에 답변해주세요."""
-            
+            위 캐릭터 정보를 바탕으로 사용자의 질문에 답변해주세요."""
+                        
             # LLM에 보낼 메시지 구성
             llm_messages = []
             llm_messages.append(SystemMessage(content=f"""# 거북이상담소 AI 상담사 - 공통 답변 생성
 
-{common_rules}{user_analysis_context}{conversation_context}{character_interaction_context}
+            {common_rules}{user_analysis_context}{conversation_context}{character_interaction_context}
 
-## 호칭 규칙
-답변할 때 다음 호칭 규칙을 반드시 따르세요:
-- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}' 사용
+            ## 호칭 규칙
+            답변할 때 자연스러운 호칭을 사용하세요:
+            - 필요할 때만 '{user_nickname}님'으로 부르되, 매번 부르지 마세요
+            - '사용자', '당신'보다는 자연스러운 반말이나 존댓말 사용
 
-위 규칙에 따라 사용자의 메시지에 대해 기본적이고 중립적인 상담 답변을 생성해주세요.
-이 답변은 나중에 각 페르소나의 특성에 맞게 변환될 예정입니다."""))
+            위 규칙에 따라 사용자의 메시지에 대해 기본적이고 중립적인 상담 답변을 생성해주세요.
+            이 답변은 나중에 각 페르소나의 특성에 맞게 변환될 예정입니다."""))
             
             # 대화 히스토리 추가 (최근 8개만)
             recent_messages = messages[-8:] if len(messages) > 8 else messages
@@ -357,27 +358,28 @@ class AIService:
             # 변환용 프롬프트 구성
             transform_prompt = f"""# 페르소나 변환 시스템
 
-{common_rules}
+            {common_rules}
 
-다음은 당신의 페르소나 특성입니다:
+            다음은 당신의 페르소나 특성입니다:
 
-{persona_prompt}{user_analysis_context}
+            {persona_prompt}{user_analysis_context}
 
-## 호칭 규칙
-답변할 때 다음 호칭 규칙을 반드시 따르세요:
-- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}님' 사용
+            ## 호칭 규칙
+            답변할 때 자연스러운 호칭을 사용하세요:
+            - 필요할 때만 '{user_nickname}님'으로 부르되, 매번 부르지 마세요
+            - 친근하고 자연스러운 말투로 대화
 
-## 변환 작업
-위의 공통 규칙, 페르소나 특성, 그림분석 결과를 모두 반영하여 다음 기본 답변을 자연스럽게 변환해주세요:
+            ## 변환 작업
+            위의 공통 규칙, 페르소나 특성, 그림분석 결과를 모두 반영하여 다음 기본 답변을 자연스럽게 변환해주세요:
 
-**기본 답변:**
-{common_response}
+            **기본 답변:**
+            {common_response}
 
-**사용자 메시지:**
-{user_message}
+            **사용자 메시지:**
+            {user_message}
 
-페르소나의 말투, 성격, 상담 스타일을 반영하고, 사용자의 심리 특성도 고려하여 답변을 변환해주세요. 
-답변의 핵심 내용과 의도는 유지하되, 표현 방식을 페르소나와 사용자에게 맞게 조정해주세요."""
+            페르소나의 말투, 성격, 상담 스타일을 반영하고, 사용자의 심리 특성도 고려하여 답변을 변환해주세요. 
+            답변의 핵심 내용과 의도는 유지하되, 표현 방식을 페르소나와 사용자에게 맞게 조정해주세요."""
             
             llm_messages = [
                 SystemMessage(content=transform_prompt),
@@ -482,26 +484,26 @@ class AIService:
         # GPT-4o 프롬프트 구성
         prompt = f"""# 거북이상담소 AI 상담사 - 개인화된 첫 인사 생성
 
-{common_rules}
+        {common_rules}
 
-{persona_prompt}
+        {persona_prompt}
 
-**중요한 말투 규칙:**
-- 절대 존댓말을 사용하지 마세요 ("안녕하세요" 금지)
-- 위의 페르소나 특성과 말투 규칙을 정확히 따라주세요
+        **중요한 말투 규칙:**
+        - 절대 존댓말을 사용하지 마세요 ("안녕하세요" 금지)
+        - 위의 페르소나 특성과 말투 규칙을 정확히 따라주세요
 
-## 호칭 규칙
-답변할 때 다음 호칭 규칙을 반드시 따르세요:
-- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}님' 사용
-- 자연스럽고 친근한 톤으로 대화
-- 예: "당신이 원하는..." → "{user_nickname}님이 원하시는..."
+        ## 호칭 규칙
+        답변할 때 자연스러운 호칭을 사용하세요:
+        - 필요할 때만 '{user_nickname}님'으로 부르되, 매번 부르지 마세요
+        - 자연스럽고 친근한 톤으로 대화
+        - 부담스럽지 않게 자연스러운 말투 사용
 
-사용자의 그림검사 분석 결과를 바탕으로 개인화된 첫 인사 메시지를 생성해주세요.
+        사용자의 그림검사 분석 결과를 바탕으로 개인화된 첫 인사 메시지를 생성해주세요.
 
-**그림 분석 결과:**
-{analysis_summary}
+        **그림 분석 결과:**
+        {analysis_summary}
 
-위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나는 150자 이내의 첫 인사 메시지를 생성해주세요."""
+        위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나는 150자 이내의 첫 인사 메시지를 생성해주세요."""
 
         # GPT-4o 호출
         from langchain.schema import HumanMessage
@@ -550,20 +552,21 @@ class AIService:
             # 요약 프롬프트
             summary_prompt = f"""다음은 심리 상담 대화 내용입니다. 이를 간결하게 요약해주세요.
 
-기존 요약 (있다면):
-{existing_summary}
+            기존 요약 (있다면):
+            {existing_summary}
 
-새로운 대화 내용:
-{conversation_str}
+            새로운 대화 내용:
+            {conversation_str}
 
-요구사항:
-1. 사용자의 주요 고민과 감정 상태를 중심으로 요약
-2. 상담사가 제공한 주요 조언이나 통찰 포함  
-3. 대화의 흐름과 중요한 전환점 기록
-4. 200자 이내로 간결하게 작성
-5. 기존 요약이 있다면 통합하여 작성
+            요구사항:
+            1. 사용자의 주요 고민과 감정 상태를 중심으로 요약
+            2. 상담사가 제공한 주요 조언이나 통찰 포함  
+            3. 대화의 흐름과 중요한 전환점 기록
+            4. 200자 이내로 간결하게 작성
+            5. 기존 요약이 있다면 통합하여 작성
 
-요약:"""
+            요약:
+            """
 
             # GPT로 요약 생성
             from langchain.schema import HumanMessage
