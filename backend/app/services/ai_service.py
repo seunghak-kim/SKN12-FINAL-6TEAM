@@ -282,10 +282,10 @@ class AIService:
             
             # 캐릭터 상호작용 컨텍스트 준비
             character_interaction_context = ""
-            if 'character_interaction' in kwargs and kwargs['character_interaction']:
+            if 'character_interaction' in context and context['character_interaction']:
                 character_interaction_context = f"""
 
-{kwargs['character_interaction']}
+{context['character_interaction']}
 
 위 캐릭터 정보를 바탕으로 사용자의 질문에 답변해주세요."""
             
