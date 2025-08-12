@@ -365,7 +365,7 @@ class AIService:
 
 ## 호칭 규칙
 답변할 때 다음 호칭 규칙을 반드시 따르세요:
-- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}님' 사용
+- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}' 사용
 
 ## 변환 작업
 위의 공통 규칙, 페르소나 특성, 그림분석 결과를 모두 반영하여 다음 기본 답변을 자연스럽게 변환해주세요:
@@ -486,22 +486,20 @@ class AIService:
 
 {persona_prompt}
 
-**중요한 말투 규칙:**
-- 절대 존댓말을 사용하지 마세요 ("안녕하세요" 금지)
-- 위의 페르소나 특성과 말투 규칙을 정확히 따라주세요
-
 ## 호칭 규칙
 답변할 때 다음 호칭 규칙을 반드시 따르세요:
-- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}님' 사용
-- 자연스럽고 친근한 톤으로 대화
-- 예: "당신이 원하는..." → "{user_nickname}님이 원하시는..."
+- '사용자', '너', '당신', '귀하' 대신 '{user_nickname}' 사용
 
+## 첫 인사 생성 요구사항
 사용자의 그림검사 분석 결과를 바탕으로 개인화된 첫 인사 메시지를 생성해주세요.
 
 **그림 분석 결과:**
 {analysis_summary}
 
-위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나는 150자 이내의 첫 인사 메시지를 생성해주세요."""
+**생성 지침:**
+- 위 분석 결과를 자연스럽게 반영하되, 분석 내용을 직접 언급하지 말고 은연중에 드러나도록 함
+- 150자 이내의 간결한 첫 인사 메시지
+- 위에 명시된 모든 페르소나 특성, 말투 규칙, 어조 규칙을 정확히 준수"""
 
         # GPT-4o 호출
         from langchain.schema import HumanMessage
@@ -571,7 +569,7 @@ class AIService:
             response = self.llm.invoke([HumanMessage(content=summary_prompt)])
             summary = response.content.strip()
             
-            print(f"[요약] 생성된 대화 요약: {summary[:100]}...")
+            print(f"[요약] 생성된 대화 요약: {summary}")
             return summary
             
         except Exception as e:
