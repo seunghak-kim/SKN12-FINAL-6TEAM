@@ -17,7 +17,7 @@ interface UseChatSessionReturn {
   greeting: string | null;
 
   // 액션
-  createSession: (data: CreateSessionRequest) => Promise<void>;
+  createSession: (data: CreateSessionRequest) => Promise<ChatSession | null>;
   sendMessage: (content: string) => Promise<void>;
   loadSession: (sessionId: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
@@ -47,93 +47,80 @@ export const useChatSession = (): UseChatSessionReturn => {
     }
   }, []);
 
-  // 새 채팅 세션 생성
-  const createSession = useCallback(async (data: CreateSessionRequest) => {
-    // 이미 세션이 있거나 로딩 중이거나 세션 생성 중이면 중복 생성 방지
-    if (session || isLoading || isCreatingSession) {
-      console.log('세션 생성 중복 방지:', { 
-        hasSession: !!session, 
-        isLoading, 
-        isCreatingSession 
-      });
-      return;
+  const createSession = useCallback(async (data: CreateSessionRequest): Promise<ChatSession | null> => {
+    // resetSession 직후에는 session이 null이므로 isLoading, isCreatingSession만 체크
+    if (isLoading || isCreatingSession) {
+      console.log('세션 생성 중복 방지:', { hasSession: !!session, isLoading, isCreatingSession });
+      return null; // 중복 생성 방지
     }
+
+  setIsCreatingSession(true);
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    console.log('세션 생성 요청:', data);
+    const newSession = await chatService.createSession(data);
+    console.log('세션 생성 성공:', newSession);
+    setSession(newSession);
+
+    const sessionData = {
+      sessionId: newSession.chat_sessions_id,
+      personaId: newSession.persona_id,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem('lastChatSession', JSON.stringify(sessionData));
+    console.log('useChatSession - 세션 정보 localStorage에 저장:', sessionData);
+
+    // 개인화된 인사 생성을 백그라운드에서 처리하고 즉시 메시지 로드
+    console.log('createSession - 개인화된 인사 API 호출 시작 (백그라운드)');
     
-    setIsCreatingSession(true);
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      console.log('세션 생성 요청:', data);
-      const newSession = await chatService.createSession(data);
-      console.log('세션 생성 성공:', newSession);
-      setSession(newSession);
-      
-      // localStorage에 세션 정보 저장
-      const sessionData = {
-        sessionId: newSession.chat_sessions_id,
-        personaId: newSession.persona_id,
-        timestamp: Date.now()
-      };
-      localStorage.setItem('lastChatSession', JSON.stringify(sessionData));
-      console.log('useChatSession - 세션 정보 localStorage에 저장:', sessionData);
-      
-      // 세션 생성 후 개인화된 인사 API 호출
-      try {
-        console.log('createSession - 개인화된 인사 API 호출 시작');
-        const personalizedGreeting = await chatService.getPersonalizedGreeting(newSession.chat_sessions_id);
+    // 개인화된 인사 생성 (백그라운드에서 처리)
+    chatService.getPersonalizedGreeting(newSession.chat_sessions_id)
+      .then(personalizedGreeting => {
         console.log('createSession - 개인화된 인사 API 응답:', personalizedGreeting);
-        
         if (personalizedGreeting.greeting) {
           console.log('createSession - 개인화된 인사 설정:', personalizedGreeting.greeting);
           setGreeting(personalizedGreeting.greeting);
           
-          // 개인화된 인사가 생성되었으므로 메시지 다시 로드 (DB에 저장된 메시지 포함)
+          // 개인화된 인사가 생성되면 메시지 다시 로드
           setTimeout(async () => {
             try {
-              const sessionMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
-              const frontendMessages = sessionMessages.map(msg => 
-                ChatService.convertToFrontendMessage(msg)
-              );
+              const updatedMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
+              const frontendMessages = updatedMessages.map(m => ChatService.convertToFrontendMessage(m));
               setMessages(frontendMessages);
-              console.log('createSession - 개인화된 인사 반영 후 메시지 업데이트 완료, 메시지 수:', frontendMessages.length);
-            } catch (updateError) {
-              console.error('createSession - 메시지 업데이트 실패:', updateError);
+              console.log('createSession - 개인화된 인사 반영 후 메시지 업데이트, 메시지 수:', frontendMessages.length);
+            } catch (e) {
+              console.error('개인화된 인사 반영 후 메시지 로드 실패:', e);
             }
-          }, 1000); // 1초 후에 메시지 다시 로드
-        } else {
-          // 개인화된 인사가 없는 경우 바로 메시지 로드
-          try {
-            const sessionMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
-            const frontendMessages = sessionMessages.map(msg => 
-              ChatService.convertToFrontendMessage(msg)
-            );
-            setMessages(frontendMessages);
-          } catch (messageError) {
-            console.error('초기 메시지 로드 실패:', messageError);
-          }
+          }, 300); // 300ms로 단축
         }
-      } catch (greetingError) {
-        console.error('createSession - 개인화된 인사 로드 실패:', greetingError);
-        // 개인화된 인사 실패해도 기본 메시지는 로드
-        try {
-          const sessionMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
-          const frontendMessages = sessionMessages.map(msg => 
-            ChatService.convertToFrontendMessage(msg)
-          );
-          setMessages(frontendMessages);
-        } catch (messageError) {
-          console.error('초기 메시지 로드 실패:', messageError);
-        }
-      }
-    } catch (error) {
-      console.error('createSession 에러:', error);
-      handleError(error);
-    } finally {
-      setIsLoading(false);
-      setIsCreatingSession(false);
+      })
+      .catch(e => {
+        console.error('createSession - 개인화된 인사 로드 실패:', e);
+      });
+
+    // 초기 메시지 로드 (개인화된 인사 생성과 병렬 처리)
+    try {
+      const sessionMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
+      const frontendMessages = sessionMessages.map((m) => ChatService.convertToFrontendMessage(m));
+      setMessages(frontendMessages);
+      console.log('createSession - 초기 메시지 로드 완료, 메시지 수:', frontendMessages.length);
+    } catch (e) {
+      console.error('초기 메시지 로드 실패:', e);
     }
-  }, [session, isLoading, isCreatingSession, handleError]);
+
+    return newSession; // ✅ 여기!
+  } catch (error) {
+    console.error('createSession 에러:', error);
+    handleError(error);
+    return null; // 실패 시 null
+  } finally {
+    setIsLoading(false);
+    setIsCreatingSession(false);
+  }
+}, [session, isLoading, isCreatingSession, handleError]);
+
 
 
   // 세션 상세 정보 로드

@@ -215,7 +215,8 @@ useEffect(() => {
     sendMessage,
     loadSession,
     clearError,
-    clearMessages
+    clearMessages,
+    resetSession
   } = useChatSession();
 
 // 실제 사용자 ID 가져오기
@@ -932,44 +933,54 @@ return (
           <div className="px-4 py-8 border-t border-white/30 flex-shrink-0 space-y-2 mt-6">
             <Button
               onClick={async () => {
-                console.log('버튼 클릭됨! 상태 확인:', { 
+                console.log('새로운 채팅 세션 버튼 클릭:', { 
                   currentUserId, 
                   actualPersonaId, 
                   currentPersonaName,
-                  session: session?.chat_sessions_id
+                  currentSession: session?.chat_sessions_id
                 })
                 
-                // 현재 페르소나와 새로운 세션 생성
                 if (currentUserId !== null && actualPersonaId !== null) {
-                  console.log('새로운 채팅 세션 생성 시작:', { currentUserId, actualPersonaId, currentPersonaName })
-                  
                   try {
-                    // 기존 세션 정보 삭제
-                    localStorage.removeItem('lastChatSession')
+                    console.log('기존 세션 리셋 시작')
                     
-                    // URL에서 sessionId 파라미터 제거  
+                    // 1. 기존 세션 상태 완전히 리셋
+                    resetSession()
+                    
+                    // 2. localStorage 및 URL 정리
+                    localStorage.removeItem('lastChatSession')
                     const currentUrl = new URL(window.location.href)
                     currentUrl.searchParams.delete('sessionId')
                     window.history.replaceState({}, '', currentUrl.toString())
                     
-                    // chatService를 사용해서 새로운 세션 생성 (POST 방식)
-                    const newSession = await chatService.createSession({
+                    console.log('세션 리셋 완료, 새로운 세션 생성 시작')
+                    
+                    // 3. 새로운 세션 생성 (개인화된 인사 포함)
+                    const newSession = await createSession({
                       user_id: currentUserId,
                       persona_id: actualPersonaId,
                       session_name: `${currentPersonaName}와의 대화`
                     })
-                    
-                    console.log('새로운 세션 생성 성공:', newSession)
-                    
-                    // 새로운 세션으로 리다이렉트 (개인화된 인사는 loadSession에서 처리)
-                    window.location.href = `/chat?sessionId=${newSession.chat_sessions_id}`
-                    
+
+                    if (newSession) {
+                      console.log('새로운 세션 생성 성공:', newSession.chat_sessions_id)
+                      
+                      // 4. URL에 새 세션 ID 반영 (리다이렉트 없음)
+                      const newUrl = new URL(window.location.href)
+                      newUrl.searchParams.set('sessionId', newSession.chat_sessions_id)
+                      window.history.replaceState(null, '', newUrl.toString())
+                      
+                      console.log('새로운 채팅 세션 준비 완료')
+                    } else {
+                      console.error('새로운 세션 생성 실패')
+                      alert('새로운 세션 생성에 실패했습니다. 다시 시도해주세요.')
+                    }
                   } catch (error) {
                     console.error('새로운 세션 생성 중 오류:', error)
                     alert('오류가 발생했습니다: ' + (error instanceof Error ? error.message : String(error)))
                   }
                 } else {
-                  console.error('새로운 세션 생성 실패: 사용자 ID 또는 페르소나 ID가 없습니다.', { currentUserId, actualPersonaId })
+                  console.error('사용자 ID 또는 페르소나 ID가 없습니다:', { currentUserId, actualPersonaId })
                   alert('새로운 세션을 시작할 수 없습니다. 페이지를 새로고침해주세요.')
                 }
               }}
