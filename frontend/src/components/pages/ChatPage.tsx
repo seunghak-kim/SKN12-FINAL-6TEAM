@@ -798,7 +798,7 @@ return (
             return lastBotMessage ? (
               <div className="w-full">
                 <div className="bg-black/35 backdrop-blur-md rounded-3xl px-8 py-6 text-center shadow-2xl relative border border-white/10">
-                  <p className="text-white text-lg leading-relaxed">{lastBotMessage.content}</p>
+                  <p className="text-white text-lg leading-relaxed whitespace-pre-wrap">{lastBotMessage.content}</p>
                   {/* Speech bubble tail */}
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
                     <div className="w-0 h-0 border-l-8 border-r-8 border-t-16 border-transparent border-t-black/35"></div>
@@ -883,7 +883,7 @@ return (
                    <div key={index} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
                      <div className="flex flex-col max-w-[80%]">
                        <div
-                         className={`px-4 py-3 rounded-2xl ${
+                         className={`px-4 py-3 rounded-2xl whitespace-pre-wrap ${
                            message.type === "user"
                              ? "bg-blue-500/90 text-white rounded-br-md shadow-lg"
                              : "bg-white/90 text-gray-800 rounded-bl-md shadow-lg"
