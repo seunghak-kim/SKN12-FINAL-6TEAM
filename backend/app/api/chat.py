@@ -394,6 +394,28 @@ async def get_personalized_greeting(
                 print(f"[개인화 인사] AI 서비스로 개인화된 인사 생성 요청")
                 greeting = ai_service._generate_personalized_greeting(persona_type, user_analysis_result, user_nickname)
                 print(f"[개인화 인사] 생성된 인사: {greeting}")
+                
+                # 🆕 개인화된 인사를 채팅 메시지로 저장 (사이드바 히스토리에 표시되도록)
+                if greeting and greeting.strip():
+                    # 이미 개인화된 인사 메시지가 있는지 확인 (중복 방지)
+                    existing_greeting = db.query(ChatMessage).filter(
+                        ChatMessage.session_id == session_id,
+                        ChatMessage.sender_type == "assistant",
+                        ChatMessage.content.like("%" + greeting[:50] + "%")  # 인사 메시지의 일부로 중복 체크
+                    ).first()
+                    
+                    if not existing_greeting:
+                        # 개인화된 인사를 assistant 메시지로 저장
+                        greeting_message = ChatMessage(
+                            session_id=session_id,
+                            sender_type="assistant",
+                            content=greeting
+                        )
+                        db.add(greeting_message)
+                        db.commit()
+                        print(f"[개인화 인사] 채팅 메시지로 저장 완료: {greeting}")
+                    else:
+                        print(f"[개인화 인사] 이미 저장된 인사 메시지 존재, 저장 생략")
             else:
                 print(f"[개인화 인사] 그림 분석 결과 없음 - 빈 인사 반환")
                 greeting = ""  # 그림 분석 결과가 없으면 빈 문자열
