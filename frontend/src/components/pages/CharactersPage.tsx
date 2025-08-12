@@ -347,6 +347,8 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
       avatar: character.avatar,
     }
     onCharacterSelect(searchResult)
+    // 새로운 캐릭터와의 대화 시작이므로 기존 세션 정보 삭제
+    localStorage.removeItem('lastChatSession');
     onStartChat()
     navigate("/chat")
   }

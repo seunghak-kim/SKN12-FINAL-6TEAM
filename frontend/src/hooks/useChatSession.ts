@@ -68,6 +68,15 @@ export const useChatSession = (): UseChatSessionReturn => {
       console.log('세션 생성 성공:', newSession);
       setSession(newSession);
       
+      // localStorage에 세션 정보 저장
+      const sessionData = {
+        sessionId: newSession.chat_sessions_id,
+        personaId: newSession.persona_id,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('lastChatSession', JSON.stringify(sessionData));
+      console.log('useChatSession - 세션 정보 localStorage에 저장:', sessionData);
+      
       // 세션 생성 후 백그라운드에서 개인화된 인사 로드
       try {
         console.log('개인화된 인사 API 호출 시작:', newSession.chat_sessions_id);
@@ -119,6 +128,15 @@ export const useChatSession = (): UseChatSessionReturn => {
         sessionName: sessionDetail.session_name
       });
       setSession(sessionDetail);
+      
+      // localStorage에 로드된 세션 정보 저장
+      const sessionData = {
+        sessionId: sessionDetail.chat_sessions_id,
+        personaId: sessionDetail.persona_id,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('lastChatSession', JSON.stringify(sessionData));
+      console.log('useChatSession - 로드된 세션 정보 localStorage에 저장:', sessionData);
       
       // 메시지 변환 및 설정
       const frontendMessages = sessionDetail.messages.map(msg => 
