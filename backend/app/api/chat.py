@@ -237,9 +237,12 @@ async def send_message(
             ChatMessage.session_id == session_id
         ).order_by(ChatMessage.created_at.desc()).limit(2).all()
         
-        # 가장 최근의 사용자 메시지와 AI 응답 메시지
-        assistant_message = recent_messages[0]  # 가장 최근 (AI 응답)
-        user_message = recent_messages[1]  # 그 다음 최근 (사용자 메시지)
+        # 시간순으로 정렬하여 사용자 메시지가 먼저, AI 응답이 나중에 오도록 수정
+        recent_messages.sort(key=lambda x: x.created_at)
+        
+        # 이제 순서가 올바름: 사용자 메시지 -> AI 응답
+        user_message = recent_messages[0]  # 먼저 생성된 사용자 메시지
+        assistant_message = recent_messages[1]  # 나중에 생성된 AI 응답
         
         return SendMessageResponse(
             user_message=ChatMessageResponse(
