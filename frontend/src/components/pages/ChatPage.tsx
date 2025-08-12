@@ -10,6 +10,7 @@ import type { SearchResult } from "../../types"
 import { useChatSession } from "../../hooks/useChatSession"
 import { authService } from "../../services/authService"
 import { testService } from "../../services/testService"
+import { chatService } from "../../services/chatService"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -158,8 +159,25 @@ const [imageLoaded, setImageLoaded] = useState(false)
 // location.state에서 캐릭터 정보 가져오기 (ResultDetailPage에서 전달된 정보)
 const stateSelectedCharacter = location.state?.selectedCharacter as SearchResult | undefined
 
-// 최종 선택된 캐릭터 결정 (state > props 순서로 우선순위)
-const selectedCharacter = stateSelectedCharacter || propSelectedCharacter
+// sessionStorage에서 새로운 캐릭터 세션 정보 가져오기
+const [sessionStorageCharacter, setSessionStorageCharacter] = useState<SearchResult | null>(null)
+
+useEffect(() => {
+  const newCharacterSession = sessionStorage.getItem('newCharacterSession')
+  if (newCharacterSession) {
+    try {
+      const characterData = JSON.parse(newCharacterSession)
+      setSessionStorageCharacter(characterData)
+      sessionStorage.removeItem('newCharacterSession') // 사용 후 삭제
+      console.log('SessionStorage에서 캐릭터 정보 복원:', characterData)
+    } catch (error) {
+      console.error('SessionStorage 캐릭터 정보 파싱 오류:', error)
+    }
+  }
+}, [])
+
+// 최종 선택된 캐릭터 결정 (sessionStorage > state > props 순서로 우선순위)
+const selectedCharacter = sessionStorageCharacter || stateSelectedCharacter || propSelectedCharacter
 
 console.log('ChatPage - 캐릭터 정보:', {
   stateSelectedCharacter,
@@ -909,9 +927,56 @@ return (
              )}
              <div ref={sidebarMessagesEndRef} />
            </div>
-
+          
           {/* 하단 버튼 */}
           <div className="px-4 py-8 border-t border-white/30 flex-shrink-0 space-y-2 mt-6">
+            <Button
+              onClick={async () => {
+                console.log('버튼 클릭됨! 상태 확인:', { 
+                  currentUserId, 
+                  actualPersonaId, 
+                  currentPersonaName,
+                  session: session?.chat_sessions_id
+                })
+                
+                // 현재 페르소나와 새로운 세션 생성
+                if (currentUserId !== null && actualPersonaId !== null) {
+                  console.log('새로운 채팅 세션 생성 시작:', { currentUserId, actualPersonaId, currentPersonaName })
+                  
+                  try {
+                    // 기존 세션 정보 삭제
+                    localStorage.removeItem('lastChatSession')
+                    
+                    // URL에서 sessionId 파라미터 제거
+                    const currentUrl = new URL(window.location.href)
+                    currentUrl.searchParams.delete('sessionId')
+                    window.history.replaceState({}, '', currentUrl.toString())
+                    
+                    // chatService를 사용해서 새로운 세션 생성
+                    const newSession = await chatService.createSession({
+                      user_id: currentUserId,
+                      persona_id: actualPersonaId,
+                      session_name: `${currentPersonaName}와의 대화`
+                    })
+                    
+                    console.log('새로운 세션 생성 성공:', newSession)
+                    
+                    // 새로운 세션으로 리다이렉트
+                    window.location.href = `/chat?sessionId=${newSession.chat_sessions_id}`
+                    
+                  } catch (error) {
+                    console.error('새로운 세션 생성 중 오류:', error)
+                    alert('오류가 발생했습니다: ' + (error instanceof Error ? error.message : String(error)))
+                  }
+                } else {
+                  console.error('새로운 세션 생성 실패: 사용자 ID 또는 페르소나 ID가 없습니다.', { currentUserId, actualPersonaId })
+                  alert('새로운 세션을 시작할 수 없습니다. 페이지를 새로고침해주세요.')
+                }
+              }}
+              className="w-full bg-gradient-to-r from-green-500/80 to-teal-600/80 hover:from-green-600/90 hover:to-teal-700/90 text-white py-3 rounded-full font-medium transition-all duration-200 backdrop-blur-sm shadow-lg"
+            >
+              {currentPersonaName}와 새로운 채팅 세션 시작하기
+            </Button>
             <Button
               onClick={() => {
                 // 만족도 조사 모달 표시

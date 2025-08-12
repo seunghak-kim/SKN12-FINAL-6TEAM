@@ -23,6 +23,7 @@ interface UseChatSessionReturn {
   deleteSession: (sessionId: string) => Promise<void>;
   clearError: () => void;
   clearMessages: () => void;
+  resetSession: () => void;
 }
 
 export const useChatSession = (): UseChatSessionReturn => {
@@ -226,6 +227,15 @@ export const useChatSession = (): UseChatSessionReturn => {
     setMessages([]);
   }, []);
 
+  // 세션 완전히 리셋 (새로운 세션 생성을 위해)
+  const resetSession = useCallback(() => {
+    setSession(null);
+    setMessages([]);
+    setError(null);
+    setGreeting(null);
+    setIsCreatingSession(false);
+  }, []);
+
   // greeting 로드 함수 제거 (더 이상 사용하지 않음)
 
   return {
@@ -243,6 +253,7 @@ export const useChatSession = (): UseChatSessionReturn => {
     loadSession,
     deleteSession,
     clearError,
-    clearMessages
+    clearMessages,
+    resetSession
   };
 };
