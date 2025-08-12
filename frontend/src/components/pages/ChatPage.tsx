@@ -947,7 +947,7 @@ return (
                     // 기존 세션 정보 삭제
                     localStorage.removeItem('lastChatSession')
                     
-                    // URL에서 sessionId 파라미터 제거
+                    // URL에서 sessionId 파라미터 제거  
                     const currentUrl = new URL(window.location.href)
                     currentUrl.searchParams.delete('sessionId')
                     window.history.replaceState({}, '', currentUrl.toString())

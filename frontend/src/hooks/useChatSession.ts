@@ -78,21 +78,18 @@ export const useChatSession = (): UseChatSessionReturn => {
       localStorage.setItem('lastChatSession', JSON.stringify(sessionData));
       console.log('useChatSession - 세션 정보 localStorage에 저장:', sessionData);
       
-      // 세션 생성 후 백그라운드에서 개인화된 인사 로드
+      // 세션 생성 후 개인화된 인사 API 호출
       try {
-        console.log('개인화된 인사 API 호출 시작:', newSession.chat_sessions_id);
+        console.log('createSession - 개인화된 인사 API 호출 시작');
         const personalizedGreeting = await chatService.getPersonalizedGreeting(newSession.chat_sessions_id);
-        console.log('개인화된 인사 API 응답:', personalizedGreeting);
+        console.log('createSession - 개인화된 인사 API 응답:', personalizedGreeting);
         
         if (personalizedGreeting.greeting) {
-          console.log('개인화된 인사 설정:', personalizedGreeting.greeting);
+          console.log('createSession - 개인화된 인사 설정:', personalizedGreeting.greeting);
           setGreeting(personalizedGreeting.greeting);
-        } else {
-          console.log('개인화된 인사가 비어있음 - 기본 인사 유지');
         }
       } catch (greetingError) {
-        console.error('개인화된 인사 로드 실패:', greetingError);
-        // 실패해도 기본 인사는 그대로 유지
+        console.error('createSession - 개인화된 인사 로드 실패:', greetingError);
       }
       
       // 세션 생성 후 기존 메시지 로드
@@ -144,6 +141,7 @@ export const useChatSession = (): UseChatSessionReturn => {
         ChatService.convertToFrontendMessage(msg)
       );
       setMessages(frontendMessages);
+
     } catch (error) {
       console.error('useChatSession - 세션 로드 실패:', error);
       handleError(error);
