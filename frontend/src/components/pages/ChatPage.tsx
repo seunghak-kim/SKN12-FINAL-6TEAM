@@ -376,30 +376,58 @@ useEffect(() => {
           // 기존 세션 로드
           console.log('ChatPage - 기존 세션 로드:', sessionId);
           await loadSession(sessionId)
-        } else if (selectedCharacter && currentUserId !== null) {
-          // 새 세션 생성 (URL에 sessionId가 없을 때만)
-          // 사용자 인증 상태 재확인
-          if (!authService.isAuthenticated() && !localStorage.getItem("access_token")) {
-            console.error("사용자가 로그인되어 있지 않습니다.")
-            alert("로그인이 필요합니다. 다시 로그인해주세요.")
-            navigate("/")
-            return
-          }
-
-          if (actualPersonaId !== null) {
-            console.log('ChatPage - 새 세션 생성:', actualPersonaId);
-            await createSession({
-              user_id: currentUserId,
-              persona_id: actualPersonaId,
-              session_name: `${currentPersonaName}와의 대화`,
-            })
-          }
         } else {
-          console.log('ChatPage - 세션 초기화 조건 미충족:', {
-            selectedCharacter: !!selectedCharacter,
-            currentUserId,
-            actualPersonaId
-          });
+          // URL에 sessionId가 없으면 localStorage에서 마지막 세션 확인
+          const lastSessionData = localStorage.getItem('lastChatSession')
+          if (lastSessionData) {
+            try {
+              const { sessionId: lastSessionId, personaId: lastPersonaId, timestamp } = JSON.parse(lastSessionData)
+              const now = Date.now()
+              
+              // 24시간 이내의 세션만 복원 (선택사항)
+              if (now - timestamp < 24 * 60 * 60 * 1000) {
+                console.log('ChatPage - localStorage에서 마지막 세션 복원:', lastSessionId);
+                // URL에 sessionId 추가하고 세션 로드
+                const newUrl = new URL(window.location.href)
+                newUrl.searchParams.set('sessionId', lastSessionId)
+                window.history.replaceState(null, '', newUrl.toString())
+                await loadSession(lastSessionId)
+                return
+              } else {
+                // 24시간이 지난 세션 데이터는 삭제
+                localStorage.removeItem('lastChatSession')
+              }
+            } catch (e) {
+              console.error('localStorage 세션 데이터 파싱 오류:', e)
+              localStorage.removeItem('lastChatSession')
+            }
+          }
+          
+          // 새 세션 생성 로직
+          if (selectedCharacter && currentUserId !== null) {
+            // 사용자 인증 상태 재확인
+            if (!authService.isAuthenticated() && !localStorage.getItem("access_token")) {
+              console.error("사용자가 로그인되어 있지 않습니다.")
+              alert("로그인이 필요합니다. 다시 로그인해주세요.")
+              navigate("/")
+              return
+            }
+
+            if (actualPersonaId !== null) {
+              console.log('ChatPage - 새 세션 생성:', actualPersonaId);
+              await createSession({
+                user_id: currentUserId,
+                persona_id: actualPersonaId,
+                session_name: `${currentPersonaName}와의 대화`,
+              })
+            }
+          } else {
+            console.log('ChatPage - 세션 초기화 조건 미충족:', {
+              selectedCharacter: !!selectedCharacter,
+              currentUserId,
+              actualPersonaId
+            });
+          }
         }
       } catch (error) {
         console.error("세션 초기화 실패:", error)
@@ -424,7 +452,7 @@ useEffect(() => {
   location.search,
 ])
 
-// 세션이 생성되면 URL에 세션 ID 추가 (새로고침 시 세션 유지를 위해)
+// 세션이 생성되면 URL에 세션 ID 추가 및 localStorage에 저장 (새로고침 시 세션 유지를 위해)
 useEffect(() => {
   if (session?.chat_sessions_id) {
     const urlParams = new URLSearchParams(location.search)
@@ -436,8 +464,17 @@ useEffect(() => {
       currentUrl.searchParams.set("sessionId", session.chat_sessions_id)
       window.history.replaceState({}, "", currentUrl.toString())
     }
+    
+    // localStorage에 현재 세션 정보 저장
+    const sessionData = {
+      sessionId: session.chat_sessions_id,
+      personaId: session.persona_id,
+      timestamp: Date.now()
+    }
+    localStorage.setItem('lastChatSession', JSON.stringify(sessionData))
+    console.log('ChatPage - 세션 정보 localStorage에 저장:', sessionData)
   }
-}, [session?.chat_sessions_id, location.search])
+}, [session?.chat_sessions_id, session?.persona_id, location.search])
 
 // 레거시 초기화 함수 호출 (기존 코드와의 호환성 유지)
 useEffect(() => {

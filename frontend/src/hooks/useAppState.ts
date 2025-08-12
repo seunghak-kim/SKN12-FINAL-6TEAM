@@ -317,6 +317,48 @@ export const useAppState = () => {
     }
   }, [getAvailableCharacters]);
 
+  // 세션 정보 localStorage 저장 헬퍼 함수
+  const saveSessionToStorage = useCallback((sessionId: string, personaId: number) => {
+    const sessionData = {
+      sessionId,
+      personaId,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('lastChatSession', JSON.stringify(sessionData));
+    console.log('useAppState - 세션 정보 localStorage에 저장:', sessionData);
+  }, []);
+
+  // 세션 정보 localStorage 복원 헬퍼 함수
+  const restoreSessionFromStorage = useCallback(() => {
+    try {
+      const lastSessionData = localStorage.getItem('lastChatSession');
+      if (lastSessionData) {
+        const { sessionId, personaId, timestamp } = JSON.parse(lastSessionData);
+        const now = Date.now();
+        
+        // 24시간 이내의 세션만 유효
+        if (now - timestamp < 24 * 60 * 60 * 1000) {
+          console.log('useAppState - localStorage에서 세션 복원:', { sessionId, personaId });
+          return { sessionId, personaId, timestamp };
+        } else {
+          // 오래된 세션 데이터 삭제
+          localStorage.removeItem('lastChatSession');
+          console.log('useAppState - 오래된 세션 데이터 삭제');
+        }
+      }
+    } catch (error) {
+      console.error('useAppState - 세션 복원 실패:', error);
+      localStorage.removeItem('lastChatSession');
+    }
+    return null;
+  }, []);
+
+  // 세션 정보 삭제 헬퍼 함수
+  const clearSessionFromStorage = useCallback(() => {
+    localStorage.removeItem('lastChatSession');
+    console.log('useAppState - localStorage 세션 정보 삭제');
+  }, []);
+
   return {
     currentScreen,
     selectedCharacter,
@@ -344,6 +386,10 @@ export const useAppState = () => {
     handleUpdateProfile,
     handleInitializeChat,
     updateTestResult,
-    setCharacterFromTestResult
+    setCharacterFromTestResult,
+    // 세션 관련 헬퍼 함수들
+    saveSessionToStorage,
+    restoreSessionFromStorage,
+    clearSessionFromStorage
   };
 };
