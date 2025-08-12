@@ -1,6 +1,7 @@
-# 🐢 거북이상담소: HTP 기반 그림 심리 분석 & GPT 페르소나 챗봇 플랫폼
+# MY MOODY: HTP 기반 그림 심리 분석 & GPT 페르소나 챗봇 플랫폼
 
 ## 👨‍👨‍👧‍👦 팀 소개
+**팀명: 거북이상담소 🐢**
 
 |                       **김승학**                        |                      **남의헌**                      |                       **이정민**                       |                     **이지복**                      |                      **조성지**                       |
 | :-----------------------------------------------------: | :--------------------------------------------------: | :----------------------------------------------------: | :-------------------------------------------------: | :---------------------------------------------------: |
@@ -38,61 +39,6 @@
 - 유형별 프롬프트 기반 GPT-4o 챗봇 연결
 - 정서 피드백, 공감 대화, 자기 돌봄 전략 제공
 
----
-
-## 📁 폴더 구조 (수정 예정)
-
-```
-SKN12-FINAL-6TEAM/
-├── README.md
-├── requirements.txt
-│
-├── backend/
-│   ├── app/                     # FastAPI 앱: 라우터, 모델, 서비스, DB 설정
-│   ├── llm/                     # GPT 분석, KoBERT/YOLO 모델, RAG 문서
-│   ├── data/                    # 키워드 데이터셋
-│   ├── preprocess/              # 전처리 스크립트 및 결과
-│   ├── prompts/                 # 유형별 챗봇 프롬프트
-│   ├── tests/                   # 테스트 코드
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── public/                  # 정적 파일 및 이미지
-│   ├── src/
-│   │   ├── components/          # 페이지 및 공통 컴포넌트
-│   │   ├── services/            # API 서비스 로직
-│   │   ├── hooks/               # 커스텀 훅
-│   │   ├── types/               # 타입 정의
-│   │   └── data/                # 정적 데이터
-│   ├── package.json
-│   └── tailwind.config.js
-```
-
-## 주요 디렉토리 설명
-
-### Backend
-
-- **`app/`**: FastAPI 메인 애플리케이션 코드
-- **`llm/`**: AI/ML 모델 관련 코드 및 데이터
-- **`data/`**: 학습용 데이터셋
-- **`preprocess/`**: 데이터 전처리 스크립트
-- **`tests/`**: 백엔드 테스트 코드
-
-### Frontend
-
-- **`src/components/pages/`**: 각 페이지별 React 컴포넌트
-- **`src/components/common/`**: 재사용 가능한 공통 컴포넌트
-- **`src/services/`**: API 통신 및 외부 서비스 연동
-- **`src/hooks/`**: 커스텀 React 훅
-- **`src/types/`**: TypeScript 타입 정의
-
-### AI/ML
-
-- **`llm/model/`**: 머신러닝 모델 훈련 및 추론 코드
-- **`llm/rag/`**: RAG 시스템용 문서 및 이미지
-- **`llm/detection_results/`**: 그림 분석 결과 저장소
-
----
 
 ## 🛠 기술 스택
 
@@ -102,17 +48,6 @@ SKN12-FINAL-6TEAM/
 | **Frontend**       | ![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)                                                                                                               |
 | **AI 모델**        | ![YOLO](https://img.shields.io/badge/YOLOv11-black?style=for-the-badge) ![OpenCV](https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white) ![GPT-4o](https://img.shields.io/badge/GPT--4o-AB47BC?style=for-the-badge) ![KoBERT](https://img.shields.io/badge/KoBERT-1976D2?style=for-the-badge) |
 | **Infra & DevOps** | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white) ![S3](https://img.shields.io/badge/Amazon_S3-569A31?style=for-the-badge&logo=amazonaws&logoColor=white)           |
-
----
-
-## 🧬 모델 구성 및 성능
-
-| 모델    | 목적                        | 정확도/성능                     |
-| ------- | --------------------------- | ------------------------------- |
-| YOLOv11 | 집-나무-사람 객체 탐지      | Precision: 0.99 / Recall: 0.97  |
-| KoBERT  | 감정 키워드 → 성격유형 분류 | Accuracy: 0.97 / F1 Score: 0.96 |
-
-> 🧠 모델은 PyTorch 기반으로 개발되었으며, `.pt` 형식으로 저장 및 추론 가능
 
 ---
 
