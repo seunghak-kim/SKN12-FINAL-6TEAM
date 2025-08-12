@@ -65,9 +65,16 @@ const NicknamePage: React.FC<NicknamePageProps> = ({ onComplete }) => {
         const result = await response.json()
         setNicknameCheckResult(result.available ? "available" : "taken")
         setIsNicknameChecked(true)
+        
+        // 에러 메시지 초기화 후 새로운 메시지 설정
+        setNameError(null)
+        if (!result.available && result.message) {
+          setNameError(result.message)
+        }
       } else {
         setNicknameCheckResult("error")
         setIsNicknameChecked(false)
+        setNameError("중복 확인 중 오류가 발생했습니다.")
       }
     } catch (error) {
       console.error("Nickname check failed:", error)
@@ -84,7 +91,7 @@ const NicknamePage: React.FC<NicknamePageProps> = ({ onComplete }) => {
       setNickname(value)
       setNicknameCheckResult(null)
       setIsNicknameChecked(false)
-      setNameError(null)
+      setNameError(null) // 닉네임 변경시 에러 메시지 초기화
     }
   }
 
@@ -156,26 +163,12 @@ const NicknamePage: React.FC<NicknamePageProps> = ({ onComplete }) => {
           </button>
         </div>
 
-        {/* 닉네임 검사 결과 */}
-        {nicknameCheckResult && (
+        {/* 닉네임 검사 결과 (성공시만 표시) */}
+        {nicknameCheckResult === "available" && (
           <div className="max-w-md mx-auto mb-2">
             <div className="flex items-center justify-center space-x-2 p-2">
-              {nicknameCheckResult === "available" ? (
-                <>
-                  <Check className="w-5 h-5 text-green-500" />
-                  <span className="font-medium text-white">사용 가능한 닉네임입니다!</span>
-                </>
-              ) : nicknameCheckResult === "taken" ? (
-                <>
-                  <X className="w-5 h-5 text-red-500" />
-                  <span className="font-medium text-white">이미 사용 중인 닉네임입니다.</span>
-                </>
-              ) : (
-                <>
-                  <X className="w-5 h-5 text-red-500" />
-                  <span className="font-medium text-white">중복 확인 중 오류가 발생했습니다.</span>
-                </>
-              )}
+              <Check className="w-5 h-5 text-green-500" />
+              <span className="font-medium text-white">사용 가능한 닉네임입니다!</span>
             </div>
           </div>
         )}

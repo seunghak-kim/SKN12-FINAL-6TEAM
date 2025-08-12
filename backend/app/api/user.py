@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import os
 import uuid
+import csv
 from pathlib import Path
 
 from app.schemas.user import (
@@ -27,6 +28,13 @@ auth_service = AuthService()
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     """일반 사용자 회원가입"""
+    # slang 단어 포함 여부 확인
+    if check_slang_in_nickname(user_data.nickname):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="사용할 수 없는 닉네임입니다."
+        )
+    
     # 닉네임 중복 확인
     existing_user = db.query(UserInformation).filter(
         UserInformation.nickname == user_data.nickname
@@ -157,6 +165,13 @@ async def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends
     
     # 닉네임 변경 시 중복 확인
     if user_data.nickname and user_data.nickname != user_info.nickname:
+        # slang 단어 포함 여부 확인
+        if check_slang_in_nickname(user_data.nickname):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="사용할 수 없는 닉네임입니다."
+            )
+        
         existing_user = db.query(UserInformation).filter(
             UserInformation.nickname == user_data.nickname,
             UserInformation.user_id != user_id
@@ -389,6 +404,52 @@ async def get_user_test_results(
         "has_more": len(test_results) == limit
     }
 
+def load_slang_words():
+    """slang.csv 파일에서 금지어 목록 로드"""
+    slang_words = set()
+    slang_file_path = Path("data/slang.csv")
+    
+    if slang_file_path.exists():
+        try:
+            with open(slang_file_path, 'r', encoding='utf-8-sig') as file:  # BOM 처리
+                reader = csv.reader(file)
+                for row in reader:
+                    if row and row[0]:
+                        word = row[0].strip().strip('"').strip("'")  # 따옴표 제거
+                        if word and word.lower() != 'slang':  # 헤더 제외
+                            slang_words.add(word.lower())
+        except Exception as e:
+            print(f"slang.csv 로드 실패: {e}")
+    
+    return slang_words
+
+def check_slang_in_nickname(nickname: str) -> bool:
+    """닉네임에 slang 단어가 포함되어 있는지 확인"""
+    slang_words = load_slang_words()
+    nickname_lower = nickname.lower()
+    
+    # 완전 일치 검사
+    if nickname_lower in slang_words:
+        return True
+    
+    # 한국어 욕설은 완전한 단어 단위로만 검사
+    korean_slang = {w for w in slang_words if any(ord(c) > 127 for c in w)}
+    for slang in korean_slang:
+        if slang in nickname_lower:
+            return True
+    
+    # 영어 욕설은 5글자 이상이거나 완전한 단어인 경우만 검사
+    english_slang = {w for w in slang_words if all(ord(c) <= 127 for c in w)}
+    for slang in english_slang:
+        if len(slang) >= 5 and slang in nickname_lower:
+            return True
+        # 완전한 단어 경계에서만 매치 (앞뒤에 알파벳이 없는 경우)
+        import re
+        if re.search(r'\b' + re.escape(slang) + r'\b', nickname_lower):
+            return True
+    
+    return False
+
 @router.post("/{user_id}/check-nickname")
 async def check_nickname_availability(
     user_id: int,
@@ -406,6 +467,10 @@ async def check_nickname_availability(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="사용자를 찾을 수 없습니다."
         )
+    
+    # slang 단어 포함 여부 확인
+    if check_slang_in_nickname(nickname):
+        return {"available": False, "message": "사용할 수 없는 닉네임입니다."}
     
     # 현재 사용자의 닉네임과 동일한 경우 사용 가능
     if current_user.nickname == nickname:
