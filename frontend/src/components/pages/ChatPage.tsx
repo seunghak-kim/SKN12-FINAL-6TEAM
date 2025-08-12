@@ -952,7 +952,7 @@ return (
                     currentUrl.searchParams.delete('sessionId')
                     window.history.replaceState({}, '', currentUrl.toString())
                     
-                    // chatService를 사용해서 새로운 세션 생성
+                    // chatService를 사용해서 새로운 세션 생성 (POST 방식)
                     const newSession = await chatService.createSession({
                       user_id: currentUserId,
                       persona_id: actualPersonaId,
@@ -961,7 +961,7 @@ return (
                     
                     console.log('새로운 세션 생성 성공:', newSession)
                     
-                    // 새로운 세션으로 리다이렉트
+                    // 새로운 세션으로 리다이렉트 (개인화된 인사는 loadSession에서 처리)
                     window.location.href = `/chat?sessionId=${newSession.chat_sessions_id}`
                     
                   } catch (error) {
