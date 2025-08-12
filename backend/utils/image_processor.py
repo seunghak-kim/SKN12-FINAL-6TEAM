@@ -331,6 +331,85 @@ class BasicImageProcessor:
             self.logger.error(f"썸네일 생성 실패: {e}")
             return None
 
+    def create_yolo_optimized_image(self, image_input: Union[str, Image.Image, np.ndarray], 
+                                    output_path: Optional[str] = None) -> Dict[str, Any]:
+        """YOLO 분석을 위한 최적화된 이미지 생성 (320x320, quality=10)
+        
+        Args:
+            image_input: 입력 이미지 (파일 경로, PIL Image, numpy 배열)
+            output_path: 저장 경로 (선택사항)
+            
+        Returns:
+            dict: 처리 결과 정보
+        """
+        try:
+            # 이미지 로드
+            if isinstance(image_input, str):
+                image = self.load_image_pil(image_input)
+                if image is None:
+                    return {'success': False, 'error': '이미지 로드 실패'}
+            elif isinstance(image_input, Image.Image):
+                image = image_input.copy()
+            elif isinstance(image_input, np.ndarray):
+                image = Image.fromarray(cv2.cvtColor(image_input, cv2.COLOR_BGR2RGB))
+            else:
+                return {'success': False, 'error': '지원하지 않는 이미지 데이터 형식'}
+            
+            if image is None:
+                return {'success': False, 'error': '이미지 로드 실패'}
+            
+            # 원본 크기 저장
+            original_size = image.size
+            
+            # 320x320으로 리사이징 (종횡비 유지, 패딩 추가)
+            target_size = (320, 320)
+            image.thumbnail(target_size, Image.Resampling.LANCZOS)
+            
+            # 정사각형 이미지로 패딩 (필요한 경우)
+            if image.size != target_size:
+                padded_image = Image.new('RGB', target_size, (255, 255, 255))
+                x_offset = (target_size[0] - image.size[0]) // 2
+                y_offset = (target_size[1] - image.size[1]) // 2
+                padded_image.paste(image, (x_offset, y_offset))
+                image = padded_image
+            
+            # Base64 인코딩을 위한 바이트 생성
+            buffer = io.BytesIO()
+            image.save(buffer, format='JPEG', quality=10, optimize=True)
+            img_bytes = buffer.getvalue()
+            img_base64 = base64.b64encode(img_bytes).decode()
+            
+            # 파일로 저장 (선택사항)
+            if output_path:
+                try:
+                    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                    image.save(output_path, format='JPEG', quality=10, optimize=True)
+                    save_success = True
+                except Exception as e:
+                    save_success = False
+                    self.logger.error(f"YOLO 최적화 이미지 저장 실패: {e}")
+            else:
+                save_success = None
+                
+            result = {
+                'success': True,
+                'image': image,
+                'image_base64': f"data:image/jpeg;base64,{img_base64}",
+                'original_size': original_size,
+                'optimized_size': image.size,
+                'file_size_bytes': len(img_bytes),
+                'compression_ratio': round((1 - len(img_bytes) / (original_size[0] * original_size[1] * 3)) * 100, 1),
+                'output_path': output_path if save_success else None,
+                'save_success': save_success
+            }
+            
+            self.logger.info(f"YOLO 최적화 완료: {original_size} → {image.size}, {len(img_bytes):,} bytes")
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"YOLO 이미지 최적화 중 오류: {e}")
+            return {'success': False, 'error': f'YOLO 이미지 최적화 중 오류: {str(e)}'}
+
 
 if __name__ == '__main__':
     

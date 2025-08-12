@@ -438,14 +438,27 @@ class HTPAnalysisPipeline:
             stage_time = stage_end - stage_start
             self.logger.info(f"✅ [TIMING] 1단계 (객체탐지) 완료: {stage_time:.2f}초")
             
+            # UI 표시를 위한 최소 대기 시간 (1단계가 너무 빨리 끝났을 때)
+            min_display_time = 2.0  # 최소 2초 표시
+            if stage_time < min_display_time:
+                wait_time = min_display_time - stage_time
+                self.logger.info(f"⏱️ 1단계 UI 표시 대기: {wait_time:.1f}초")
+                time.sleep(wait_time)
+            
             # 2단계: 심리 분석 (재시도 로직 포함)
+            stage_start = time.time()
             if not self._execute_stage_2(result, max_retries=5):
-
                 result.status = PipelineStatus.ERROR
                 return result
             stage_end = time.time()
             stage_time = stage_end - stage_start
             self.logger.info(f"✅ [TIMING] 2단계 (심리분석) 완료: {stage_time:.2f}초")
+            
+            # UI 표시를 위한 최소 대기 시간 (2단계)
+            if stage_time < min_display_time:
+                wait_time = min_display_time - stage_time
+                self.logger.info(f"⏱️ 2단계 UI 표시 대기: {wait_time:.1f}초")
+                time.sleep(wait_time)
             
             # 3단계: 성격 분류
             stage_start = time.time()

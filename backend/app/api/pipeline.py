@@ -158,15 +158,24 @@ async def analyze_drawing_image(
         unique_id = str(uuid.uuid4())
         image_filename = f"{unique_id}{file_extension}"
         
-        # 3. 업로드 디렉토리 설정 (backend/result/images)
+        # 3. 다중 해상도 이미지 디렉토리 설정
         backend_root = Path(__file__).parent.parent.parent
-        upload_dir = backend_root / "result" / "images"
-        upload_dir.mkdir(parents=True, exist_ok=True)
+        base_dir = backend_root / "result" / "images"
         
-        # 4. 파일 저장 (JPG로 통일)
-        image_path = upload_dir / f"{unique_id}.jpg"
+        # 다중 해상도별 디렉토리 생성
+        original_dir = base_dir / "original"    # 원본 (사용자 조회용)
+        yolo_dir = base_dir / "yolo"           # YOLO 분석용 (320x320, q=10)
+        web_dir = base_dir / "web"             # 웹 표시용 (640x640, q=85)
         
-        # 5. 파이프라인용 디렉토리에도 복사 (기존 분석 파이프라인 호환성)
+        for dir_path in [original_dir, yolo_dir, web_dir]:
+            dir_path.mkdir(parents=True, exist_ok=True)
+        
+        # 4. 파일 경로 설정 (JPG로 통일)
+        original_path = original_dir / f"{unique_id}.jpg"
+        yolo_path = yolo_dir / f"{unique_id}.jpg"
+        web_path = web_dir / f"{unique_id}.jpg"
+        
+        # 5. 파이프라인용 디렉토리 (기존 호환성 유지)
         pipeline = get_pipeline()
         pipeline_upload_dir = pipeline.config.test_img_dir
         pipeline_upload_dir.mkdir(parents=True, exist_ok=True)
@@ -192,16 +201,33 @@ async def analyze_drawing_image(
         if pil_image.mode != 'RGB':
             pil_image = pil_image.convert('RGB')
         
-        # JPG로 저장 (backend/result/images)
-        pil_image.save(image_path, 'JPEG', quality=95)
+        # 다중 해상도 이미지 저장
+        print(f"📸 다중 해상도 이미지 저장 시작...")
         
-        # 파이프라인용 디렉토리에도 저장
-        pil_image.save(pipeline_image_path, 'JPEG', quality=95)
+        # 1. 원본 저장 (사용자 조회용, 고품질)
+        pil_image.save(original_path, 'JPEG', quality=95, optimize=True)
+        print(f"✅ 원본 저장 완료: {original_path}")
         
-        # 6. 데이터베이스에 테스트 레코드 생성
+        # 2. YOLO용 압축 (320x320, quality=10)
+        yolo_image = pil_image.copy()
+        yolo_image.thumbnail((320, 320), PILImage.Resampling.LANCZOS)
+        yolo_image.save(yolo_path, 'JPEG', quality=10, optimize=True)
+        print(f"✅ YOLO용 압축 완료: {yolo_path} (320x320, q=10)")
+        
+        # 3. 웹용 중간 품질 (640x640, quality=85)
+        web_image = pil_image.copy()
+        web_image.thumbnail((640, 640), PILImage.Resampling.LANCZOS)
+        web_image.save(web_path, 'JPEG', quality=85, optimize=True)
+        print(f"✅ 웹용 이미지 완료: {web_path} (640x640, q=85)")
+        
+        # 4. 파이프라인용 디렉토리에 YOLO 압축본 저장 (기존 호환성)
+        yolo_image.save(pipeline_image_path, 'JPEG', quality=10, optimize=True)
+        print(f"✅ 파이프라인 호환성 저장 완료: {pipeline_image_path}")
+        
+        # 6. 데이터베이스에 테스트 레코드 생성 (원본 이미지 경로 저장)
         drawing_test = DrawingTest(
             user_id=current_user["user_id"],
-            image_url=f"result/images/{unique_id}.jpg",  # backend/result/images 경로
+            image_url=f"result/images/original/{unique_id}.jpg",  # 원본 이미지 경로
             submitted_at=datetime.now()
         )
         
@@ -573,11 +599,11 @@ async def get_analysis_status(
             pipeline = get_pipeline()
             
             # 이미지 파일명 추출 (URL에서 파일명 부분만)
-            image_url = drawing_test.image_url  # "result/images/{unique_id}.jpg"
+            image_url = drawing_test.image_url  # "result/images/original/{unique_id}.jpg"
             if image_url:
-                # "result/images/uuid.jpg" -> "uuid"
+                # "result/images/original/uuid.jpg" -> "uuid"
                 import re
-                match = re.search(r'result/images/(.+?)\.jpg', image_url)
+                match = re.search(r'result/images/original/(.+?)\.jpg', image_url)
                 if match:
                     unique_id = match.group(1)
                     status_info = pipeline.get_analysis_status(unique_id)
