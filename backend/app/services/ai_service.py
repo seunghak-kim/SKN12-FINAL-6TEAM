@@ -40,24 +40,6 @@ class AIService:
         """페르소나별 시스템 프롬프트 생성"""
         return self.prompt_manager.get_persona_prompt(persona_type, **context)
     
-    def _process_drawing_analysis_for_querock(self, analysis_result: Dict[str, Any]) -> str:
-        """쾌락이 특성에 맞게 그림검사 결과를 처리"""
-        if not analysis_result.get('has_result'):
-            return "아직 그림검사를 해보지 않으셨군요! 혹시 관심이 있으시다면, 당신의 내면세계를 더 깊이 탐험해볼 수 있는 재미있는 방법이 있어요."
-        
-        scores = analysis_result.get('personality_scores', {})
-        querock_score = scores.get('쾌락이', 0.0)
-        
-        # 점수를 100으로 나누어 올바른 퍼센트 표시
-        querock_percentage = querock_score / 100
-        
-        if querock_score > 0.7:
-            return f"당신의 그림에서 보이는 창의적인 에너지가 정말 인상적이에요! 쾌락이 점수가 {querock_percentage:.2%}로 높게 나온 걸 보니, 새로운 경험을 추구하는 모험가의 마음이 강하시군요! 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
-        elif querock_score > 0.4:
-            return f"그림에서 다양한 색채와 형태를 사용하신 걸 보니, 새로운 경험을 추구하시는 분이시군요! 쾌락이 점수가 {querock_percentage:.2%}로 나타났어요. 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
-        else:
-            return f"그림에서 보이는 다른 성향들도 있지만, 그 이면에는 새로운 경험을 추구하는 모험가의 마음이 숨어있을지도 몰라요. 쾌락이 점수는 {querock_percentage:.2%}로 나타났어요. 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
-    
     def _process_drawing_analysis_for_persona(self, analysis_result: Dict[str, Any], persona_type: str) -> str:
         """페르소나별로 그림검사 결과를 처리"""
         if not analysis_result.get('has_result'):
@@ -74,13 +56,15 @@ class AIService:
             "안정형": ("안정이", "안정감과 균형을 추구하는")
         }
         
-        target_persona, description = persona_mapping.get(persona_type, ("쾌락이", "창의적인"))
-        target_score = scores.get(target_persona, 0.0)
+        target_persona, description = persona_mapping.get(persona_type, (None, "다양한"))
+        target_score = scores.get(target_persona, 0.0) if target_persona else 0.0
         
         # 점수를 100으로 나누어 올바른 퍼센트 표시
         target_percentage = target_score / 100
         
-        if target_score > 0.7:
+        if target_persona is None:
+            return "그림검사 결과를 분석하는 중입니다. 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
+        elif target_score > 0.7:
             return f"당신의 그림에서 보이는 {description} 특성이 정말 인상적이에요! {target_persona} 점수가 {target_percentage:.2%}로 높게 나온 걸 보니, 이런 성향이 강하시군요! 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
         elif target_score > 0.4:
             return f"그림에서 {description} 면모가 보이시네요! {target_persona} 점수가 {target_percentage:.2%}로 나타났어요. 더 자세한 분석이 궁금하시다면 마이페이지에서 검사결과를 확인해보세요."
@@ -98,11 +82,28 @@ class AIService:
         scores = analysis_result.get('personality_scores', {})
         summary = analysis_result.get('summary', '')
         
-        # 페르소나별 특화된 해석
-        if persona_type == "쾌락형":
-            interpretation = self._process_drawing_analysis_for_querock(analysis_result)
+        # 실제 그림검사 결과에서 가장 높은 점수를 받은 페르소나 기준으로 해석
+        if scores:
+            # 가장 높은 점수를 받은 페르소나 찾기
+            highest_persona = max(scores.items(), key=lambda x: x[1])[0]
+            
+            # 페르소나 이름을 타입으로 매핑
+            persona_mapping = {
+                "쾌락이": "쾌락형",
+                "내면이": "내면형", 
+                "추진이": "추진형",
+                "관계이": "관계형",
+                "안정이": "안정형"
+            }
+            
+            result_persona_type = persona_mapping.get(highest_persona)
+            if result_persona_type:
+                interpretation = self._process_drawing_analysis_for_persona(analysis_result, result_persona_type)
+            else:
+                interpretation = "그림검사 결과를 분석하는 중입니다. 더 자세한 결과를 위해 마이페이지를 확인해보세요."
         else:
-            interpretation = self._process_drawing_analysis_for_persona(analysis_result, persona_type)
+            # 점수가 없는 경우 기본 안내
+            interpretation = "그림검사 결과를 분석 중입니다. 더 자세한 결과를 위해 마이페이지를 확인해보세요."
         
         return f"""
 [그림검사 분석 결과]
@@ -166,7 +167,7 @@ class AIService:
                 session = self._manage_conversation_history(session, messages)
             
             # 컨텍스트에 user_nickname 추가 (context에서 가져오거나 기본값 사용)
-            user_nickname = context.get('user_nickname', '사용자')
+            user_nickname = context.get('user_nickname', 'user')
             context_with_nickname = {**context, 'user_nickname': user_nickname}
             
             # 캐릭터 간 상호작용 감지
@@ -248,7 +249,7 @@ class AIService:
             common_rules = self.chained_prompt_manager.load_common_rules()
             
             # 사용자 닉네임 가져오기
-            user_nickname = context.get('user_nickname', '사용자')
+            user_nickname = context.get('user_nickname', 'user')
             
             # 그림검사 분석 결과 컨텍스트 준비
             user_analysis_context = ""
@@ -257,7 +258,7 @@ class AIService:
                 # 새로운 상세 분석 결과 처리
                 if isinstance(analysis_result, dict) and 'has_result' in analysis_result:
                     # 새로운 형식의 분석 결과
-                    persona_type_for_analysis = context.get('persona_type_for_analysis', context.get('persona_type', '내면형'))
+                    persona_type_for_analysis = context.get('persona_type_for_analysis', context.get('persona_type'))
                     user_analysis_context = self._generate_drawing_context(analysis_result, persona_type_for_analysis)
                 else:
                     # 기존 형식의 분석 결과 (호환성 유지)
@@ -339,7 +340,7 @@ class AIService:
                 "쾌락형": "querock"
             }
             
-            persona_key = persona_mapping.get(persona_type, "nemyeon")
+            persona_key = persona_mapping.get(persona_type)
             persona_prompt = self.chained_prompt_manager.load_persona_prompt(persona_key)
             
             # 공통 규칙도 함께 로드
@@ -352,7 +353,7 @@ class AIService:
                 user_analysis_context = self._generate_drawing_context(analysis_result, persona_type)
             
             # 사용자 닉네임 가져오기
-            user_nickname = context.get('user_nickname', '사용자')
+            user_nickname = context.get('user_nickname', 'user')
             
             # 변환용 프롬프트 구성
             transform_prompt = f"""# 페르소나 변환 시스템
@@ -444,7 +445,7 @@ class AIService:
                 4: "쾌락형",
                 5: "안정형"
             }
-            predicted_personality = persona_mapping.get(user_analysis_result.persona_type, "내면형")
+            predicted_personality = persona_mapping.get(user_analysis_result.persona_type, "분석중")
             
             # 확률 정보 추가
             scores = {
@@ -476,7 +477,7 @@ class AIService:
             "쾌락형": "querock"
         }
         
-        persona_key = persona_mapping_prompt.get(persona_type, "nemyeon")
+        persona_key = persona_mapping_prompt.get(persona_type)
         persona_prompt = self.chained_prompt_manager.load_persona_prompt(persona_key)
         
         # GPT-4o 프롬프트 구성
