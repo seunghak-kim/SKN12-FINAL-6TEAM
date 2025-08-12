@@ -377,33 +377,7 @@ useEffect(() => {
           console.log('ChatPage - 기존 세션 로드:', sessionId);
           await loadSession(sessionId)
         } else {
-          // URL에 sessionId가 없으면 localStorage에서 마지막 세션 확인
-          const lastSessionData = localStorage.getItem('lastChatSession')
-          if (lastSessionData) {
-            try {
-              const { sessionId: lastSessionId, personaId: lastPersonaId, timestamp } = JSON.parse(lastSessionData)
-              const now = Date.now()
-              
-              // 24시간 이내의 세션만 복원 (선택사항)
-              if (now - timestamp < 24 * 60 * 60 * 1000) {
-                console.log('ChatPage - localStorage에서 마지막 세션 복원:', lastSessionId);
-                // URL에 sessionId 추가하고 세션 로드
-                const newUrl = new URL(window.location.href)
-                newUrl.searchParams.set('sessionId', lastSessionId)
-                window.history.replaceState(null, '', newUrl.toString())
-                await loadSession(lastSessionId)
-                return
-              } else {
-                // 24시간이 지난 세션 데이터는 삭제
-                localStorage.removeItem('lastChatSession')
-              }
-            } catch (e) {
-              console.error('localStorage 세션 데이터 파싱 오류:', e)
-              localStorage.removeItem('lastChatSession')
-            }
-          }
-          
-          // 새 세션 생성 로직
+          // 새 세션 생성 로직 (selectedCharacter가 있으면 새 세션 우선)
           if (selectedCharacter && currentUserId !== null) {
             // 사용자 인증 상태 재확인
             if (!authService.isAuthenticated() && !localStorage.getItem("access_token")) {
@@ -422,6 +396,32 @@ useEffect(() => {
               })
             }
           } else {
+            // selectedCharacter가 없을 때만 localStorage에서 마지막 세션 확인
+            const lastSessionData = localStorage.getItem('lastChatSession')
+            if (lastSessionData) {
+              try {
+                const { sessionId: lastSessionId, personaId: lastPersonaId, timestamp } = JSON.parse(lastSessionData)
+                const now = Date.now()
+                
+                // 24시간 이내의 세션만 복원
+                if (now - timestamp < 24 * 60 * 60 * 1000) {
+                  console.log('ChatPage - selectedCharacter 없음, localStorage에서 마지막 세션 복원:', lastSessionId);
+                  // URL에 sessionId 추가하고 세션 로드
+                  const newUrl = new URL(window.location.href)
+                  newUrl.searchParams.set('sessionId', lastSessionId)
+                  window.history.replaceState(null, '', newUrl.toString())
+                  await loadSession(lastSessionId)
+                  return
+                } else {
+                  // 24시간이 지난 세션 데이터는 삭제
+                  localStorage.removeItem('lastChatSession')
+                }
+              } catch (e) {
+                console.error('localStorage 세션 데이터 파싱 오류:', e)
+                localStorage.removeItem('lastChatSession')
+              }
+            }
+            
             console.log('ChatPage - 세션 초기화 조건 미충족:', {
               selectedCharacter: !!selectedCharacter,
               currentUserId,
