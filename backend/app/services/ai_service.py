@@ -530,6 +530,7 @@ class AIService:
                 self.db.flush()
                 
                 print(f"[히스토리] 대화 요약 업데이트: {len(old_messages)}개 메시지 요약됨")
+                print(f"[히스토리] 요약 내용: {new_summary}")
                 
         except Exception as e:
             print(f"대화 히스토리 관리 오류: {e}")
