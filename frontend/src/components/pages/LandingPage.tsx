@@ -199,8 +199,8 @@ const LandingPage: React.FC<LandingPageProps> = () => {
           </div>
           <div className="w-[210px] h-[210px] flex-shrink-0 flex items-center justify-center float-5">
             <img
-              src="/assets/persona/관계이.png"
-              alt="관계이"
+              src="/assets/persona/햇살이.png"
+              alt="햇살이"
               className="w-full h-full object-contain drop-shadow-lg"
             />
           </div>

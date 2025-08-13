@@ -128,7 +128,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     const typeToCharacter: { [key: string]: string } = {
       '추진형': '추진이',
       '내면형': '내면이', 
-      '관계형': '관계이',
+      '관계형': '햇살이',
       '쾌락형': '쾌락이',
       '안정형': '안정이'
     };
@@ -152,7 +152,7 @@ const getColorForType = (type: string) => {
     const imageMap: { [key: string]: string } = {
       '추진형': '../../assets/persona/추진이.png',
       '내면형': '../../assets/persona/내면이.png',
-      '관계형': '../../assets/persona/관계이.png',
+      '관계형': '../../assets/persona/햇살이.png',
       '쾌락형': '../../assets/persona/쾌락이.png',
       '안정형': '../../assets/persona/안정이.png'
     };

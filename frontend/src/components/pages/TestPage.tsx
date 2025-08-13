@@ -52,15 +52,60 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     checkConsentStatus();
   }, []);
 
-  // 캔버스 초기화
+  // 반응형 캔버스 크기 계산 함수
+  const calculateCanvasSize = () => {
+    const screenWidth = window.innerWidth;
+    
+    // 13인치 노트북을 위한 자연스러운 반응형 처리
+    let width, height;
+    
+    if (screenWidth < 640) {
+      // 모바일: 화면 너비의 95%, 높이는 4:3 비율
+      width = Math.min(screenWidth * 0.95, 400);
+      height = Math.floor(width * 0.75);
+      console.log('📱 모바일 크기:', { screenWidth, calculatedWidth: width, calculatedHeight: height });
+    } else if (screenWidth < 1024) {
+      // 13인치 노트북 및 태블릿: 화면 너비의 90%, 높이는 4:3 비율
+      width = Math.min(screenWidth * 0.9, 800);
+      height = Math.floor(width * 0.75);
+      console.log('💻 13인치 노트북/태블릿 크기:', { screenWidth, calculatedWidth: width, calculatedHeight: height });
+    } else {
+      // 대형 화면: 화면 너비의 80%, 높이는 4:3 비율
+      width = Math.min(screenWidth * 0.8, 1200);
+      height = Math.floor(width * 0.75);
+      console.log('🖥️ 대형 화면 크기:', { screenWidth, calculatedWidth: width, calculatedHeight: height });
+    }
+    
+    const result = { width: Math.floor(width), height };
+    console.log('🎯 최종 반환값:', result);
+    return result;
+  };
+
+  // 캔버스 초기화 및 반응형 크기 조정
   useEffect(() => {
     if (canvasRef && activeTab === 'draw') {
       const ctx = canvasRef.getContext('2d');
       if (ctx) {
+        const { width, height } = calculateCanvasSize();
+        
+        console.log('🎨 캔버스 초기화:', { 
+          canvasRef: !!canvasRef, 
+          activeTab, 
+          calculatedWidth: width, 
+          calculatedHeight: height,
+          screenWidth: window.innerWidth,
+          deviceType: window.innerWidth < 768 ? '모바일' : window.innerWidth < 1024 ? '태블릿' : '데스크톱'
+        });
+        
         // 캔버스 크기 설정
         const canvas = canvasRef;
-        canvas.width = 400;
-        canvas.height = 300;
+        canvas.width = width;
+        canvas.height = height;
+        
+        console.log('✅ 캔버스 크기 설정 완료:', { 
+          actualCanvasWidth: canvas.width, 
+          actualCanvasHeight: canvas.height 
+        });
         
         // 캔버스를 완전히 초기화
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -75,6 +120,57 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
         ctx.globalCompositeOperation = 'source-over';
       }
     }
+  }, [canvasRef, activeTab]);
+
+  // 화면 크기 변경 시 캔버스 크기 재조정
+  useEffect(() => {
+    const handleResize = () => {
+      if (canvasRef && activeTab === 'draw') {
+        const ctx = canvasRef.getContext('2d');
+        if (ctx) {
+          const { width, height } = calculateCanvasSize();
+          
+          // 현재 그린 내용을 임시로 저장
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvasRef.width;
+          tempCanvas.height = canvasRef.height;
+          const tempCtx = tempCanvas.getContext('2d');
+          if (tempCtx) {
+            tempCtx.drawImage(canvasRef, 0, 0);
+          }
+          
+          // 캔버스 크기 재설정
+          canvasRef.width = width;
+          canvasRef.height = height;
+          
+          // 흰색 배경으로 초기화
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, width, height);
+          
+          // 기존 내용을 새로운 크기에 맞게 스케일링하여 복원
+          if (tempCanvas.width > 0 && tempCanvas.height > 0) {
+            const scaleX = width / tempCanvas.width;
+            const scaleY = height / tempCanvas.height;
+            const scale = Math.min(scaleX, scaleY);
+            
+            const scaledWidth = tempCanvas.width * scale;
+            const scaledHeight = tempCanvas.height * scale;
+            const offsetX = (width - scaledWidth) / 2;
+            const offsetY = (height - scaledHeight) / 2;
+            
+            ctx.drawImage(tempCanvas, offsetX, offsetY, scaledWidth, scaledHeight);
+          }
+          
+          // 기본 설정 복원
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.globalCompositeOperation = 'source-over';
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [canvasRef, activeTab]);
 
 
@@ -133,8 +229,11 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     setIsDrawing(true);
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // CSS 크기와 실제 캔버스 크기의 비율을 계산하여 정확한 좌표 계산
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
     // 그리기 설정
     ctx.lineWidth = brushSize;
@@ -165,8 +264,11 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // CSS 크기와 실제 캔버스 크기의 비율을 계산하여 정확한 좌표 계산
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
     ctx.lineTo(x, y);
     ctx.stroke();
@@ -175,6 +277,71 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
 
   const stopDrawing = () => {
     setIsDrawing(false);
+  };
+
+  // 터치 이벤트를 위한 별도 함수들
+  const startDrawingTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef) return;
+    
+    // 터치 이벤트에서 스크롤 방지
+    e.preventDefault();
+    
+    const canvas = canvasRef;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    setIsDrawing(true);
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    // CSS 크기와 실제 캔버스 크기의 비율을 계산하여 정확한 좌표 계산
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (touch.clientX - rect.left) * scaleX;
+    const y = (touch.clientY - rect.top) * scaleY;
+
+    // 그리기 설정
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    if (isEraser) {
+      ctx.globalCompositeOperation = 'destination-out';
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = currentColor;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    
+    // 터치한 지점에 점 그리기
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.moveTo(x, y);
+  };
+
+  const drawTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !canvasRef) return;
+
+    // 터치 이벤트에서 스크롤 방지
+    e.preventDefault();
+
+    const canvas = canvasRef;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    // CSS 크기와 실제 캔버스 크기의 비율을 계산하여 정확한 좌표 계산
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (touch.clientX - rect.left) * scaleX;
+    const y = (touch.clientY - rect.top) * scaleY;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.moveTo(x, y);
   };
 
   const clearCanvas = () => {
@@ -513,13 +680,15 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
                 <div className="border-2 border-white/30 rounded-2xl p-4 bg-white">
                   <canvas
                     ref={setCanvasRef}
-                    width={400}
-                    height={300}
-                    className={`border border-gray-300 rounded-lg w-full ${isEraser ? 'cursor-pointer' : 'cursor-crosshair'}`}
+                    className={`border border-gray-300 rounded-lg w-full h-auto ${isEraser ? 'cursor-pointer' : 'cursor-crosshair'}`}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
                     onMouseUp={stopDrawing}
                     onMouseLeave={stopDrawing}
+                    onTouchStart={startDrawingTouch}
+                    onTouchMove={drawTouch}
+                    onTouchEnd={stopDrawing}
+                    style={{ touchAction: 'none' }}
                   />
                 </div>
               </div>

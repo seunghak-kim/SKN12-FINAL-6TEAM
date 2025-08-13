@@ -46,7 +46,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
   const personaStyles: { [key: number]: { color: string; emoji: string } } = {
     1: { color: "from-[#DC143C] to-[#FF6347]", emoji: "/assets/persona/추진이.png" }, // 추진형
     2: { color: "from-[#3CB371] to-[#6495ED]", emoji: "/assets/persona/내면이.png" }, // 내면형
-    3: { color: "from-[#6495ED] to-[#9932CC]", emoji: "/assets/persona/관계이.png" }, // 관계형
+    3: { color: "from-[#6495ED] to-[#9932CC]", emoji: "/assets/persona/햇살이.png" }, // 관계형
     4: { color: "from-[#FF6347] to-[#E6B800]", emoji: "/assets/persona/쾌락이.png" }, // 쾌락형
     5: { color: "from-[#E6B800] to-[#3CB371]", emoji: "/assets/persona/안정이.png" }, // 안정형
   }
@@ -77,12 +77,12 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
     },
     {
       id: "3",
-      name: "관계이",
+      name: "햇살이",
       description: "항상 긍정적이고 밝은 에너지로 당신의 기분을 좋게 해드릴게요!",
-      avatar: "/assets/persona/관계이.png",
+      avatar: "/assets/persona/햇살이.png",
       color: "from-[#6495ED] to-[#9932CC]", // 관계형
-      emoji: "/assets/persona/관계이.png",
-      buttonText: "관계이와 대화하기",
+      emoji: "/assets/persona/햇살이.png",
+      buttonText: "햇살이와 대화하기",
       personality_type: "관계형",
       score: 0.92,
     },
@@ -119,10 +119,10 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
         emoji: "/assets/persona/추진이.png",
         buttonText: "추진이와 대화하기",
       },
-      관계이: {
+      햇살이: {
         color: "from-[#6495ED] to-[#9932CC]", // 관계형
-        emoji: "/assets/persona/관계이.png",
-        buttonText: "관계이와 대화하기",
+        emoji: "/assets/persona/햇살이.png",
+        buttonText: "햇살이와 대화하기",
       },
       내면이: {
         color: "from-[#3CB371] to-[#6495ED]", // 내면형

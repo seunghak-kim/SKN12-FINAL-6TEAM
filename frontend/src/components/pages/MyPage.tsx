@@ -118,7 +118,7 @@ const MyPage: React.FC<MyPageProps> = ({
     const nameMap: { [key: number]: string } = {
       1: '추진이',
       2: '내면이',
-      3: '관계이',
+      3: '햇살이',
       4: '쾌락이',
       5: '안정이',
     };
@@ -131,7 +131,7 @@ const MyPage: React.FC<MyPageProps> = ({
     const nameMap: { [key: number]: string } = {
       1: '추진이',
       2: '내면이',
-      3: '관계이',
+      3: '햇살이',
       4: '쾌락이',
       5: '안정이',
     };
