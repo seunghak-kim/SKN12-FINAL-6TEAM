@@ -36,6 +36,15 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const [currentColor, setCurrentColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(3);
   const [isEraser, setIsEraser] = useState(false);
+  
+  // 큰 그림판 모달 상태
+  const [showLargeCanvas, setShowLargeCanvas] = useState(false);
+  const [largeCanvasRef, setLargeCanvasRef] = useState<HTMLCanvasElement | null>(null);
+  const [largeCanvasImageData, setLargeCanvasImageData] = useState<{
+    data: ImageData;
+    originalWidth: number;
+    originalHeight: number;
+  } | null>(null);
 
   // 컴포넌트 마운트 시 동의 상태 확인
   useEffect(() => {
@@ -79,6 +88,31 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     const result = { width: Math.floor(width), height };
     console.log('🎯 최종 반환값:', result);
     return result;
+  };
+
+  // 큰 그림판 크기 계산 함수 (화면 크기에 맞춤)
+  const calculateLargeCanvasSize = () => {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    
+    // 화면의 90% 크기로 설정 (여백 확보)
+    const maxWidth = Math.floor(screenWidth * 0.9);
+    const maxHeight = Math.floor(screenHeight * 0.9);
+    
+    // 4:3 비율 유지하면서 화면에 맞춤
+    let width, height;
+    if (maxWidth / maxHeight > 4/3) {
+      // 화면이 가로로 긴 경우
+      height = maxHeight;
+      width = Math.floor(height * 4/3);
+    } else {
+      // 화면이 세로로 긴 경우
+      width = maxWidth;
+      height = Math.floor(width * 3/4);
+    }
+    
+    console.log('🎨 큰 그림판 크기:', { screenWidth, screenHeight, calculatedWidth: width, calculatedHeight: height });
+    return { width, height };
   };
 
   // 캔버스 초기화 및 반응형 크기 조정
@@ -172,6 +206,77 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [canvasRef, activeTab]);
+
+  // 큰 그림판 초기화
+  useEffect(() => {
+    if (largeCanvasRef && showLargeCanvas) {
+      const ctx = largeCanvasRef.getContext('2d');
+      if (ctx) {
+        const { width, height } = calculateLargeCanvasSize();
+        
+        console.log('🎨 큰 그림판 초기화:', { 
+          largeCanvasRef: !!largeCanvasRef, 
+          showLargeCanvas, 
+          calculatedWidth: width, 
+          calculatedHeight: height
+        });
+        
+        // 큰 캔버스 크기 설정
+        largeCanvasRef.width = width;
+        largeCanvasRef.height = height;
+        
+        // 흰색 배경으로 초기화
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, width, height);
+        
+        // 그리기 설정 초기화
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = currentColor;
+        
+        // 작은 그림판의 원본 내용을 큰 그림판에 복원 (항상 원본 크기 기준)
+        if (largeCanvasImageData) {
+          // 원본 크기의 임시 캔버스 생성
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = largeCanvasImageData.originalWidth;
+          tempCanvas.height = largeCanvasImageData.originalHeight;
+          const tempCtx = tempCanvas.getContext('2d');
+          
+          if (tempCtx) {
+            // 원본 ImageData를 임시 캔버스에 복원
+            tempCtx.putImageData(largeCanvasImageData.data, 0, 0);
+            
+            // 임시 캔버스를 큰 그림판 크기에 맞게 스케일링하여 복원
+            ctx.drawImage(tempCanvas, 0, 0, width, height);
+          }
+          
+          console.log('🎯 원본 크기 기준으로 큰 그림판에 복원:', {
+            originalWidth: largeCanvasImageData.originalWidth,
+            originalHeight: largeCanvasImageData.originalHeight,
+            targetWidth: width,
+            targetHeight: height
+          });
+        }
+        
+        console.log('✅ 큰 그림판 초기화 완료:', { 
+          actualCanvasWidth: largeCanvasRef.width, 
+          actualCanvasHeight: largeCanvasRef.height
+        });
+      }
+    }
+  }, [largeCanvasRef, showLargeCanvas, brushSize, currentColor, largeCanvasImageData]);
+
+  // 큰 그림판에서 그리기 도구 변경 시 캔버스에 반영
+  useEffect(() => {
+    if (largeCanvasRef && showLargeCanvas) {
+      const ctx = largeCanvasRef.getContext('2d');
+      if (ctx) {
+        ctx.lineWidth = brushSize;
+        ctx.strokeStyle = currentColor;
+      }
+    }
+  }, [largeCanvasRef, showLargeCanvas, brushSize, currentColor]);
 
 
 
@@ -275,6 +380,58 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     ctx.moveTo(x, y);
   };
 
+  // 큰 그림판 마우스 이벤트 함수들
+  const startDrawingLarge = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!largeCanvasRef) return;
+    
+    const canvas = largeCanvasRef;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    setIsDrawing(true);
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    if (isEraser) {
+      ctx.globalCompositeOperation = 'destination-out';
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = currentColor;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.moveTo(x, y);
+  };
+
+  const drawLarge = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !largeCanvasRef) return;
+
+    const canvas = largeCanvasRef;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.moveTo(x, y);
+  };
+
   const stopDrawing = () => {
     setIsDrawing(false);
   };
@@ -344,6 +501,63 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     ctx.moveTo(x, y);
   };
 
+  // 큰 그림판 터치 이벤트 함수들
+  const startDrawingLargeTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!largeCanvasRef) return;
+    
+    e.preventDefault();
+    
+    const canvas = largeCanvasRef;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    setIsDrawing(true);
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (touch.clientX - rect.left) * scaleX;
+    const y = (touch.clientY - rect.top) * scaleY;
+
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    if (isEraser) {
+      ctx.globalCompositeOperation = 'destination-out';
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = currentColor;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.moveTo(x, y);
+  };
+
+  const drawLargeTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !largeCanvasRef) return;
+    
+    e.preventDefault();
+    
+    const canvas = largeCanvasRef;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (touch.clientX - rect.left) * scaleX;
+    const y = (touch.clientY - rect.top) * scaleY;
+
+    ctx.lineTo(x, y);
+    ctx.moveTo(x, y);
+  };
+
   const clearCanvas = () => {
     if (!canvasRef) return;
     const ctx = canvasRef.getContext('2d');
@@ -358,6 +572,68 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     
     // composite operation 리셋
     ctx.globalCompositeOperation = 'source-over';
+  };
+
+  // 큰 그림판 열기
+  const openLargeCanvas = () => {
+    if (!canvasRef) return;
+    
+    const ctx = canvasRef.getContext('2d');
+    if (ctx) {
+      // 현재 작은 그림판의 내용을 저장 (원본 크기 그대로)
+      const { width, height } = calculateCanvasSize();
+      const imageData = ctx.getImageData(0, 0, width, height);
+      
+      // 원본 크기 정보도 함께 저장
+      setLargeCanvasImageData({
+        data: imageData,
+        originalWidth: width,
+        originalHeight: height
+      });
+      setShowLargeCanvas(true);
+    }
+  };
+
+  // 큰 그림판 닫기
+  const closeLargeCanvas = () => {
+    setShowLargeCanvas(false);
+    // 큰 그림판을 닫을 때는 ImageData를 유지하여 다음에 열 때 원본 크기로 복원할 수 있도록 함
+    // setLargeCanvasImageData(null); // 이 줄을 제거하여 원본 데이터 유지
+  };
+
+  // 큰 그림판에 작은 그림판 내용 복원
+  const restoreToSmallCanvas = () => {
+    if (!largeCanvasRef || !canvasRef) return;
+    
+    const smallCtx = canvasRef.getContext('2d');
+    const largeCtx = largeCanvasRef.getContext('2d');
+    
+    if (smallCtx && largeCtx) {
+      const { width: smallWidth, height: smallHeight } = calculateCanvasSize();
+      const { width: largeWidth, height: largeHeight } = calculateLargeCanvasSize();
+      
+      // 작은 그림판을 흰색으로 초기화
+      smallCtx.fillStyle = 'white';
+      smallCtx.fillRect(0, 0, smallWidth, smallHeight);
+      
+      // 큰 그림판의 현재 내용을 가져와서 작은 그림판에 복원
+      const currentLargeImageData = largeCtx.getImageData(0, 0, largeWidth, largeHeight);
+      
+      // 큰 그림판의 현재 내용을 작은 그림판에 맞게 스케일링하여 복원
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = largeWidth;
+      tempCanvas.height = largeHeight;
+      const tempCtx = tempCanvas.getContext('2d');
+      
+      if (tempCtx) {
+        tempCtx.putImageData(currentLargeImageData, 0, 0);
+        smallCtx.drawImage(tempCanvas, 0, 0, smallWidth, smallHeight);
+      }
+      
+      console.log('✅ 큰 그림판의 현재 내용을 작은 그림판에 복원 완료');
+    }
+    
+    closeLargeCanvas();
   };
 
 
@@ -678,6 +954,15 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
 
                 {/* Canvas */}
                 <div className="border-2 border-white/30 rounded-2xl p-4 bg-white">
+                  <div className="text-center mb-3">
+                    <p className="text-gray-600 text-sm mb-2">아래 버튼을 클릭하면 큰 그림판에서 그리실 수 있습니다</p>
+                    <button
+                      onClick={openLargeCanvas}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-all duration-200 shadow-md"
+                    >
+                      🎨 큰 그림판 열기
+                    </button>
+                  </div>
                   <canvas
                     ref={setCanvasRef}
                     className={`border border-gray-300 rounded-lg w-full h-auto ${isEraser ? 'cursor-pointer' : 'cursor-crosshair'}`}
@@ -802,6 +1087,136 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
             />
             <button
               onClick={() => setEnlargedImage(null)}
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-colors z-10"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 큰 그림판 모달 */}
+      {showLargeCanvas && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="relative w-full h-full flex flex-col items-center justify-center">
+            {/* 헤더 */}
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
+              <h2 className="text-xl font-bold text-gray-800">🎨 큰 그림판</h2>
+              <p className="text-sm text-gray-600 text-center">사용자 화면 크기에 맞는 큰 그림판입니다</p>
+            </div>
+
+            {/* 큰 캔버스 */}
+            <div className="bg-white rounded-2xl p-4 shadow-2xl">
+              {/* 큰 그림판용 그리기 도구 */}
+              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                <div className="flex items-center justify-center space-x-4">
+                  {/* 색상 선택 */}
+                  <div className={`flex items-center space-x-2 ${isEraser ? 'opacity-50' : ''}`}>
+                    <label className="text-gray-700 text-sm font-medium">색상:</label>
+                    <input
+                      type="color"
+                      value={currentColor}
+                      onChange={(e) => setCurrentColor(e.target.value)}
+                      disabled={isEraser}
+                      className="w-8 h-8 rounded border border-gray-300 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  
+                  {/* 브러시 크기 */}
+                  <div className="flex items-center space-x-2">
+                    <label className="text-gray-700 text-sm font-medium">브러시:</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="30"
+                      value={brushSize}
+                      onChange={(e) => setBrushSize(Number(e.target.value))}
+                      className="w-20"
+                    />
+                    <span className="text-gray-700 text-sm w-8">{brushSize}px</span>
+                  </div>
+                  
+                  {/* 브러시/지우개 */}
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setIsEraser(false)}
+                      className={`px-3 py-1 rounded text-sm transition-colors ${
+                        !isEraser 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-gray-300 text-gray-700'
+                      }`}
+                    >
+                      브러시
+                    </button>
+                    <button
+                      onClick={() => setIsEraser(true)}
+                      className={`px-3 py-1 rounded text-sm transition-colors ${
+                        isEraser 
+                          ? 'bg-red-500 text-white' 
+                          : 'bg-gray-300 text-gray-700'
+                      }`}
+                    >
+                      지우개
+                    </button>
+                  </div>
+                  
+                  {/* 전체 지우기 */}
+                  <button
+                    onClick={() => {
+                      if (largeCanvasRef) {
+                        const ctx = largeCanvasRef.getContext('2d');
+                        if (ctx) {
+                          const { width, height } = calculateLargeCanvasSize();
+                          ctx.clearRect(0, 0, width, height);
+                          ctx.fillStyle = 'white';
+                          ctx.fillRect(0, 0, width, height);
+                        }
+                      }
+                    }}
+                    className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm transition-colors"
+                  >
+                    전체 지우기
+                  </button>
+                  
+
+                </div>
+              </div>
+              
+              <canvas
+                ref={setLargeCanvasRef}
+                className={`border-2 border-gray-300 rounded-lg ${isEraser ? 'cursor-pointer' : 'cursor-crosshair'}`}
+                onMouseDown={startDrawingLarge}
+                onMouseMove={drawLarge}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                onTouchStart={startDrawingLargeTouch}
+                onTouchMove={drawLargeTouch}
+                onTouchEnd={stopDrawing}
+                style={{ touchAction: 'none' }}
+              />
+            </div>
+
+            {/* 하단 버튼들 */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 flex space-x-4">
+              <button
+                onClick={restoreToSmallCanvas}
+                className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg"
+              >
+                ✅ 작은 그림판에 저장
+              </button>
+              <button
+                onClick={closeLargeCanvas}
+                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg"
+              >
+                ❌ 닫기
+              </button>
+            </div>
+
+            {/* 닫기 버튼 */}
+            <button
+              onClick={closeLargeCanvas}
               className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-colors z-10"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

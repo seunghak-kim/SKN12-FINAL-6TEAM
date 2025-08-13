@@ -68,9 +68,15 @@ const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = (
       case 1: // 추진이
         return "/assets/추진이 gif.gif";
       case 2: // 내면이
+<<<<<<< Updated upstream
         return "/assets/내면이 gif.gif";
       case 3: // 햇살이
         return "/assets/햇살이 gif.gif";
+=======
+        return "/assets/persona/내면이 gif.gif";
+      case 3: // 관계이
+        return "/assets/관계이 gif.gif";
+>>>>>>> Stashed changes
       case 4: // 쾌락이
         return "/assets/쾌락이 gif.gif";
       case 5: // 안정이
@@ -88,7 +94,11 @@ const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = (
         return "w-[1450px] h-[1450px]";
       case 2: // 내면이
         return "w-[480px] h-[480px]";
+<<<<<<< Updated upstream
       case 3: // 햇살이
+=======
+      case 3: // 관계이
+>>>>>>> Stashed changes
         return "w-[1500px] h-[1500px]"; 
       case 1: // 추진이
         return "w-[950px] h-[950px]";
@@ -934,6 +944,7 @@ return (
             <h3 className="text-white font-bold text-lg">채팅 기록</h3>
           </div>
 
+<<<<<<< Updated upstream
           {/* 채팅 메시지 영역 */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
             {chatMessages.length > 0 ? (
@@ -968,6 +979,43 @@ return (
             )}
             <div ref={sidebarMessagesEndRef} />
           </div>
+=======
+                                 {/* 채팅 메시지 영역 */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+              {chatMessages.length > 0 ? (
+                <div className="space-y-4">
+                  {chatMessages.map((message, index) => (
+                    <div key={index} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+                      <div className="flex flex-col max-w-[80%]">
+                        <div
+                          className={`px-4 py-3 rounded-2xl ${
+                            message.type === "user"
+                              ? "bg-blue-500/90 text-white rounded-br-md shadow-lg"
+                              : "bg-white/90 text-gray-800 rounded-bl-md shadow-lg"
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                        <div
+                          className={`text-xs text-white/70 mt-1 ${message.type === "user" ? "text-right" : "text-left"}`}
+                        >
+                          {message.timestamp}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-white/70 py-8">
+                  <div className="text-white/50 text-6xl mb-4">💬</div>
+                  <p className="text-lg font-medium">대화를 시작해보세요</p>
+                  <p className="text-sm mt-2">첫 메시지를 보내보세요!</p>
+                </div>
+              )}
+              <div ref={sidebarMessagesEndRef} />
+            </div>
+
+>>>>>>> Stashed changes
           {/* 하단 버튼 */}
           <div className="px-4 py-8 border-t border-white/30 flex-shrink-0 space-y-2 mt-6">
             <Button
