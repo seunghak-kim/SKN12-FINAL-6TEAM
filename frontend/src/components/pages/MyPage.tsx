@@ -437,7 +437,7 @@ const MyPage: React.FC<MyPageProps> = ({
     setNameError(null);
     
     try {
-      const result = await userService.checkNickname(nickname);
+      const result = await userService.checkNickname(currentUserId, nickname);
       if (result.available) {
         setNicknameCheckResult('available');
         setIsNicknameChecked(true);
@@ -507,6 +507,10 @@ const MyPage: React.FC<MyPageProps> = ({
     try {
       // 백엔드 업데이트
       await userService.updateUser(currentUserId, { nickname: editingName });
+      
+      // 닉네임 검사 결과 초기화
+      setNicknameCheckResult(null);
+      setIsNicknameChecked(false);
       
       setSaveSuccess(true);
       // 성공 딜레이 단축: 1.5초 → 0.8초
@@ -760,8 +764,19 @@ const MyPage: React.FC<MyPageProps> = ({
                         />
                       </div>
 
-                      {/* 닉네임 검사 결과 */}
-                      {nicknameCheckResult && (
+
+                      {/* 상태 메시지 (에러, 닉네임 검사 결과, 성공) */}
+                      {saveSuccess ? (
+                        <div className="mt-2 flex items-center space-x-1 text-sm text-purple-400">
+                          <Check className="w-4 h-4" />
+                          <span>프로필이 성공적으로 저장되었습니다.</span>
+                        </div>
+                      ) : nameError ? (
+                        <div className="mt-2 flex items-center space-x-1 text-sm text-red-400">
+                          <X className="w-4 h-4" />
+                          <span>{nameError}</span>
+                        </div>
+                      ) : nicknameCheckResult ? (
                         <div className={`mt-2 flex items-center space-x-1 text-sm ${
                           nicknameCheckResult === 'available' ? 'text-green-400' : 'text-red-400'
                         }`}>
@@ -787,15 +802,7 @@ const MyPage: React.FC<MyPageProps> = ({
                             </>
                           )}
                         </div>
-                      )}
-
-                      {/* 에러 메시지 */}
-                      {nameError && (
-                        <div className="mt-2 flex items-center space-x-1 text-sm text-red-400">
-                          <X className="w-4 h-4" />
-                          <span>{nameError}</span>
-                        </div>
-                      )}
+                      ) : null}
                     </div>
 
                     {/* 이미지 업로드 에러 */}
@@ -811,12 +818,6 @@ const MyPage: React.FC<MyPageProps> = ({
                       <div className="flex items-center space-x-1 text-sm text-red-400">
                         <X className="w-4 h-4" />
                         <span>{saveError}</span>
-                      </div>
-                    )}
-                    {saveSuccess && (
-                      <div className="flex items-center space-x-1 text-sm text-green-400">
-                        <Check className="w-4 h-4" />
-                        <span>프로필이 성공적으로 저장되었습니다.</span>
                       </div>
                     )}
 
