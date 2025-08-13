@@ -45,6 +45,7 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     originalWidth: number;
     originalHeight: number;
   } | null>(null);
+  const [showLargeCanvasMessage, setShowLargeCanvasMessage] = useState(true);
 
   // 컴포넌트 마운트 시 동의 상태 확인
   useEffect(() => {
@@ -591,12 +592,19 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
         originalHeight: height
       });
       setShowLargeCanvas(true);
+      setShowLargeCanvasMessage(true);
+      
+      // 5초 후 메시지 숨기기
+      setTimeout(() => {
+        setShowLargeCanvasMessage(false);
+      }, 5000);
     }
   };
 
   // 큰 그림판 닫기
   const closeLargeCanvas = () => {
     setShowLargeCanvas(false);
+    setShowLargeCanvasMessage(true); // 메시지 상태 리셋
     // 큰 그림판을 닫을 때는 ImageData를 유지하여 다음에 열 때 원본 크기로 복원할 수 있도록 함
     // setLargeCanvasImageData(null); // 이 줄을 제거하여 원본 데이터 유지
   };
@@ -745,7 +753,24 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const canAnalyze = selectedImage !== null && !isAnalyzing;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
+    <>
+      <style>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+      `}</style>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
       <Navigation onNavigate={onNavigate} />
 
       {/* Decorative elements */}
@@ -803,7 +828,7 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
               <>
                 <p>• 집, 나무, 사람 3가지 요소를 분리해서 그려주세요</p>
                 <p>• 그림을 완성한 후 '그림 저장' 버튼을 클릭하시면 분석 시작 버튼이 활성화됩니다</p>
-                <p>• 브러시 크기와 색상을 자유롭게 조정할 수 있습니다</p>
+                <p>• 브러시 크기를 자유롭게 조정할 수 있습니다</p>
                 <p>• 실수한 부분은 지우개로 수정할 수 있습니다</p>
               </>
             )}
@@ -880,19 +905,6 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
                   </div>
                   
                   <div className="space-y-4">
-                    {/* Color picker */}
-                    <div className={`flex items-center space-x-3 ${isEraser ? 'opacity-50' : ''}`}>
-                      <label className="text-white/90 text-sm">색상:</label>
-                      <input
-                        type="color"
-                        value={currentColor}
-                        onChange={(e) => setCurrentColor(e.target.value)}
-                        disabled={isEraser}
-                        className="w-8 h-8 rounded border border-white/30 disabled:cursor-not-allowed"
-                      />
-                      <span className="text-white/70 text-sm">{isEraser ? '지우개 모드' : currentColor}</span>
-                    </div>
-                    
                     {/* Brush size */}
                     <div className="flex items-center space-x-3">
                       <label className="text-white/90 text-sm">브러시 크기:</label>
@@ -1102,28 +1114,18 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="relative w-full h-full flex flex-col items-center justify-center">
             {/* 헤더 */}
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
-              <h2 className="text-xl font-bold text-gray-800">🎨 큰 그림판</h2>
-              <p className="text-sm text-gray-600 text-center">사용자 화면 크기에 맞는 큰 그림판입니다</p>
-            </div>
+            {showLargeCanvasMessage && (
+              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg animate-fade-in">
+                <h2 className="text-xl font-bold text-gray-800">🎨 큰 그림판</h2>
+                <p className="text-sm text-gray-600 text-center">사용자 화면 크기에 맞는 큰 그림판입니다</p>
+              </div>
+            )}
 
             {/* 큰 캔버스 */}
             <div className="bg-white rounded-2xl p-4 shadow-2xl">
               {/* 큰 그림판용 그리기 도구 */}
               <div className="mb-4 p-3 bg-gray-100 rounded-lg">
                 <div className="flex items-center justify-center space-x-4">
-                  {/* 색상 선택 */}
-                  <div className={`flex items-center space-x-2 ${isEraser ? 'opacity-50' : ''}`}>
-                    <label className="text-gray-700 text-sm font-medium">색상:</label>
-                    <input
-                      type="color"
-                      value={currentColor}
-                      onChange={(e) => setCurrentColor(e.target.value)}
-                      disabled={isEraser}
-                      className="w-8 h-8 rounded border border-gray-300 disabled:cursor-not-allowed"
-                    />
-                  </div>
-                  
                   {/* 브러시 크기 */}
                   <div className="flex items-center space-x-2">
                     <label className="text-gray-700 text-sm font-medium">브러시:</label>
@@ -1153,7 +1155,7 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
                     <button
                       onClick={() => setIsEraser(true)}
                       className={`px-3 py-1 rounded text-sm transition-colors ${
-                        isEraser 
+                        !isEraser 
                           ? 'bg-red-500 text-white' 
                           : 'bg-gray-300 text-gray-700'
                       }`}
@@ -1179,8 +1181,6 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
                   >
                     전체 지우기
                   </button>
-                  
-
                 </div>
               </div>
               
@@ -1226,7 +1226,8 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
