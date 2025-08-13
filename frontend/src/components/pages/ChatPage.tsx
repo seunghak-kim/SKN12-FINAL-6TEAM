@@ -42,7 +42,7 @@ const getPersonaBaseGreeting = (personaName: string) => {
 };
 
 // 캐릭터별 떠오르는 애니메이션 스타일 결정 함수
-const getFloatAnimationStyle = (personaId: number | null): React.CSSProperties => {
+const getFloatAnimationStyle = (personaId: number | null | undefined): React.CSSProperties => {
   const getDelay = () => {
     switch (personaId) {
       case 1: return '-0.6s'; // 추진이
@@ -71,6 +71,10 @@ const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = (
         return "/assets/persona/내면이 gif.gif";
       case 3: // 관계이
         return "/assets/관계이 gif.gif";
+      case 4: // 쾌락이
+        return "/assets/쾌락이 gif.gif";
+      case 5: // 안정이
+        return "/assets/안정이 gif.gif";
       default:
         // 다른 캐릭터들은 기본 애니메이션 사용
         return null;
@@ -81,13 +85,15 @@ const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = (
   const getGifSize = (personaId: number | undefined) => {
     switch (personaId) {
       case 4: // 쾌락이
-        return "w-[450px] h-[450px]";
+        return "w-[1450px] h-[1450px]";
       case 2: // 내면이
         return "w-[480px] h-[480px]";
       case 3: // 관계이
-        return "w-[800px] h-[800px]"; 
+        return "w-[1500px] h-[1500px]"; 
       case 1: // 추진이
-        return "w-[796px] h-[796px]";
+        return "w-[950px] h-[950px]";
+      case 5: // 안정이
+        return "w-[1550px] h-[1550px]";
       default:
         return "w-95 h-95";
     }
@@ -191,7 +197,15 @@ const toggleChatPanel = () => {
     setTimeout(() => setIsVisible(false), 500) // 닫힘 애니메이션 후 DOM 제거
   } else {
     setIsVisible(true)
-    setTimeout(() => setShowChatPanel(true), 10) // 살짝 지연 후 애니메이션 실행
+    setTimeout(() => {
+      setShowChatPanel(true) // 애니메이션 실행
+      // 사이드탭이 열린 후 즉시 최신 메시지 위치에 표시 (스크롤 애니메이션 없음)
+      setTimeout(() => {
+        if (sidebarMessagesEndRef.current) {
+          sidebarMessagesEndRef.current.scrollIntoView({ behavior: "auto" })
+        }
+      }, 100) // 애니메이션 완료 후 스크롤
+    }, 10)
   }
 }
 
@@ -683,29 +697,51 @@ return (
       <Navigation onNavigate={onNavigate} />
     </div>
 
-    <style>{`
-      @keyframes natural-movement {
-        0% {
-          transform: translateX(0px) translateY(0px);
+         <style>{`
+       @keyframes natural-movement {
+         0% {
+           transform: translateX(0px) translateY(0px);
+         }
+         25% {
+           transform: translateX(-8px) translateY(-12px);
+         }
+         50% {
+           transform: translateX(5px) translateY(-8px);
+         }
+         75% {
+           transform: translateX(-3px) translateY(-15px);
+         }
+         100% {
+           transform: translateX(0px) translateY(0px);
+         }
+       }
+       
+       .natural-movement {
+         animation: natural-movement 3s ease-in-out infinite;
+       }
+
+               @keyframes floating-bubble {
+          0% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          25% {
+            transform: translateY(-3px) rotate(1deg);
+          }
+          50% {
+            transform: translateY(-1px) rotate(-0.5deg);
+          }
+          75% {
+            transform: translateY(-4px) rotate(0.5deg);
+          }
+          100% {
+            transform: translateY(0px) rotate(0deg);
+          }
         }
-        25% {
-          transform: translateX(-8px) translateY(-12px);
+        
+        .floating-bubble {
+          animation: floating-bubble 5s ease-in-out infinite;
         }
-        50% {
-          transform: translateX(5px) translateY(-8px);
-        }
-        75% {
-          transform: translateX(-3px) translateY(-15px);
-        }
-        100% {
-          transform: translateX(0px) translateY(0px);
-        }
-      }
-      
-      .natural-movement {
-        animation: natural-movement 3s ease-in-out infinite;
-      }
-    `}</style>
+     `}</style>
 
     {/* 페르소나별 배경 오버레이 효과 */}
     <div className="absolute inset-0">
@@ -750,21 +786,25 @@ return (
     </div>
 
     {/* Bookmark-shaped chat toggle button */}
-    <button
-      onClick={toggleChatPanel}
-      className={`absolute top-1/2 transform -translate-y-1/2 z-20 transition-all duration-300 ${
-        showChatPanel ? "right-96" : "right-0"
-      }`}
-    >
-      <div className="relative">
-        {/* Bookmark shape with rounded corners and custom gradient */}
-        <div className="w-16 h-20 bg-gradient-to-br from-[#FF6948]/50 to-[#FF0051]/50 hover:from-[#FF6948]/60 hover:to-[#FF0051]/60 transition-colors shadow-lg relative rounded-l-2xl backdrop-blur-sm border border-white/10"></div>
-        {/* Arrow icon */}
-        <div className="absolute inset-0 flex items-center justify-center text-white">
-          {showChatPanel ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </div>
+    <div className={`absolute top-1/2 transform -translate-y-1/2 z-20 transition-all duration-300 ${
+      showChatPanel ? "right-96" : "right-0"
+    }`}>
+      {/* 🗨️ 이모티콘 - 화살표 박스 왼쪽에 배치 */}
+      <div className="absolute -left-16 top-1/4 transform -translate-y-1/2 text-3xl floating-bubble">
+        🗨️
       </div>
-    </button>
+      
+      <button onClick={toggleChatPanel}>
+        <div className="relative">
+          {/* Bookmark shape with rounded corners and custom gradient */}
+          <div className="w-16 h-20 bg-gradient-to-br from-[#FF6948]/50 to-[#FF0051]/50 hover:from-[#FF6948]/60 hover:to-[#FF0051]/60 transition-colors shadow-lg relative rounded-l-2xl backdrop-blur-sm border border-white/10"></div>
+          {/* Arrow icon */}
+          <div className="absolute inset-0 flex items-center justify-center text-white">
+            {showChatPanel ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </div>
+        </div>
+      </button>
+    </div>
 
     {/* Main chat interface - Compact layout optimized for viewport */}
     <div
@@ -894,41 +934,40 @@ return (
             <h3 className="text-white font-bold text-lg">채팅 기록</h3>
           </div>
 
-                     {/* 채팅 메시지 영역 */}
-           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 flex flex-col-reverse">
-             {chatMessages.length > 0 ? (
-               <div className="space-y-4">
-                 {chatMessages.map((message, index) => (
-                   <div key={index} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
-                     <div className="flex flex-col max-w-[80%]">
-                       <div
-                         className={`px-4 py-3 rounded-2xl whitespace-pre-wrap ${
-                           message.type === "user"
-                             ? "bg-blue-500/90 text-white rounded-br-md shadow-lg"
-                             : "bg-white/90 text-gray-800 rounded-bl-md shadow-lg"
-                         }`}
-                       >
-                         {message.content}
-                       </div>
-                       <div
-                         className={`text-xs text-white/70 mt-1 ${message.type === "user" ? "text-right" : "text-left"}`}
-                       >
-                         {message.timestamp}
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             ) : (
-               <div className="text-center text-white/70 py-8">
-                 <div className="text-white/50 text-6xl mb-4">💬</div>
-                 <p className="text-lg font-medium">대화를 시작해보세요</p>
-                 <p className="text-sm mt-2">첫 메시지를 보내보세요!</p>
-               </div>
-             )}
-             <div ref={sidebarMessagesEndRef} />
-           </div>
-          
+          {/* 채팅 메시지 영역 */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+            {chatMessages.length > 0 ? (
+              <div className="space-y-4">
+                {chatMessages.map((message, index) => (
+                  <div key={index} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className="flex flex-col max-w-[80%]">
+                      <div
+                        className={`px-4 py-3 rounded-2xl whitespace-pre-wrap ${
+                          message.type === "user"
+                            ? "bg-blue-500/90 text-white rounded-br-md shadow-lg"
+                            : "bg-white/90 text-gray-800 rounded-bl-md shadow-lg"
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                      <div
+                        className={`text-xs text-white/70 mt-1 ${message.type === "user" ? "text-right" : "text-left"}`}
+                      >
+                        {message.timestamp}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-white/70 py-8">
+                <div className="text-white/50 text-6xl mb-4">💬</div>
+                <p className="text-lg font-medium">대화를 시작해보세요</p>
+                <p className="text-sm mt-2">첫 메시지를 보내보세요!</p>
+              </div>
+            )}
+            <div ref={sidebarMessagesEndRef} />
+          </div>
           {/* 하단 버튼 */}
           <div className="px-4 py-8 border-t border-white/30 flex-shrink-0 space-y-2 mt-6">
             <Button
