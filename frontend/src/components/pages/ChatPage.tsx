@@ -88,11 +88,7 @@ const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = (
         return "w-[1450px] h-[1450px]";
       case 2: // 내면이
         return "w-[480px] h-[480px]";
-<<<<<<< HEAD
       case 3: // 햇살이
-=======
-      case 3: // 관계이
->>>>>>> 53c222fc95696175036abc34579420f4ff3444c5
         return "w-[1500px] h-[1500px]"; 
       case 1: // 추진이
         return "w-[950px] h-[950px]";
