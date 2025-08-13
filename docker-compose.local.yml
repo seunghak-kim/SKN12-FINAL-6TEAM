@@ -1,0 +1,47 @@
+services:
+  backend:
+    build: ./backend
+    container_name: backend-app
+    ports:
+      - "8000:8000"
+    environment:
+      - FRONTEND_URL=http://localhost:3000
+      - GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./uploads:/app/uploads
+      - ./result:/app/result
+      - ./backend:/app
+    networks:
+      - frontback-network
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: frontend-app
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api
+      - REACT_APP_GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=true
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - frontback-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+networks:
+  frontback-network:
+    driver: bridge
