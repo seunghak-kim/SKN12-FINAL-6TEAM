@@ -68,7 +68,7 @@ const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = (
       case 1: // 추진이
         return "/assets/추진이 gif.gif";
       case 2: // 내면이
-        return "/assets/내면이 gif.gif";
+        return "/assets/persona/내면이 gif.gif";
       case 3: // 햇살이
         return "/assets/햇살이 gif.gif";
       case 4: // 쾌락이
