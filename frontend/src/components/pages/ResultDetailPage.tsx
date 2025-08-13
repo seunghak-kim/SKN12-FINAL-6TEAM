@@ -234,7 +234,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
   };
 
   // 대화하기 버튼 클릭 핸들러 - 올바른 캐릭터 정보를 전달하여 채팅 페이지로 이동
-  const handleChatClick = () => {
+  const ㅇ아니 = () => {
     const characterId = getCharacterId(testResult.characterMatch);
     
     // SearchResult 객체 생성
