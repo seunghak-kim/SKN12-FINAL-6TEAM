@@ -164,6 +164,7 @@ const [imageLoaded, setImageLoaded] = useState(false)
 
 // location.state에서 캐릭터 정보 가져오기 (ResultDetailPage에서 전달된 정보)
 const stateSelectedCharacter = location.state?.selectedCharacter as SearchResult | undefined
+const forceNewSession = location.state?.forceNewSession as boolean | undefined
 
 // sessionStorage에서 새로운 캐릭터 세션 정보 가져오기
 const [sessionStorageCharacter, setSessionStorageCharacter] = useState<SearchResult | null>(null)
@@ -405,11 +406,19 @@ useEffect(() => {
         const urlParams = new URLSearchParams(location.search)
         const sessionId = urlParams.get("sessionId")
 
-        if (sessionId) {
+        // forceNewSession이 true면 기존 세션 무시하고 새 세션 생성
+        if (sessionId && !forceNewSession) {
           // 기존 세션 로드
           console.log('ChatPage - 기존 세션 로드:', sessionId);
           await loadSession(sessionId)
         } else {
+          if (forceNewSession) {
+            console.log('ChatPage - 새 세션 강제 생성 모드');
+            // URL에서 sessionId 파라미터 제거
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('sessionId');
+            window.history.replaceState(null, '', newUrl.toString());
+          }
           // 새 세션 생성 로직 (selectedCharacter가 있으면 새 세션 우선)
           if (selectedCharacter && currentUserId !== null) {
             // 사용자 인증 상태 재확인

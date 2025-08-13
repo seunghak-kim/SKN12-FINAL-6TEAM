@@ -245,16 +245,20 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
       avatar: getCharacterImage(testResult.characterMatch),
     };
 
-    console.log('ResultDetailPage - 대화하기 버튼 클릭:', {
+    console.log('ResultDetailPage - 대화하기 버튼 클릭 (새 세션 강제):', {
       characterMatch: testResult.characterMatch,
       characterId,
       searchResult
     });
 
-    // 채팅 페이지로 이동하면서 캐릭터 정보를 state로 전달
+    // 기존 세션 정보 제거하여 새 세션 강제 생성
+    localStorage.removeItem('lastChatSession');
+    
+    // 채팅 페이지로 이동하면서 캐릭터 정보를 state로 전달 (URL 파라미터 제거)
     navigate("/chat", {
       state: {
-        selectedCharacter: searchResult
+        selectedCharacter: searchResult,
+        forceNewSession: true // 새 세션 강제 생성 플래그
       }
     });
   };
