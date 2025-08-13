@@ -266,7 +266,18 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
         });
       }
     }
-  }, [largeCanvasRef, showLargeCanvas, brushSize, currentColor, largeCanvasImageData]);
+  }, [largeCanvasRef, showLargeCanvas, largeCanvasImageData]);
+
+  // 작은 그림판에서 그리기 도구 변경 시 캔버스에 반영
+  useEffect(() => {
+    if (canvasRef && activeTab === 'draw') {
+      const ctx = canvasRef.getContext('2d');
+      if (ctx) {
+        ctx.lineWidth = brushSize;
+        ctx.strokeStyle = currentColor;
+      }
+    }
+  }, [canvasRef, activeTab, brushSize, currentColor]);
 
   // 큰 그림판에서 그리기 도구 변경 시 캔버스에 반영
   useEffect(() => {
@@ -1155,7 +1166,7 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
                     <button
                       onClick={() => setIsEraser(true)}
                       className={`px-3 py-1 rounded text-sm transition-colors ${
-                        !isEraser 
+                        isEraser 
                           ? 'bg-red-500 text-white' 
                           : 'bg-gray-300 text-gray-700'
                       }`}
