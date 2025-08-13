@@ -48,6 +48,7 @@ export interface TestResultResponse {
 export interface NicknameCheckResponse {
   available: boolean;
   message: string;
+  reason: 'available' | 'duplicate' | 'slang';
 }
 
 class UserService {
@@ -129,8 +130,8 @@ class UserService {
   }
 
   // 닉네임 중복 확인
-  async checkNickname(userId: number, nickname: string): Promise<NicknameCheckResponse> {
-    return await apiClient.post<NicknameCheckResponse>(`/users/${userId}/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+  async checkNickname(nickname: string): Promise<NicknameCheckResponse> {
+    return await apiClient.post<NicknameCheckResponse>(`/auth/check-nickname`, { nickname });
   }
 
   // 사용자 정보 업데이트

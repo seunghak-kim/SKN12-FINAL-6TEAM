@@ -38,7 +38,7 @@ const MyPage: React.FC<MyPageProps> = ({
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
-  const [nicknameCheckResult, setNicknameCheckResult] = useState<'available' | 'taken' | 'error' | null>(null);
+  const [nicknameCheckResult, setNicknameCheckResult] = useState<'available' | 'taken' | 'slang' | 'error' | null>(null);
   const [isNicknameChecked, setIsNicknameChecked] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -437,9 +437,15 @@ const MyPage: React.FC<MyPageProps> = ({
     setNameError(null);
     
     try {
-      const result = await userService.checkNickname(currentUserId, nickname);
-      setNicknameCheckResult(result.available ? 'available' : 'taken');
-      setIsNicknameChecked(true);
+      const result = await userService.checkNickname(nickname);
+      if (result.available) {
+        setNicknameCheckResult('available');
+        setIsNicknameChecked(true);
+      } else {
+        // API에서 반환된 reason 사용 (duplicate -> taken 매핑)
+        setNicknameCheckResult(result.reason === 'duplicate' ? 'taken' : result.reason);
+        setIsNicknameChecked(false);
+      }
     } catch (error) {
       console.error('닉네임 확인 실패:', error);
       setNicknameCheckResult('error');
@@ -768,6 +774,11 @@ const MyPage: React.FC<MyPageProps> = ({
                             <>
                               <X className="w-4 h-4" />
                               <span>이미 사용 중인 닉네임입니다.</span>
+                            </>
+                          ) : nicknameCheckResult === 'slang' ? (
+                            <>
+                              <X className="w-4 h-4" />
+                              <span>부적절한 단어가 포함된 닉네임입니다.</span>
                             </>
                           ) : (
                             <>
