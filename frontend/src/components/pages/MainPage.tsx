@@ -218,7 +218,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
               대표: 이정민 | leejm2157@gmail.com
             </div>
             <div className="text-white/40 text-xs">
-              © 2024 MY MOODY. All rights reserved.
+              © 2025 MY MOODY. All rights reserved.
             </div>
           </div>
         </footer>
