@@ -48,6 +48,7 @@ export interface TestResultResponse {
 export interface NicknameCheckResponse {
   available: boolean;
   message: string;
+  reason: 'available' | 'duplicate' | 'slang';
 }
 
 class UserService {

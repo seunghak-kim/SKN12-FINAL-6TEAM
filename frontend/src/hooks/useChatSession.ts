@@ -72,8 +72,11 @@ export const useChatSession = (): UseChatSessionReturn => {
     localStorage.setItem('lastChatSession', JSON.stringify(sessionData));
     console.log('useChatSession - 세션 정보 localStorage에 저장:', sessionData);
 
-    // 개인화된 인사 생성을 백그라운드에서 처리하고 즉시 메시지 로드
+    // 개인화된 인사 생성을 백그라운드에서 처리
     console.log('createSession - 개인화된 인사 API 호출 시작 (백그라운드)');
+    
+    // 초기에는 빈 메시지로 시작
+    setMessages([]);
     
     // 개인화된 인사 생성 (백그라운드에서 처리)
     chatService.getPersonalizedGreeting(newSession.chat_sessions_id)
@@ -83,7 +86,7 @@ export const useChatSession = (): UseChatSessionReturn => {
           console.log('createSession - 개인화된 인사 설정:', personalizedGreeting.greeting);
           setGreeting(personalizedGreeting.greeting);
           
-          // 개인화된 인사가 생성되면 메시지 다시 로드
+          // 개인화된 인사가 생성되면 메시지 한 번만 로드
           setTimeout(async () => {
             try {
               const updatedMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
@@ -93,22 +96,20 @@ export const useChatSession = (): UseChatSessionReturn => {
             } catch (e) {
               console.error('개인화된 인사 반영 후 메시지 로드 실패:', e);
             }
-          }, 300); // 300ms로 단축
+          }, 500); // 500ms로 조정
         }
       })
       .catch(e => {
         console.error('createSession - 개인화된 인사 로드 실패:', e);
+        // 개인화된 인사 실패 시에만 기본 메시지 로드
+        chatService.getSessionMessages(newSession.chat_sessions_id)
+          .then(sessionMessages => {
+            const frontendMessages = sessionMessages.map((m) => ChatService.convertToFrontendMessage(m));
+            setMessages(frontendMessages);
+            console.log('createSession - 기본 메시지 로드 완료 (인사 실패 후), 메시지 수:', frontendMessages.length);
+          })
+          .catch(e => console.error('기본 메시지 로드 실패:', e));
       });
-
-    // 초기 메시지 로드 (개인화된 인사 생성과 병렬 처리)
-    try {
-      const sessionMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
-      const frontendMessages = sessionMessages.map((m) => ChatService.convertToFrontendMessage(m));
-      setMessages(frontendMessages);
-      console.log('createSession - 초기 메시지 로드 완료, 메시지 수:', frontendMessages.length);
-    } catch (e) {
-      console.error('초기 메시지 로드 실패:', e);
-    }
 
     return newSession; // ✅ 여기!
   } catch (error) {

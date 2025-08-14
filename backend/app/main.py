@@ -46,8 +46,23 @@ if not os.path.exists("result/images"):
 if not os.path.exists("uploads/profile_images"):
     os.makedirs("uploads/profile_images")
     
-app.mount("/images", StaticFiles(directory="result/images"), name="images")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# Custom Static Files with CORS  
+from fastapi.responses import Response
+
+class CORSStaticFiles(StaticFiles):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+    async def get_response(self, path: str, scope) -> Response:
+        response = await super().get_response(path, scope)
+        # CORS 헤더 추가
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+
+app.mount("/images", CORSStaticFiles(directory="result/images"), name="images")
+app.mount("/uploads", CORSStaticFiles(directory="uploads"), name="uploads")
 
 # 라우터 등록
 app.include_router(auth_router, prefix="/auth", tags=["auth"])

@@ -38,7 +38,7 @@ const MyPage: React.FC<MyPageProps> = ({
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
-  const [nicknameCheckResult, setNicknameCheckResult] = useState<'available' | 'taken' | 'error' | null>(null);
+  const [nicknameCheckResult, setNicknameCheckResult] = useState<'available' | 'taken' | 'slang' | 'error' | null>(null);
   const [isNicknameChecked, setIsNicknameChecked] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -438,8 +438,14 @@ const MyPage: React.FC<MyPageProps> = ({
     
     try {
       const result = await userService.checkNickname(currentUserId, nickname);
-      setNicknameCheckResult(result.available ? 'available' : 'taken');
-      setIsNicknameChecked(true);
+      if (result.available) {
+        setNicknameCheckResult('available');
+        setIsNicknameChecked(true);
+      } else {
+        // API에서 반환된 reason 사용 (duplicate -> taken 매핑)
+        setNicknameCheckResult(result.reason === 'duplicate' ? 'taken' : result.reason);
+        setIsNicknameChecked(false);
+      }
     } catch (error) {
       console.error('닉네임 확인 실패:', error);
       setNicknameCheckResult('error');
@@ -501,6 +507,10 @@ const MyPage: React.FC<MyPageProps> = ({
     try {
       // 백엔드 업데이트
       await userService.updateUser(currentUserId, { nickname: editingName });
+      
+      // 닉네임 검사 결과 초기화
+      setNicknameCheckResult(null);
+      setIsNicknameChecked(false);
       
       setSaveSuccess(true);
       // 성공 딜레이 단축: 1.5초 → 0.8초
@@ -754,8 +764,19 @@ const MyPage: React.FC<MyPageProps> = ({
                         />
                       </div>
 
-                      {/* 닉네임 검사 결과 */}
-                      {nicknameCheckResult && (
+
+                      {/* 상태 메시지 (에러, 닉네임 검사 결과, 성공) */}
+                      {saveSuccess ? (
+                        <div className="mt-2 flex items-center space-x-1 text-sm text-purple-400">
+                          <Check className="w-4 h-4" />
+                          <span>프로필이 성공적으로 저장되었습니다.</span>
+                        </div>
+                      ) : nameError ? (
+                        <div className="mt-2 flex items-center space-x-1 text-sm text-red-400">
+                          <X className="w-4 h-4" />
+                          <span>{nameError}</span>
+                        </div>
+                      ) : nicknameCheckResult ? (
                         <div className={`mt-2 flex items-center space-x-1 text-sm ${
                           nicknameCheckResult === 'available' ? 'text-green-400' : 'text-red-400'
                         }`}>
@@ -769,6 +790,11 @@ const MyPage: React.FC<MyPageProps> = ({
                               <X className="w-4 h-4" />
                               <span>이미 사용 중인 닉네임입니다.</span>
                             </>
+                          ) : nicknameCheckResult === 'slang' ? (
+                            <>
+                              <X className="w-4 h-4" />
+                              <span>부적절한 단어가 포함된 닉네임입니다.</span>
+                            </>
                           ) : (
                             <>
                               <X className="w-4 h-4" />
@@ -776,15 +802,7 @@ const MyPage: React.FC<MyPageProps> = ({
                             </>
                           )}
                         </div>
-                      )}
-
-                      {/* 에러 메시지 */}
-                      {nameError && (
-                        <div className="mt-2 flex items-center space-x-1 text-sm text-red-400">
-                          <X className="w-4 h-4" />
-                          <span>{nameError}</span>
-                        </div>
-                      )}
+                      ) : null}
                     </div>
 
                     {/* 이미지 업로드 에러 */}
@@ -800,12 +818,6 @@ const MyPage: React.FC<MyPageProps> = ({
                       <div className="flex items-center space-x-1 text-sm text-red-400">
                         <X className="w-4 h-4" />
                         <span>{saveError}</span>
-                      </div>
-                    )}
-                    {saveSuccess && (
-                      <div className="flex items-center space-x-1 text-sm text-green-400">
-                        <Check className="w-4 h-4" />
-                        <span>프로필이 성공적으로 저장되었습니다.</span>
                       </div>
                     )}
 
