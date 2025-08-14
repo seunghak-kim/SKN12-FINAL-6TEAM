@@ -68,7 +68,7 @@ const TalkingAnimation: React.FC<{ className?: string; personaId?: number }> = (
       case 1: // 추진이
         return "/assets/추진이 gif.gif";
       case 2: // 내면이
-        return "/assets/persona/내면이 gif.gif";
+        return "/assets/내면이 gif.gif";
       case 3: // 햇살이
         return "/assets/햇살이 gif.gif";
       case 4: // 쾌락이
@@ -809,9 +809,13 @@ return (
     <div className={`absolute top-1/2 transform -translate-y-1/2 z-20 transition-all duration-300 ${
       showChatPanel ? "right-96" : "right-0"
     }`}>
-      {/* 🗨️ 이모티콘 - 화살표 박스 왼쪽에 배치 */}
-      <div className="absolute -left-16 top-1/4 transform -translate-y-1/2 text-3xl floating-bubble">
-        🗨️
+      {/* 말풍선 이미지 - 화살표 박스 왼쪽에 배치 */}
+      <div className="absolute -left-16 top-1/4 transform -translate-y-1/2 floating-bubble">
+        <img 
+          src="/assets/말풍선.png" 
+          alt="말풍선" 
+          className="w-12 h-12 object-contain"
+        />
       </div>
       
       <button onClick={toggleChatPanel}>
