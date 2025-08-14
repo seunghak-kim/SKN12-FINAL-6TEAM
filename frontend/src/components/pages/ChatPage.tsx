@@ -713,7 +713,7 @@ const getLastBotMessage = () => {
 
 return (
   <div className="min-h-screen relative overflow-hidden" style={currentBackgroundStyle}>
-    <div className="relative z-50">
+    <div className={`relative z-50 transition-all duration-300 ${showChatPanel ? "mr-96" : ""}`}>
       <Navigation onNavigate={onNavigate} />
     </div>
 
