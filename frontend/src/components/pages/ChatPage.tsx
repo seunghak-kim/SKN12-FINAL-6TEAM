@@ -197,14 +197,25 @@ const toggleChatPanel = () => {
     setShowChatPanel(false)
     setTimeout(() => setIsVisible(false), 500) // 닫힘 애니메이션 후 DOM 제거
   } else {
+    // 사이드탭을 열기 전에 현재 스크롤 위치 저장
+    const currentScrollTop = window.scrollY || document.documentElement.scrollTop
+    
     setIsVisible(true)
     setTimeout(() => {
       setShowChatPanel(true) // 애니메이션 실행
-      // 사이드탭이 열린 후 즉시 최신 메시지 위치에 표시 (스크롤 애니메이션 없음)
+      // 사이드탭이 열린 후 즉시 최신 메시지 위치에 표시 (사이드탭 내부만 스크롤)
       setTimeout(() => {
         if (sidebarMessagesEndRef.current) {
-          sidebarMessagesEndRef.current.scrollIntoView({ behavior: "auto" })
+          // 사이드탭 내부 컨테이너를 찾아서 스크롤
+          const sidebarContainer = sidebarMessagesEndRef.current.closest('.overflow-y-auto')
+          if (sidebarContainer) {
+            sidebarContainer.scrollTop = sidebarContainer.scrollHeight
+          }
         }
+        // 사이드탭 열린 후 원래 스크롤 위치로 복원
+        setTimeout(() => {
+          window.scrollTo({ top: currentScrollTop, behavior: "auto" })
+        }, 50)
       }, 100) // 애니메이션 완료 후 스크롤
     }, 10)
   }
