@@ -28,6 +28,7 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
   
   // 캔버스 관련 상태
   const [activeTab, setActiveTab] = useState<'upload' | 'draw'>('upload');
@@ -719,18 +720,22 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     setShowAnalysisModal(true);
     setAnalysisStatus(null);
 
+    // 새로운 AbortController 생성
+    const controller = new AbortController();
+    setAbortController(controller);
 
     try {
       // 이미지 분석 시작
       const analysisResponse = await testService.analyzeImage(selectedImage, '');
       setCurrentTestId(analysisResponse.test_id);
 
-      // 분석 상태 폴링 시작
+      // 분석 상태 폴링 시작 (AbortSignal 전달)
       const finalStatus = await testService.pollAnalysisStatus(
         analysisResponse.test_id,
         (status) => {
           setAnalysisStatus(status);
-        }
+        },
+        controller.signal
       );
 
       if (finalStatus.status === 'completed') {
@@ -749,9 +754,12 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
         alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      setIsAnalyzing(false);
-      setShowAnalysisModal(false);
-      alert('분석을 시작하는 중 오류가 발생했습니다. 다시 시도해주세요.');
+      // 중단된 경우가 아닌 실제 오류인 경우에만 알림 표시
+      if (!controller.signal.aborted) {
+        setIsAnalyzing(false);
+        setShowAnalysisModal(false);
+        alert('분석을 시작하는 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
     }
   };
 
@@ -1075,18 +1083,27 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
             });
           }
         }}
-        onClose={async () => {
+        onClose={() => {
+          // 폴링 중단
+          if (abortController) {
+            abortController.abort();
+            setAbortController(null);
+          }
+          
+          // 즉시 UI 상태 변경 (사용자 경험 개선)
           setIsAnalyzing(false);
           setShowAnalysisModal(false);
           
-          // 분석이 진행 중이던 그림검사 결과를 DB에서 삭제
+          // 백그라운드에서 정리 작업 수행
           if (currentTestId) {
-            try {
-              await testService.deleteDrawingTest(currentTestId);
-              console.log('분석 중단으로 인한 테스트 삭제 완료:', currentTestId);            
-            } catch (error) {
-              console.error('테스트 삭제 실패:', error);
-            }
+            testService.deleteDrawingTest(currentTestId)
+              .then(() => {
+                console.log('분석 중단으로 인한 테스트 삭제 완료:', currentTestId);
+              })
+              .catch((error) => {
+                // 삭제 실패해도 사용자에게는 알리지 않음 (조용히 처리)
+                console.warn('테스트 삭제 실패 (무시됨):', error);
+              });
           }
           
           // 상태 초기화

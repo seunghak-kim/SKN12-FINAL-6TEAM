@@ -94,21 +94,43 @@ class TestService {
   /**
    * 분석 완료까지 폴링
    */
-  async pollAnalysisStatus(testId: string, onProgress?: (status: PipelineStatusResponse) => void): Promise<PipelineStatusResponse> {
+  async pollAnalysisStatus(testId: string, onProgress?: (status: PipelineStatusResponse) => void, abortSignal?: AbortSignal): Promise<PipelineStatusResponse> {
     const poll = async (): Promise<PipelineStatusResponse> => {
-      const status = await this.getAnalysisStatus(testId);
-      
-      if (onProgress) {
-        onProgress(status);
+      // 중단 신호가 있으면 폴링 중단
+      if (abortSignal?.aborted) {
+        return { status: 'cancelled', message: 'Analysis cancelled by user' } as PipelineStatusResponse;
       }
 
-      if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
-        return status;
-      }
+      try {
+        const status = await this.getAnalysisStatus(testId);
+        
+        if (onProgress) {
+          onProgress(status);
+        }
 
-      // 2초 후 재요청
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return poll();
+        if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
+          return status;
+        }
+
+        // 2초 후 재요청 (중단 신호 확인)
+        await new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(resolve, 2000);
+          if (abortSignal) {
+            abortSignal.addEventListener('abort', () => {
+              clearTimeout(timeoutId);
+              reject(new Error('Analysis cancelled'));
+            });
+          }
+        });
+        
+        return poll();
+      } catch (error) {
+        // 404 등의 오류가 발생하면 중단된 것으로 처리
+        if (abortSignal?.aborted) {
+          return { status: 'cancelled', message: 'Analysis cancelled by user' } as PipelineStatusResponse;
+        }
+        throw error;
+      }
     };
 
     return poll();
