@@ -12,7 +12,6 @@ from .api.user import router as user_router
 from .api.persona import router as persona_router
 from .api.test import router as test_router
 from .api.rating import router as rating_router
-from .api.agreement import router as agreement_router
 from .api.admin import router as admin_router
 from .api.pipeline import router as pipeline_router
 from .database import create_tables
@@ -71,7 +70,6 @@ app.include_router(persona_router, prefix="/personas", tags=["personas"])
 app.include_router(chat_router, prefix="/chat", tags=["chat"])
 app.include_router(test_router, prefix="/api/v1/test", tags=["tests"])
 app.include_router(rating_router, prefix="/ratings", tags=["ratings"])
-app.include_router(agreement_router, prefix="/api/v1/agreement", tags=["agreements"])
 app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
 app.include_router(pipeline_router, prefix="/api/v1/pipeline", tags=["pipeline"])
 

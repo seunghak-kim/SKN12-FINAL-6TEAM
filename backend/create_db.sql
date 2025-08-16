@@ -31,13 +31,6 @@ CREATE TABLE IF NOT EXISTS "user_informations" (
   PRIMARY KEY ("user_id")
 );
 
-CREATE TABLE IF NOT EXISTS "agreements" (
-  "agreement_id" serial4 NOT NULL,
-  "user_id" int4 NOT NULL,
-  "is_agree" bool,
-  "agreed_at" timestamp NOT NULL DEFAULT (now()),
-  PRIMARY KEY ("agreement_id")
-);
 
 CREATE TABLE IF NOT EXISTS "chat_sessions" (
   "chat_sessions_id" uuid NOT NULL,
@@ -109,7 +102,6 @@ ALTER TABLE "user_informations" ADD CONSTRAINT "user_informations_regular_user_i
 
 ALTER TABLE "user_informations" ADD CONSTRAINT "user_informations_social_user_id_fkey" FOREIGN KEY ("social_user_id") REFERENCES "social_users" ("social_user_id") ON DELETE CASCADE;
 
-ALTER TABLE "agreements" ADD CONSTRAINT "agreements_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user_informations" ("user_id") ON DELETE CASCADE;
 
 ALTER TABLE "chat_sessions" ADD CONSTRAINT "chat_sessions_persona_id_fkey" FOREIGN KEY ("persona_id") REFERENCES "personas" ("persona_id");
 

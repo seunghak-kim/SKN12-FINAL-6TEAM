@@ -18,9 +18,6 @@ from .test import (
 from .rating import (
     RatingBase, RatingCreate, RatingUpdate, RatingResponse
 )
-from .agreement import (
-    AgreementBase, AgreementCreate, AgreementUpdate, AgreementResponse
-)
 
 __all__ = [
     # User schemas
@@ -41,8 +38,5 @@ __all__ = [
     "DrawingTestResultResponse",
     
     # Rating schemas
-    "RatingBase", "RatingCreate", "RatingUpdate", "RatingResponse",
-    
-    # Agreement schemas
-    "AgreementBase", "AgreementCreate", "AgreementUpdate", "AgreementResponse"
+    "RatingBase", "RatingCreate", "RatingUpdate", "RatingResponse"
 ]

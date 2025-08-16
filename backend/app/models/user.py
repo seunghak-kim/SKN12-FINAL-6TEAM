@@ -56,7 +56,6 @@ class UserInformation(Base):
     chat_sessions = relationship("ChatSession", back_populates="user_information", cascade="all, delete-orphan")
     drawing_tests = relationship("DrawingTest", back_populates="user_information", cascade="all, delete-orphan")
     ratings = relationship("Rating", back_populates="user_information", cascade="all, delete-orphan")
-    agreements = relationship("Agreement", back_populates="user_information", cascade="all, delete-orphan")
     
     def __repr__(self):
         email_value = getattr(self, 'email', None) or 'None'

@@ -5,7 +5,6 @@ import ConsentModal from '../common/ConsentModal';
 import AnalysisModal from '../common/AnalysisModal';
 import { testService } from '../../services/testService';
 import { PipelineStatusResponse } from '../../types';
-import { agreementService } from '../../services/agreementService';
 import { Button } from "../../components/ui/button";
 
 interface TestPageProps {
@@ -48,19 +47,10 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
   } | null>(null);
   const [showLargeCanvasMessage, setShowLargeCanvasMessage] = useState(true);
 
-  // 컴포넌트 마운트 시 동의 상태 확인
+  // 로컬 세션에서 동의 상태 확인 (서버 저장 없이 세션 내에서만 관리)
   useEffect(() => {
-    const checkConsentStatus = async () => {
-      try {
-        const status = await agreementService.getHtpConsentStatus();
-        setHasAgreed(status.has_agreed);
-      } catch (error) {
-        console.error('동의 상태 확인 실패:', error);
-        setHasAgreed(false);
-      }
-    };
-
-    checkConsentStatus();
+    const sessionConsent = sessionStorage.getItem('htp_consent');
+    setHasAgreed(sessionConsent === 'true');
   }, []);
 
   // 반응형 캔버스 크기 계산 함수
@@ -697,16 +687,12 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     setShowConsentModal(true);
   };
 
-  const handleConsentAgree = async () => {
-    try {
-      await agreementService.createHtpConsent();
-      setHasAgreed(true);
-      setShowConsentModal(false);
-      navigate('/test-instruction');
-    } catch (error) {
-      console.error('동의 처리 실패:', error);
-      alert('동의 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
+  const handleConsentAgree = () => {
+    // 로컬 세션에 동의 상태 저장 (서버 저장 없이)
+    sessionStorage.setItem('htp_consent', 'true');
+    setHasAgreed(true);
+    setShowConsentModal(false);
+    navigate('/test-instruction');
   };
 
   const handleConsentClose = () => {

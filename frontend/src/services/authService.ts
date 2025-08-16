@@ -23,7 +23,7 @@ export interface LoginResponse {
 }
 
 class AuthService {
-  private baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  private baseUrl = this.getApiUrl();
   private clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '689738363605-i65c3ar97vnts2jeh648dj3v9b23njq4.apps.googleusercontent.com';
   private isGoogleLoaded = false;
 
@@ -33,6 +33,27 @@ class AuthService {
       clientId: this.clientId?.substring(0, 20) + '...'
     });
     this.initializeGoogleAuth();
+  }
+
+  private getApiUrl(): string {
+    // 환경변수가 있으면 우선 사용
+    if (process.env.REACT_APP_API_URL) {
+      return process.env.REACT_APP_API_URL;
+    }
+    
+    // 현재 도메인 기반으로 API URL 결정
+    const hostname = window.location.hostname;
+    
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      // 로컬 개발 환경
+      return 'http://localhost:8000';
+    } else if (hostname.includes('ec2') || hostname.includes('amazonaws.com')) {
+      // AWS EC2 환경
+      return 'http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com';
+    } else {
+      // 기타 배포 환경 (현재 도메인 기준)
+      return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
   }
 
   async initializeGoogleAuth() {

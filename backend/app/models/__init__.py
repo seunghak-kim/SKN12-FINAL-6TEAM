@@ -3,7 +3,6 @@ from .chat import ChatSession, ChatMessage
 from .persona import Persona
 from .test import DrawingTest, DrawingTestResult
 from .rating import Rating
-from .agreement import Agreement
 
 __all__ = [
     'Base',
@@ -15,6 +14,5 @@ __all__ = [
     'Persona',
     'DrawingTest',
     'DrawingTestResult',
-    'Rating',
-    'Agreement'
+    'Rating'
 ]
