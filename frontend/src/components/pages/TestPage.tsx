@@ -107,6 +107,40 @@ const TestPage: React.FC<TestPageProps> = ({ onStartAnalysis, onNavigate }) => {
     return { width, height };
   };
 
+  // 탭 변경 시 직접그리기 캔버스 초기화
+  useEffect(() => {
+    if (activeTab === 'upload') {
+      // 이미지 업로드 탭으로 변경 시 직접그리기 캔버스 내용 초기화
+      if (canvasRef) {
+        const ctx = canvasRef.getContext('2d');
+        if (ctx) {
+          const { width, height } = calculateCanvasSize();
+          ctx.clearRect(0, 0, width, height);
+          console.log('🧹 직접그리기 탭에서 이미지 업로드 탭으로 변경 - 캔버스 초기화 완료');
+        }
+      }
+      
+      // 큰 그림판 모달도 초기화
+      if (largeCanvasRef) {
+        const ctx = largeCanvasRef.getContext('2d');
+        if (ctx) {
+          const { width, height } = calculateLargeCanvasSize();
+          ctx.clearRect(0, 0, width, height);
+          console.log('🧹 큰 그림판 모달 캔버스 초기화 완료');
+        }
+      }
+      
+      // 큰 그림판 관련 상태도 초기화
+      setLargeCanvasImageData(null);
+      setShowLargeCanvas(false);
+      
+      // 이미지 업로드 관련 상태도 초기화 (직접그리기로 그린 이미지 제거)
+      setSelectedImage(null);
+      setImagePreview(null);
+      console.log('🧹 직접그리기로 그린 이미지 제거 완료');
+    }
+  }, [activeTab, canvasRef, largeCanvasRef]);
+
   // 캔버스 초기화 및 반응형 크기 조정
   useEffect(() => {
     if (canvasRef && activeTab === 'draw') {
