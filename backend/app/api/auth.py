@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..services.auth_service import AuthService
 from pydantic import BaseModel
+import os
 
 router = APIRouter()
 auth_service = AuthService()
@@ -160,8 +161,9 @@ async def google_callback(
         # 임시로 Redis나 메모리에 저장하는 대신 간단히 쿠키 사용
         from fastapi.responses import RedirectResponse
         
+        frontend_url = os.getenv("FRONTEND_URL", "http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com")
         response = RedirectResponse(
-            url=f"http://localhost:3000/auth-callback?session={session_id}&is_new={str(result.is_new_user).lower()}"
+            url=f"{frontend_url}/auth-callback?session={session_id}&is_new={str(result.is_new_user).lower()}"
         )
         
         # 쿠키에 토큰 저장 (HttpOnly, Secure 설정)
