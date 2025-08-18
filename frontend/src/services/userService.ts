@@ -112,7 +112,7 @@ class UserService {
 
   // 테스트 결과 조회
   async getTestResults(userId: number, skip: number = 0, limit: number = 10): Promise<TestResult[]> {
-    const response = await apiClient.get<DrawingTest[]>(`/api/v1/test/drawing-test-results/my-results`, {
+    const response = await apiClient.get<DrawingTest[]>(`/v1/test/drawing-test-results/my-results`, {
       skip,
       limit
     });
@@ -131,7 +131,7 @@ class UserService {
 
   // 닉네임 중복 확인
   async checkNickname(userId: number, nickname: string): Promise<NicknameCheckResponse> {
-    return await apiClient.post<NicknameCheckResponse>(`/users/${userId}/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+    return await apiClient.post<NicknameCheckResponse>(`/users/${userId}/check-nickname`, { nickname });
   }
 
   // 사용자 정보 업데이트
