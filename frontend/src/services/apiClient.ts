@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
 // API 기본 설정
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com';
 
 class ApiClient {
   private client: AxiosInstance;
