@@ -24,7 +24,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - REACT_APP_API_URL=http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/api
+      - REACT_APP_API_URL=http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com
       - REACT_APP_GOOGLE_REDIRECT_URI=http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/auth/google/callback
     env_file:
       - ./frontend/.env
