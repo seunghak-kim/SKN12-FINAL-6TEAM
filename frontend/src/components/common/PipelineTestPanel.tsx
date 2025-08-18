@@ -24,7 +24,7 @@ const PipelineTestPanel: React.FC<PipelineTestPanelProps> = ({ isVisible, onClos
     try {
       // API 기본 URL 설정 (개발 환경)
       const baseUrl = process.env.NODE_ENV === 'development' 
-        ? 'http://localhost:8000' 
+        ? `${window.location.protocol}//${window.location.hostname}` 
         : '';
       
       const fullUrl = `${baseUrl}${endpoint}`;

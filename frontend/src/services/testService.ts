@@ -146,7 +146,7 @@ class TestService {
     }
     
     // 로컬 경로를 절대 URL로 변환
-    const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+    const baseUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`;
     // 'result/images/filename.jpg' -> '/images/filename.jpg'
     const relativePath = imageUrl.replace('result/', '');
     return `${baseUrl}/${relativePath}`;

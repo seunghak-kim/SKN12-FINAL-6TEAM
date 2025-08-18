@@ -218,7 +218,7 @@ const getColorForType = (type: string) => {
 
   const fetchAnalysisStatus = async (testId: number) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/pipeline/analysis-status/${testId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`}/api/v1/pipeline/analysis-status/${testId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -300,7 +300,7 @@ const getColorForType = (type: string) => {
         '안정형': 5
       };
       const finalPersonaType = pipelinePersonaType || personalityMapping[predictedPersonality] || 2;      
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1/test/drawing-test-results`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`}/api/v1/test/drawing-test-results`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

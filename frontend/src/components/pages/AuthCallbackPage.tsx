@@ -24,7 +24,7 @@ const AuthCallbackPage: React.FC = () => {
           if (window.location.hostname.includes('ec2') || window.location.hostname.includes('amazonaws.com')) {
             return 'http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/api';
           }
-          return 'http://localhost:8000';
+          return `${window.location.protocol}//${window.location.hostname}`;
         };
         
         const response = await fetch(`${getApiUrl()}/auth/get-token`, {

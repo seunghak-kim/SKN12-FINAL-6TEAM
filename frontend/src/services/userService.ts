@@ -73,7 +73,7 @@ class UserService {
       profileImageUrl: response.profile_image_url ? 
         (response.profile_image_url.startsWith('http') ? 
           response.profile_image_url : 
-          `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${response.profile_image_url}`
+          `${process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`}${response.profile_image_url}`
         ) : undefined,
       joinDate: response.join_date,
       totalTests: response.total_tests,
@@ -174,7 +174,7 @@ class UserService {
       // URL을 절대 경로로 변환하여 반환
       const absoluteUrl = result.profile_image_url.startsWith('http') ? 
         result.profile_image_url : 
-        `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${result.profile_image_url}`;
+        `${process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`}${result.profile_image_url}`;
       
       return {
         ...result,
