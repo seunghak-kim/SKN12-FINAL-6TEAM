@@ -36,9 +36,11 @@ class AuthService {
   }
 
   private getApiUrl(): string {
-    // 환경변수가 있으면 우선 사용
+    // 환경변수가 있으면 우선 사용 (단, /api 제거)
     if (process.env.REACT_APP_API_URL) {
-      return process.env.REACT_APP_API_URL;
+      const apiUrl = process.env.REACT_APP_API_URL;
+      // /api로 끝나면 제거
+      return apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
     }
     
     // 현재 도메인 기반으로 API URL 결정

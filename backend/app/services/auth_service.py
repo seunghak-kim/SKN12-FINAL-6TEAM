@@ -242,7 +242,7 @@ class AuthService:
                 "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
                 "code": authorization_code,
                 "grant_type": "authorization_code",
-                "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
+                "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI")
             }
             
             token_response = requests.post(token_url, data=token_data)
