@@ -12,7 +12,7 @@ from pathlib import Path
 
 from app.schemas.user import (
     UserCreate, UserUpdate, UserResponse, UserLogin, UserListResponse,
-    PasswordChange, SocialLoginResponse
+    PasswordChange, SocialLoginResponse, NicknameCheckRequest, NicknameCheckResponse
 )
 from app.models.user import User, UserInformation, SocialUser
 from app.database import get_db
@@ -450,10 +450,10 @@ def check_slang_in_nickname(nickname: str) -> bool:
     
     return False
 
-@router.post("/{user_id}/check-nickname")
+@router.post("/{user_id}/check-nickname", response_model=NicknameCheckResponse)
 async def check_nickname_availability(
     user_id: int,
-    nickname: str,
+    request: NicknameCheckRequest,
     db: Session = Depends(get_db)
 ):
     """닉네임 중복 확인"""
@@ -468,13 +468,23 @@ async def check_nickname_availability(
             detail="사용자를 찾을 수 없습니다."
         )
     
+    nickname = request.nickname
+    
     # slang 단어 포함 여부 확인
     if check_slang_in_nickname(nickname):
-        return {"available": False, "message": "부적절한 단어가 포함된 닉네임입니다.", "reason": "slang"}
+        return NicknameCheckResponse(
+            available=False, 
+            message="부적절한 단어가 포함된 닉네임입니다.", 
+            reason="slang"
+        )
     
     # 현재 사용자의 닉네임과 동일한 경우 사용 가능
     if current_user.nickname == nickname:
-        return {"available": True, "message": "사용 가능한 닉네임입니다.", "reason": "available"}
+        return NicknameCheckResponse(
+            available=True, 
+            message="사용 가능한 닉네임입니다.", 
+            reason="available"
+        )
     
     # 다른 사용자가 사용 중인지 확인
     existing_user = db.query(UserInformation).filter(
@@ -484,9 +494,17 @@ async def check_nickname_availability(
     ).first()
     
     if existing_user:
-        return {"available": False, "message": "이미 사용 중인 닉네임입니다.", "reason": "duplicate"}
+        return NicknameCheckResponse(
+            available=False, 
+            message="이미 사용 중인 닉네임입니다.", 
+            reason="duplicate"
+        )
     
-    return {"available": True, "message": "사용 가능한 닉네임입니다.", "reason": "available"}
+    return NicknameCheckResponse(
+        available=True, 
+        message="사용 가능한 닉네임입니다.", 
+        reason="available"
+    )
 
 @router.delete("/{user_id}/account")
 async def delete_user_account(

@@ -147,6 +147,21 @@ class UserUpdate(BaseModel):
             raise ValueError(ErrorMessages.INVALID_PASSWORD)
         return v
 
+# 닉네임 중복 확인용 스키마
+class NicknameCheckRequest(BaseModel):
+    nickname: str = Field(..., min_length=2, max_length=20, description="확인할 닉네임")
+    
+    @field_validator('nickname')
+    def validate_nickname(cls, v):
+        if not ValidationUtils.validate_nickname(v):
+            raise ValueError(ErrorMessages.INVALID_NICKNAME)
+        return v
+
+class NicknameCheckResponse(BaseModel):
+    available: bool = Field(..., description="사용 가능 여부")
+    message: str = Field(..., description="확인 결과 메시지")
+    reason: str = Field(..., description="사유: available, duplicate, slang")
+
 # 사용자 목록 조회용 스키마
 class UserListResponse(BaseModel):
     users: List[UserResponse] = Field(..., description="사용자 목록")
