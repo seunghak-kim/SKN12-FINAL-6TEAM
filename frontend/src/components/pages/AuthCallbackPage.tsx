@@ -16,7 +16,18 @@ const AuthCallbackPage: React.FC = () => {
         console.log('Auth callback params:', { isNew, sessionId });
         
         // 쿠키에서 토큰을 가져오기 위해 백엔드 API 호출
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/auth/get-token`, {
+        const getApiUrl = () => {
+          if (process.env.REACT_APP_API_URL) {
+            return process.env.REACT_APP_API_URL;
+          }
+          // 현재 도메인이 EC2라면 EC2 주소 사용
+          if (window.location.hostname.includes('ec2') || window.location.hostname.includes('amazonaws.com')) {
+            return 'http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/api';
+          }
+          return 'http://localhost:8000';
+        };
+        
+        const response = await fetch(`${getApiUrl()}/auth/get-token`, {
           method: 'GET',
           credentials: 'include', // 쿠키 포함
         });
