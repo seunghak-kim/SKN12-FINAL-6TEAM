@@ -13,7 +13,7 @@ export class ChatService {
   // 새 채팅 세션 생성
   async createSession(data: CreateSessionRequest): Promise<ChatSession> {
     try {
-      return await apiClient.post<ChatSession>('/chat/sessions', data);
+      return await apiClient.post<ChatSession>('/api/chat/sessions', data);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -22,7 +22,7 @@ export class ChatService {
   // 사용자의 모든 채팅 세션 조회
   async getUserSessions(userId: number): Promise<ChatSession[]> {
     try {
-      return await apiClient.get<ChatSession[]>(`/chat/sessions?user_id=${userId}`);
+      return await apiClient.get<ChatSession[]>(`/api/chat/sessions?user_id=${userId}`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -31,7 +31,7 @@ export class ChatService {
   // 특정 채팅 세션 상세 조회 (메시지 포함)
   async getSessionDetail(sessionId: string): Promise<ChatSessionDetail> {
     try {
-      return await apiClient.get<ChatSessionDetail>(`/chat/sessions/${sessionId}`);
+      return await apiClient.get<ChatSessionDetail>(`/api/chat/sessions/${sessionId}`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -40,7 +40,7 @@ export class ChatService {
   // 메시지 전송
   async sendMessage(sessionId: string, data: SendMessageRequest): Promise<SendMessageResponse> {
     try {
-      return await apiClient.post<SendMessageResponse>(`/chat/sessions/${sessionId}/messages`, data);
+      return await apiClient.post<SendMessageResponse>(`/api/chat/sessions/${sessionId}/messages`, data);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -50,7 +50,7 @@ export class ChatService {
   // 세션 삭제
   async deleteSession(sessionId: string): Promise<{ message: string }> {
     try {
-      return await apiClient.delete<{ message: string }>(`/chat/sessions/${sessionId}`);
+      return await apiClient.delete<{ message: string }>(`/api/chat/sessions/${sessionId}`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -59,7 +59,7 @@ export class ChatService {
   // 세션의 모든 메시지 조회
   async getSessionMessages(sessionId: string): Promise<ChatMessage[]> {
     try {
-      return await apiClient.get<ChatMessage[]>(`/chat/sessions/${sessionId}/messages`);
+      return await apiClient.get<ChatMessage[]>(`/api/chat/sessions/${sessionId}/messages`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -68,7 +68,7 @@ export class ChatService {
   // 개인화된 인사 메시지 조회 (백그라운드 처리용)
   async getPersonalizedGreeting(sessionId: string): Promise<{ persona_type: string; persona_id: number; greeting: string }> {
     try {
-      return await apiClient.get<{ persona_type: string; persona_id: number; greeting: string }>(`/chat/sessions/${sessionId}/personalized-greeting`);
+      return await apiClient.get<{ persona_type: string; persona_id: number; greeting: string }>(`/api/chat/sessions/${sessionId}/personalized-greeting`);
     } catch (error) {
       throw this.handleError(error);
     }

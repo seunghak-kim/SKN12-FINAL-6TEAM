@@ -63,7 +63,7 @@ class UserService {
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
       return cached.data;
     }
-    const response = await apiClient.get<UserProfileResponse>(`/users/${userId}/profile`);
+    const response = await apiClient.get<UserProfileResponse>(`/api/users/${userId}/profile`);
     
     // 백엔드 응답을 프론트엔드 타입으로 변환
     const profile: UserProfile = {
@@ -88,7 +88,7 @@ class UserService {
 
   // 채팅 히스토리 조회
   async getChatHistory(userId: number, skip: number = 0, limit: number = 10): Promise<ChatHistory[]> {
-    const response = await apiClient.get<ChatHistoryResponse>(`/users/${userId}/chat-history`, {
+    const response = await apiClient.get<ChatHistoryResponse>(`/api/users/${userId}/chat-history`, {
       skip,
       limit
     });
@@ -131,12 +131,12 @@ class UserService {
 
   // 닉네임 중복 확인
   async checkNickname(userId: number, nickname: string): Promise<NicknameCheckResponse> {
-    return await apiClient.post<NicknameCheckResponse>(`/users/${userId}/check-nickname`, { nickname });
+    return await apiClient.post<NicknameCheckResponse>(`/api/users/${userId}/check-nickname`, { nickname });
   }
 
   // 사용자 정보 업데이트
   async updateUser(userId: number, data: { nickname?: string }): Promise<UserProfileResponse> {
-    const result = await apiClient.put<UserProfileResponse>(`/users/${userId}`, data);
+    const result = await apiClient.put<UserProfileResponse>(`/api/users/${userId}`, data);
     
     // 업데이트 후 캐시 무효화
     this.profileCache.delete(userId);
@@ -162,7 +162,7 @@ class UserService {
       
       console.log('📤 업로드 요청 전송...');
       const result = await apiClient.postFormData<{ message: string; profile_image_url: string }>(
-        `/users/${userId}/upload-profile-image`,
+        `/api/users/${userId}/upload-profile-image`,
         formData
       );
       
@@ -209,7 +209,7 @@ class UserService {
    */
   async deleteAccount(userId: number): Promise<{ message: string; deleted_user_id: number }> {
     try {
-      const result = await apiClient.delete<{ message: string; deleted_user_id: number }>(`/users/${userId}/account`);
+      const result = await apiClient.delete<{ message: string; deleted_user_id: number }>(`/api/users/${userId}/account`);
       // 캐시 클리어
       this.clearCache();
       return result;

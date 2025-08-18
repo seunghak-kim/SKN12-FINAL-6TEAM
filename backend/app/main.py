@@ -65,13 +65,13 @@ app.mount("/uploads", CORSStaticFiles(directory="uploads"), name="uploads")
 
 # 라우터 등록
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(user_router, prefix="/users", tags=["users"])
-app.include_router(persona_router, prefix="/v1/persona", tags=["personas"])
-app.include_router(chat_router, prefix="/chat", tags=["chat"])
-app.include_router(test_router, prefix="/v1/test", tags=["tests"])
-app.include_router(rating_router, prefix="/ratings", tags=["ratings"])
+app.include_router(user_router, prefix="/api/users", tags=["users"])
+app.include_router(persona_router, prefix="/api/v1/persona", tags=["personas"])
+app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
+app.include_router(test_router, prefix="/api/v1/test", tags=["tests"])
+app.include_router(rating_router, prefix="/api/ratings", tags=["ratings"])
 app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
-app.include_router(pipeline_router, prefix="/v1/pipeline", tags=["pipeline"])
+app.include_router(pipeline_router, prefix="/api/v1/pipeline", tags=["pipeline"])
 
 # 시작 이벤트
 @app.on_event("startup")
