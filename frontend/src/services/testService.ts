@@ -136,34 +136,6 @@ class TestService {
     return poll();
   }
 
-  /**
-   * 그림 이미지 업로드 및 테스트 생성 (기존 호환성 유지)
-   * @deprecated Use analyzeImage instead
-   */
-  async uploadDrawingImage(file: File): Promise<any> {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // FormData를 사용할 때는 Content-Type을 자동으로 설정되도록 해야 함
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${this.BASE_PATH}/drawing-tests/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Failed to upload drawing image:', error);
-      throw error;
-    }
-  }
 
   /**
    * 이미지 URL을 절대 경로로 변환

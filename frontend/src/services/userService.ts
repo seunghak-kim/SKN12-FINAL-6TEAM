@@ -112,7 +112,7 @@ class UserService {
 
   // 테스트 결과 조회
   async getTestResults(userId: number, skip: number = 0, limit: number = 10): Promise<TestResult[]> {
-    const response = await apiClient.get<DrawingTest[]>(`/v1/test/drawing-test-results/my-results`, {
+    const response = await apiClient.get<DrawingTest[]>(`/api/v1/test/drawing-test-results/my-results`, {
       skip,
       limit
     });

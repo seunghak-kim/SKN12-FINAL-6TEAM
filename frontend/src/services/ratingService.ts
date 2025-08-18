@@ -2,7 +2,7 @@ import { apiClient } from './apiClient';
 import { RatingRequest, RatingResponse, AverageRatingResponse } from '../types';
 
 class RatingService {
-  private readonly BASE_PATH = '/ratings';
+  private readonly BASE_PATH = '/api/ratings';
 
   /**
    * 새 평가 생성
