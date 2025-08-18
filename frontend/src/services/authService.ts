@@ -167,7 +167,7 @@ class AuthService {
   async authenticateWithBackend(idToken: string): Promise<LoginResponse | null> {
     try {
       console.log('🔄 백엔드 인증 시작...');
-      const response = await fetch(`${this.baseUrl}/auth/google`, {
+      const response = await fetch(`${this.baseUrl}/api/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ class AuthService {
         throw new Error('No access token found');
       }
 
-      const response = await fetch(`${this.baseUrl}/auth/complete-signup`, {
+      const response = await fetch(`${this.baseUrl}/api/auth/complete-signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ class AuthService {
         return null;
       }
 
-      const response = await fetch(`${this.baseUrl}/auth/me`, {
+      const response = await fetch(`${this.baseUrl}/api/auth/me`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
