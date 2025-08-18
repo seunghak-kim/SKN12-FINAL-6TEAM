@@ -76,7 +76,9 @@ const LandingPage: React.FC<LandingPageProps> = () => {
       const clientId =
         process.env.REACT_APP_GOOGLE_CLIENT_ID ||
         "689738363605-i65c3ar97vnts2jeh648dj3v9b23njq4.apps.googleusercontent.com"
-      const redirectUri = "http://localhost:8000/auth/google/callback"
+        
+      const redirectUri = process.env.REACT_APP_GOOGLE_REDIRECT_URI || "http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/auth/google/callback"
+
       const scope = "openid email profile"
 
       // 올바른 Google OAuth URL
