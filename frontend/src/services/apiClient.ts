@@ -1,28 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
 // API 기본 설정
-const getApiUrl = (): string => {
-  // 환경변수가 있으면 우선 사용
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
-  }
-  
-  // 현재 도메인 기반으로 API URL 결정
-  const hostname = window.location.hostname;
-  
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // 로컬 개발 환경
-    return 'http://localhost:8000';
-  } else if (hostname.includes('ec2') || hostname.includes('amazonaws.com')) {
-    // AWS EC2 환경
-    return 'http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com';
-  } else {
-    // 기타 배포 환경 (현재 도메인 기준)
-    return `${window.location.protocol}//${window.location.hostname}:8000`;
-  }
-};
-
-const API_BASE_URL = getApiUrl();
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/api';
 
 class ApiClient {
   private client: AxiosInstance;
