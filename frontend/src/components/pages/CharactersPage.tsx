@@ -272,11 +272,22 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
     const style = personaStyles[persona.persona_id] || personaStyles[2] // 기본값: 내면이 스타일
     const status = getPersonaStatus(persona.persona_id.toString())
 
+    // 페르소나 이름에 따른 이미지 파일명 매핑
+    const imageNameMap: { [key: string]: string } = {
+      "추진이": "추진이.png",
+      "내면이": "내면이.png", 
+      "햇살이": "햇살이.png",
+      "쾌락이": "쾌락이.png",
+      "안정이": "안정이.png"
+    }
+
+    const imageName = imageNameMap[persona.name] || "내면이.png"
+
     return {
       id: persona.persona_id.toString(),
       name: persona.name,
       description: persona.description,
-      avatar: `/assets/persona/${persona.name}.png`,
+      avatar: `/assets/persona/${imageName}`,
       color: style.color,
       emoji: style.emoji,
       buttonText: status.buttonText,
@@ -490,7 +501,7 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
                     {/* 원형 컨테이너 제거하고 기본 크기로 복원 */}
                     <div className="w-20 h-20 flex items-center justify-center">
                       <img
-                        src={`/assets/persona/${character.name}.png`}
+                        src={character.avatar}
                         alt={character.name}
                         className="w-20 h-20 object-contain"
                       />
