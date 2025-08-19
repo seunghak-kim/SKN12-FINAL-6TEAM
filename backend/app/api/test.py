@@ -51,7 +51,8 @@ async def upload_drawing_image(
         
         # 데이터베이스에 테스트 생성
         seoul_tz = pytz.timezone('Asia/Seoul')
-        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+        utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
         
         new_test = DrawingTest(
             user_id=current_user["user_id"],
@@ -195,7 +196,8 @@ async def create_test_result(
     else:
         # 새 결과 생성
         seoul_tz = pytz.timezone('Asia/Seoul')
-        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+        utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
         
         new_result = DrawingTestResult(
             test_id=result_data.test_id,
