@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 COPY . .
 
 # 필요한 디렉토리 생성
-RUN mkdir -p result/images uploads/profile_images assets
+RUN mkdir -p result/images uploads/profile_images
 
 # 포트 노출
 EXPOSE 8000

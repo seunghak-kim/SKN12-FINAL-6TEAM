@@ -63,12 +63,7 @@ class CORSStaticFiles(StaticFiles):
 app.mount("/images", CORSStaticFiles(directory="result/images"), name="images")
 app.mount("/uploads", CORSStaticFiles(directory="uploads"), name="uploads")
 
-# assets 디렉토리가 존재할 때만 마운트
-import os
-if os.path.exists("assets"):
-    app.mount("/assets", CORSStaticFiles(directory="assets"), name="assets")
-else:
-    print("⚠️ Warning: assets 디렉토리가 없습니다. 정적 파일 서빙이 제한됩니다.")
+# Note: Assets are now served from frontend at http://frontend:3000/assets/
 
 # 라우터 등록
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
