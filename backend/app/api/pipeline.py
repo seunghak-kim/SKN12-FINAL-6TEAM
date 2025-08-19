@@ -226,10 +226,14 @@ async def analyze_drawing_image(
         print(f"✅ 파이프라인 호환성 저장 완료: {pipeline_image_path}")
         
         # 6. 데이터베이스에 테스트 레코드 생성 (원본 이미지 경로 저장)
+        seoul_tz = pytz.timezone('Asia/Seoul')
+        utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
+        
         drawing_test = DrawingTest(
             user_id=current_user["user_id"],
             image_url=f"result/images/original/{unique_id}.jpg",  # 원본 이미지 경로
-            submitted_at=datetime.now()
+            submitted_at=seoul_time
         )
         
         db.add(drawing_test)
