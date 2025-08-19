@@ -167,14 +167,14 @@ const CharactersPage: React.FC<CharactersPageProps> = ({
         setHasTestRecords(testStatus.hasTests)
 
         // 2. 페르소나 데이터 로드 (실패해도 테스트 상태에는 영향 없음)
-        try {
-          const personasData = await personaService.getAllPersonas()
-          console.log("페르소나 데이터:", personasData)
-          setPersonas(personasData)
-        } catch (personaError) {
-          console.error("페르소나 데이터 로드 실패 (기본 데이터 사용):", personaError)
-          // 페르소나 데이터 로드 실패해도 기본 데이터 사용하므로 계속 진행
-        }
+        // try {
+        //   const personasData = await personaService.getAllPersonas()
+        //   console.log("페르소나 데이터:", personasData)
+        //   setPersonas(personasData)
+        // } catch (personaError) {
+        //   console.error("페르소나 데이터 로드 실패 (기본 데이터 사용):", personaError)
+        //   // 페르소나 데이터 로드 실패해도 기본 데이터 사용하므로 계속 진행
+        // }
 
         if (testStatus.hasTests) {
           // 3. 가장 최근 매칭된 페르소나 조회
