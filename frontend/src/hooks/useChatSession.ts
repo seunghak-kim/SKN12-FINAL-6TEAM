@@ -90,7 +90,9 @@ export const useChatSession = (): UseChatSessionReturn => {
           setTimeout(async () => {
             try {
               const updatedMessages = await chatService.getSessionMessages(newSession.chat_sessions_id);
-              const frontendMessages = updatedMessages.map(m => ChatService.convertToFrontendMessage(m));
+              const frontendMessages = updatedMessages
+                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                .map(m => ChatService.convertToFrontendMessage(m));
               setMessages(frontendMessages);
               console.log('createSession - 개인화된 인사 반영 후 메시지 업데이트, 메시지 수:', frontendMessages.length);
             } catch (e) {
@@ -104,7 +106,9 @@ export const useChatSession = (): UseChatSessionReturn => {
         // 개인화된 인사 실패 시에만 기본 메시지 로드
         chatService.getSessionMessages(newSession.chat_sessions_id)
           .then(sessionMessages => {
-            const frontendMessages = sessionMessages.map((m) => ChatService.convertToFrontendMessage(m));
+            const frontendMessages = sessionMessages
+              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+              .map((m) => ChatService.convertToFrontendMessage(m));
             setMessages(frontendMessages);
             console.log('createSession - 기본 메시지 로드 완료 (인사 실패 후), 메시지 수:', frontendMessages.length);
           })
@@ -148,51 +152,15 @@ export const useChatSession = (): UseChatSessionReturn => {
       localStorage.setItem('lastChatSession', JSON.stringify(sessionData));
       console.log('useChatSession - 로드된 세션 정보 localStorage에 저장:', sessionData);
       
-      // 메시지 변환 및 설정
-      const frontendMessages = sessionDetail.messages.map(msg => 
-        ChatService.convertToFrontendMessage(msg)
-      );
+      // 메시지 변환 및 설정 (created_at 기준으로 정렬)
+      const frontendMessages = sessionDetail.messages
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        .map(msg => ChatService.convertToFrontendMessage(msg));
       setMessages(frontendMessages);
 
-      // 새로 생성된 세션인 경우에만 개인화된 인사 API 호출
-      // 조건: 메시지가 없고, 세션이 방금 생성된 경우 (생성 시간이 5분 이내)
-      if (frontendMessages.length === 0) {
-        const sessionCreatedAt = new Date(sessionDetail.created_at);
-        const now = new Date();
-        const timeDiff = now.getTime() - sessionCreatedAt.getTime();
-        const fiveMinutesInMs = 5 * 60 * 1000; // 5분
-        
-        if (timeDiff < fiveMinutesInMs) {
-          try {
-            console.log('loadSession - 새로 생성된 빈 세션 감지, 개인화된 인사 API 호출 시작:', sessionId);
-            const personalizedGreeting = await chatService.getPersonalizedGreeting(sessionId);
-            console.log('loadSession - 개인화된 인사 API 응답:', personalizedGreeting);
-            
-            if (personalizedGreeting.greeting) {
-              console.log('loadSession - 개인화된 인사 설정:', personalizedGreeting.greeting);
-              setGreeting(personalizedGreeting.greeting);
-              
-              // 개인화된 인사가 생성되었으므로 메시지 다시 로드
-              setTimeout(async () => {
-                try {
-                  const updatedSessionDetail = await chatService.getSessionDetail(sessionId);
-                  const updatedMessages = updatedSessionDetail.messages.map(msg => 
-                    ChatService.convertToFrontendMessage(msg)
-                  );
-                  setMessages(updatedMessages);
-                  console.log('loadSession - 개인화된 인사 반영 후 메시지 업데이트 완료, 메시지 수:', updatedMessages.length);
-                } catch (updateError) {
-                  console.error('loadSession - 메시지 업데이트 실패:', updateError);
-                }
-              }, 1000); // 1초 후에 메시지 다시 로드
-            }
-          } catch (greetingError) {
-            console.error('loadSession - 개인화된 인사 로드 실패:', greetingError);
-          }
-        } else {
-          console.log('loadSession - 오래된 빈 세션이므로 개인화된 인사 API 호출 생략');
-        }
-      }
+      // loadSession에서는 개인화된 인사 API 호출 제거 (중복 생성 방지)
+      // createSession에서만 인사를 생성하고, loadSession에서는 기존 메시지만 로드
+      console.log('loadSession - 기존 메시지 로드 완료, 메시지 수:', frontendMessages.length);
     } catch (error) {
       console.error('useChatSession - 세션 로드 실패:', error);
       handleError(error);
