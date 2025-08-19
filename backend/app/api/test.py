@@ -49,9 +49,13 @@ async def upload_drawing_image(
             shutil.copyfileobj(file.file, buffer)
         
         # 데이터베이스에 테스트 생성
+        seoul_tz = pytz.timezone('Asia/Seoul')
+        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+        
         new_test = DrawingTest(
             user_id=current_user["user_id"],
-            image_url=file_path
+            image_url=file_path,
+            submitted_at=seoul_time
         )
         
         db.add(new_test)
@@ -238,7 +242,7 @@ async def get_my_test_results(
             personality_scores = {
                 "추진이": float(test.result.dog_scores) if test.result.dog_scores else 0.0,
                 "내면이": float(test.result.cat_scores) if test.result.cat_scores else 0.0,
-                "관계이": float(test.result.rabbit_scores) if test.result.rabbit_scores else 0.0,
+                "햇살이": float(test.result.rabbit_scores) if test.result.rabbit_scores else 0.0,
                 "쾌락이": float(test.result.bear_scores) if test.result.bear_scores else 0.0,
                 "안정이": float(test.result.turtle_scores) if test.result.turtle_scores else 0.0,
             }
