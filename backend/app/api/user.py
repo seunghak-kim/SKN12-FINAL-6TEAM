@@ -1,22 +1,40 @@
 """
 사용자 관리 API 라우터
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from typing import List
+import os
+import uuid
+import csv
+from pathlib import Path
 
 from app.schemas.user import (
     UserCreate, UserUpdate, UserResponse, UserLogin, UserListResponse,
-    PasswordChange, SocialLoginResponse
+    PasswordChange, SocialLoginResponse, NicknameCheckRequest, NicknameCheckResponse
 )
 from app.models.user import User, UserInformation, SocialUser
 from app.database import get_db
+from app.services.auth_service import AuthService
+from app.api.auth import get_current_user
 
 router = APIRouter()
+
+# OAuth2 스키마 설정 (user.py 전용)
+oauth2_scheme = HTTPBearer()
+auth_service = AuthService()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     """일반 사용자 회원가입"""
+    # slang 단어 포함 여부 확인
+    if check_slang_in_nickname(user_data.nickname):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="사용할 수 없는 닉네임입니다."
+        )
+    
     # 닉네임 중복 확인
     existing_user = db.query(UserInformation).filter(
         UserInformation.nickname == user_data.nickname
@@ -89,7 +107,7 @@ async def social_login(social_id: str, nickname: str, db: Session = Depends(get_
             is_new_user=False
         )
 
-@router.get("/users")
+@router.get("/")
 async def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """사용자 목록 조회"""
     users = db.query(UserInformation).filter(
@@ -109,7 +127,7 @@ async def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
     
     return {"users": user_responses}
 
-@router.get("/users/{user_id}")
+@router.get("/{user_id}")
 async def get_user(user_id: int, db: Session = Depends(get_db)):
     """특정 사용자 조회"""
     user_info = db.query(UserInformation).filter(
@@ -132,7 +150,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
         "created_at": user_info.created_at.isoformat() if user_info.created_at else None
     }
 
-@router.put("/users/{user_id}")
+@router.put("/{user_id}")
 async def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends(get_db)):
     """사용자 정보 수정"""
     user_info = db.query(UserInformation).filter(
@@ -147,6 +165,13 @@ async def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends
     
     # 닉네임 변경 시 중복 확인
     if user_data.nickname and user_data.nickname != user_info.nickname:
+        # slang 단어 포함 여부 확인
+        if check_slang_in_nickname(user_data.nickname):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="사용할 수 없는 닉네임입니다."
+            )
+        
         existing_user = db.query(UserInformation).filter(
             UserInformation.nickname == user_data.nickname,
             UserInformation.user_id != user_id
@@ -175,7 +200,7 @@ async def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends
         "created_at": user_info.created_at.isoformat() if user_info.created_at else None
     }
 
-@router.post("/users/{user_id}/change-password")
+@router.post("/{user_id}/change-password")
 async def change_password(user_id: int, password_data: PasswordChange, db: Session = Depends(get_db)):
     """비밀번호 변경 (일반 사용자만)"""
     user_info = db.query(UserInformation).filter(
@@ -205,7 +230,7 @@ async def change_password(user_id: int, password_data: PasswordChange, db: Sessi
     
     return {"message": "비밀번호가 성공적으로 변경되었습니다."}
 
-@router.delete("/users/{user_id}")
+@router.delete("/{user_id}")
 async def delete_user(user_id: int, db: Session = Depends(get_db)):
     """사용자 삭제 (비활성화)"""
     user_info = db.query(UserInformation).filter(
@@ -218,12 +243,15 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
             detail="사용자를 찾을 수 없습니다."
         )
     
+    from datetime import datetime, timezone
+    
     user_info.status = "INACTIVE"
+    user_info.deleted_at = datetime.now(timezone.utc)
     db.commit()
     
     return {"message": "사용자가 성공적으로 삭제되었습니다."}
 
-@router.get("/users/{user_id}/profile", response_model=dict)
+@router.get("/{user_id}/profile", response_model=dict)
 async def get_user_profile(user_id: int, db: Session = Depends(get_db)):
     """마이페이지용 사용자 프로필 조회"""
     from app.models.chat import ChatSession
@@ -257,6 +285,7 @@ async def get_user_profile(user_id: int, db: Session = Depends(get_db)):
         "name": user_info.nickname,
         "nickname": user_info.nickname,
         "email": None,  # 추후 이메일 필드 추가시 수정
+        "profile_image_url": user_info.profile_image_url,
         "user_type": user_type,
         "status": user_info.status,
         "join_date": user_info.created_at.isoformat() if hasattr(user_info, 'created_at') else None,
@@ -264,7 +293,7 @@ async def get_user_profile(user_id: int, db: Session = Depends(get_db)):
         "total_tests": total_tests
     }
 
-@router.get("/users/{user_id}/chat-history")
+@router.get("/{user_id}/chat-history")
 async def get_user_chat_history(
     user_id: int, 
     skip: int = 0, 
@@ -322,7 +351,7 @@ async def get_user_chat_history(
         "has_more": len(chat_sessions) == limit
     }
 
-@router.get("/users/{user_id}/test-results")
+@router.get("/{user_id}/test-results")
 async def get_user_test_results(
     user_id: int, 
     skip: int = 0, 
@@ -345,7 +374,7 @@ async def get_user_test_results(
     # 테스트 결과 조회 (최신순)
     from sqlalchemy.orm import joinedload
     test_results = db.query(DrawingTest).options(
-        joinedload(DrawingTest.result).joinedload(DrawingTestResult.friend)
+        joinedload(DrawingTest.result).joinedload(DrawingTestResult.persona)
     ).filter(
         DrawingTest.user_id == user_id
     ).order_by(DrawingTest.submitted_at.desc()).offset(skip).limit(limit).all()
@@ -355,8 +384,8 @@ async def get_user_test_results(
         character_match = "미정"
         interpretation = "분석 중..."
         
-        if test.result and test.result.friend:
-            character_match = test.result.friend.friends_name
+        if test.result and test.result.persona:
+            character_match = test.result.persona.name
             interpretation = test.result.summary_text or "분석 결과가 없습니다."
         
         results.append({
@@ -375,10 +404,56 @@ async def get_user_test_results(
         "has_more": len(test_results) == limit
     }
 
-@router.post("/users/{user_id}/check-nickname")
+def load_slang_words():
+    """slang.csv 파일에서 금지어 목록 로드"""
+    slang_words = set()
+    slang_file_path = Path("data/slang.csv")
+    
+    if slang_file_path.exists():
+        try:
+            with open(slang_file_path, 'r', encoding='utf-8-sig') as file:  # BOM 처리
+                reader = csv.reader(file)
+                for row in reader:
+                    if row and row[0]:
+                        word = row[0].strip().strip('"').strip("'")  # 따옴표 제거
+                        if word and word.lower() != 'slang':  # 헤더 제외
+                            slang_words.add(word.lower())
+        except Exception as e:
+            print(f"slang.csv 로드 실패: {e}")
+    
+    return slang_words
+
+def check_slang_in_nickname(nickname: str) -> bool:
+    """닉네임에 slang 단어가 포함되어 있는지 확인"""
+    slang_words = load_slang_words()
+    nickname_lower = nickname.lower()
+    
+    # 완전 일치 검사
+    if nickname_lower in slang_words:
+        return True
+    
+    # 한국어 욕설은 완전한 단어 단위로만 검사
+    korean_slang = {w for w in slang_words if any(ord(c) > 127 for c in w)}
+    for slang in korean_slang:
+        if slang in nickname_lower:
+            return True
+    
+    # 영어 욕설은 5글자 이상이거나 완전한 단어인 경우만 검사
+    english_slang = {w for w in slang_words if all(ord(c) <= 127 for c in w)}
+    for slang in english_slang:
+        if len(slang) >= 5 and slang in nickname_lower:
+            return True
+        # 완전한 단어 경계에서만 매치 (앞뒤에 알파벳이 없는 경우)
+        import re
+        if re.search(r'\b' + re.escape(slang) + r'\b', nickname_lower):
+            return True
+    
+    return False
+
+@router.post("/{user_id}/check-nickname", response_model=NicknameCheckResponse)
 async def check_nickname_availability(
     user_id: int,
-    nickname: str,
+    request: NicknameCheckRequest,
     db: Session = Depends(get_db)
 ):
     """닉네임 중복 확인"""
@@ -393,9 +468,23 @@ async def check_nickname_availability(
             detail="사용자를 찾을 수 없습니다."
         )
     
+    nickname = request.nickname
+    
+    # slang 단어 포함 여부 확인
+    if check_slang_in_nickname(nickname):
+        return NicknameCheckResponse(
+            available=False, 
+            message="부적절한 단어가 포함된 닉네임입니다.", 
+            reason="slang"
+        )
+    
     # 현재 사용자의 닉네임과 동일한 경우 사용 가능
     if current_user.nickname == nickname:
-        return {"available": True, "message": "현재 사용 중인 닉네임입니다."}
+        return NicknameCheckResponse(
+            available=True, 
+            message="사용 가능한 닉네임입니다.", 
+            reason="available"
+        )
     
     # 다른 사용자가 사용 중인지 확인
     existing_user = db.query(UserInformation).filter(
@@ -405,6 +494,156 @@ async def check_nickname_availability(
     ).first()
     
     if existing_user:
-        return {"available": False, "message": "이미 사용 중인 닉네임입니다."}
+        return NicknameCheckResponse(
+            available=False, 
+            message="이미 사용 중인 닉네임입니다.", 
+            reason="duplicate"
+        )
     
-    return {"available": True, "message": "사용 가능한 닉네임입니다."}
+    return NicknameCheckResponse(
+        available=True, 
+        message="사용 가능한 닉네임입니다.", 
+        reason="available"
+    )
+
+@router.delete("/{user_id}/account")
+async def delete_user_account(
+    user_id: int, 
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """회원탈퇴 - 사용자 계정 완전 삭제"""
+    # 권한 확인 - 본인만 삭제 가능
+    if current_user["user_id"] != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="본인의 계정만 삭제할 수 있습니다."
+        )
+    
+    # 사용자 정보 조회
+    user_info = db.query(UserInformation).filter(
+        UserInformation.user_id == user_id
+    ).first()
+    
+    if not user_info:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="사용자를 찾을 수 없습니다."
+        )
+    
+    try:
+        from sqlalchemy import text
+        
+        # 안전한 매개변수 바인딩을 사용하여 CASCADE 삭제 실행
+        if user_info.social_user_id:
+            # 소셜 사용자인 경우 - 매개변수 바인딩으로 안전하게 삭제
+            db.execute(text("DELETE FROM social_users WHERE social_user_id = :social_user_id"), 
+                      {"social_user_id": user_info.social_user_id})
+        elif user_info.regular_user_id:
+            # 일반 사용자인 경우 - 매개변수 바인딩으로 안전하게 삭제  
+            db.execute(text("DELETE FROM users WHERE user_id = :user_id"), 
+                      {"user_id": user_info.regular_user_id})
+        else:
+            # 사용자 타입을 확인할 수 없는 경우 user_informations에서 직접 삭제
+            db.execute(text("DELETE FROM user_informations WHERE user_id = :user_id"), 
+                      {"user_id": user_id})
+        
+        db.commit()
+        
+        return {
+            "message": "회원탈퇴가 완료되었습니다. 모든 데이터가 삭제되었습니다.",
+            "deleted_user_id": user_id
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"회원탈퇴 처리 중 오류가 발생했습니다: {str(e)}"
+        )
+
+@router.post("/{user_id}/upload-profile-image")
+async def upload_profile_image(
+    user_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """프로필 이미지 업로드"""
+    # 권한 확인
+    if current_user["user_id"] != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="본인의 프로필 이미지만 변경할 수 있습니다."
+        )
+    
+    # 사용자 확인
+    user_info = db.query(UserInformation).filter(
+        UserInformation.user_id == user_id
+    ).first()
+    
+    if not user_info:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="사용자를 찾을 수 없습니다."
+        )
+    
+    # 파일 형식 검증
+    allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="JPG, PNG, GIF 형식의 이미지 파일만 업로드 가능합니다."
+        )
+    
+    # 파일 크기 제한 (5MB)
+    max_size = 5 * 1024 * 1024
+    if file.size and file.size > max_size:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="이미지 파일은 5MB 이하여야 합니다."
+        )
+    
+    try:
+        # 업로드 디렉토리 생성
+        upload_dir = Path("uploads/profile_images")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 파일 확장자 추출
+        file_extension = file.filename.split('.')[-1] if file.filename else 'jpg'
+        
+        # 고유한 파일명 생성
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        file_path = upload_dir / unique_filename
+        
+        # 파일 저장
+        contents = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(contents)
+        
+        # 데이터베이스에 이미지 URL 저장
+        image_url = f"/uploads/profile_images/{unique_filename}"
+        
+        # 기존 이미지 파일 삭제
+        if user_info.profile_image_url:
+            old_file_path = Path(f".{user_info.profile_image_url}")
+            if old_file_path.exists():
+                try:
+                    old_file_path.unlink()
+                except Exception:
+                    pass
+        
+        user_info.profile_image_url = image_url
+        db.commit()
+        
+        return {
+            "message": "프로필 이미지가 성공적으로 업로드되었습니다.",
+            "profile_image_url": image_url
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"이미지 업로드 중 오류가 발생했습니다: {str(e)}"
+        )

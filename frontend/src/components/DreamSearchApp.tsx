@@ -17,7 +17,6 @@ const DreamSearchApp: React.FC = () => {
     showRatingModal,
     currentTestResult,
     getAvailableCharacters,
-    handleGoogleLogin,
     handleStartDreamSearch,
     handleCharacterSelect,
     handleStartChat,
@@ -26,7 +25,8 @@ const DreamSearchApp: React.FC = () => {
     handleCloseRatingModal,
     handleGoToMyPage,
     handleNewChat,
-    handleDeleteAccount
+    handleDeleteAccount,
+    updateTestResult
   } = useAppState();
 
   const handleNavigate = (screen: string) => {
@@ -38,7 +38,7 @@ const DreamSearchApp: React.FC = () => {
         handleGoToMyPage();
         break;
       case 'landing':
-        handleGoogleLogin();
+        // 랜딩 페이지는 자체적으로 구글 로그인을 처리
         break;
       default:
         break;
@@ -48,7 +48,7 @@ const DreamSearchApp: React.FC = () => {
   const renderScreen = () => {
     switch (currentScreen) {
       case 'landing':
-        return <LandingPage onGoogleLogin={handleGoogleLogin} />;
+        return <LandingPage />;
       case 'main':
         return <MainPage onStartDreamSearch={handleStartDreamSearch} onNavigate={handleNavigate} />;
       case 'results':
@@ -62,6 +62,7 @@ const DreamSearchApp: React.FC = () => {
             onStartChat={handleStartChat}
             onNavigate={handleNavigate}
             currentTestResult={currentTestResult}
+            updateTestResult={updateTestResult}
           />
         );
       case 'chat':
@@ -73,7 +74,7 @@ const DreamSearchApp: React.FC = () => {
             onCloseRatingModal={handleCloseRatingModal}
             onNavigate={handleNavigate}
             userId={1} // 실제로는 로그인한 사용자 ID
-            friendsId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
+            personaId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
           />
         );
       case 'mypage':
@@ -85,7 +86,7 @@ const DreamSearchApp: React.FC = () => {
           />
         );
       default:
-        return <LandingPage onGoogleLogin={handleGoogleLogin} />;
+        return <LandingPage />;
     }
   };
 

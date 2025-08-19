@@ -22,6 +22,7 @@ class RatingUpdate(BaseModel):
 class RatingResponse(RatingBase):
     """평가 응답 스키마"""
     ratings_id: int = Field(..., description="평가 ID")
+    persona_id: int = Field(..., description="페르소나 ID")
     created_at: datetime = Field(..., description="생성 시간")
     
     model_config = {"from_attributes": True}

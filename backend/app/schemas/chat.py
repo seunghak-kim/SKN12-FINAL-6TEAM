@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from uuid import UUID
@@ -7,7 +7,7 @@ from uuid import UUID
 class ChatSessionBase(BaseModel):
     session_name: Optional[str] = Field(None, max_length=255, description="세션 이름")
     user_id: int = Field(..., description="사용자 ID")
-    friends_id: int = Field(..., description="친구 ID")
+    persona_id: int = Field(..., description="페르소나 ID")
 
 class ChatSessionCreate(ChatSessionBase):
     pass
@@ -29,7 +29,7 @@ class ChatMessageBase(BaseModel):
     content: str = Field(..., min_length=1, description="메시지 내용")
 
 class ChatMessageCreate(ChatMessageBase):
-    sender_type: str = Field(..., pattern="^(user|friend)$", description="발신자 타입")
+    sender_type: str = Field(..., pattern="^(user|assistant)$", description="발신자 타입")
 
 class ChatMessageResponse(ChatMessageBase):
     chat_messages_id: UUID = Field(..., description="메시지 ID")

@@ -1,0 +1,122 @@
+{
+  "지붕": {
+    "count": 13,
+    "embedding_dim": 1024
+  },
+  "창문": {
+    "count": 20,
+    "embedding_dim": 1024
+  },
+  "집 위치": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "강아지 집": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "집외에 부가적인 그림": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "지붕 장식": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "벽": {
+    "count": 8,
+    "embedding_dim": 1024
+  },
+  "문": {
+    "count": 8,
+    "embedding_dim": 1024
+  },
+  "벨": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "창살": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "창": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "아파트": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "그네": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "선": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "지면선": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "창틀": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "전체그림의 평가": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "크기": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "위치": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "방향": {
+    "count": 2,
+    "embedding_dim": 1024
+  },
+  "현관문": {
+    "count": 4,
+    "embedding_dim": 1024
+  },
+  "굴뚝": {
+    "count": 5,
+    "embedding_dim": 1024
+  },
+  "태양": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "기타": {
+    "count": 9,
+    "embedding_dim": 1024
+  },
+  "구름": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "나무": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "꽃": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "잔디": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "울타리": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "담장": {
+    "count": 1,
+    "embedding_dim": 1024
+  }
+}

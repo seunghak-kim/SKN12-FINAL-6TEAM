@@ -21,6 +21,19 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# next.js
+/.next/
+/out/
+
 
 # .env 
 /frontend/.env
@@ -32,8 +45,41 @@ yarn-error.log*
 # 데이터 파일 안됨 
 /backend/data
 
+# 테스트 이미지 
+/backend/llm/test_images
+
 # Python cache files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# ML/AI 관련 파일들
+*.pth
+*.pt
+*.h5
+*.pkl
+*.joblib
+
+# 탐지 결과 및 테스트 파일들
+/backend/llm/detection_results/
+/backend/llm/test_images/
+/backend/result/
+/backend/llm/logs/
+
+# 이미지 파일들 (필요한 경우 주석 처리)
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# 추가 무시 패턴 (성능 최적화)
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+node_modules/
+dist/
+build/

@@ -1,0 +1,76 @@
+version: '3'
+services:
+  opensearch-node1:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
+      - discovery.type=single-node
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=MyStrongPassword123!
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600
+    networks:
+      - frontback-network
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["https://opensearch-node1:9200"]'
+      - OPENSEARCH_USERNAME=admin
+      - OPENSEARCH_PASSWORD=MyStrongPassword123!
+    networks:
+      - frontback-network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      - POSTGRES_DB=turtle_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=uiheon
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - frontback-network
+
+  backend:
+    build: .
+    container_name: backend-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - OPENSEARCH_HOST=opensearch-node1
+      - DATABASE_URL=postgresql://postgres:uiheon@postgres:5432/turtle_db
+    depends_on:
+      - opensearch-node1
+      - postgres
+    networks:
+      - frontback-network
+
+volumes:
+  opensearch-data1:
+  postgres-data:
+
+networks:
+  frontback-network:

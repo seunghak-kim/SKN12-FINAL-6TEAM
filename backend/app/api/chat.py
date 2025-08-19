@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
+from datetime import datetime
+import pytz
 
 from ..database import get_db
 from ..services.ai_service import AIService
@@ -15,9 +17,30 @@ from ..schemas.chat import (
 )
 from ..models.chat import ChatSession, ChatMessage
 from ..models.user import UserInformation
-from ..models.friend import Friend
+from ..models.persona import Persona
 
 router = APIRouter()
+
+def get_persona_type_from_persona_id(persona_id: int, db: Session = None) -> str:
+    """persona_id를 페르소나 타입으로 매핑 (DB 동적 조회 + 기본값)"""
+    # DB에서 실제 persona 데이터 조회 시도
+    if db:
+        try:
+            persona = db.query(Persona).filter(Persona.persona_id == persona_id).first()
+            if persona and persona.name:
+                return persona.name
+        except Exception as e:
+            print(f"DB 조회 실패, 기본값 사용: {e}")
+    
+    # DB 조회 실패 시 기본 매핑 사용 (실제 DB 상황에 맞게 수정)
+    default_mapping = {
+        1: "추진형",  # 추진이
+        2: "내면형",  # 내면이  
+        3: "관계형",  # 관계이
+        4: "쾌락형",  # 쾌락이
+        5: "안정형"   # 안정이
+    }
+    return default_mapping.get(persona_id, "내면형")
 
 @router.post("/sessions", response_model=ChatSessionResponse)
 async def create_chat_session(
@@ -34,19 +57,19 @@ async def create_chat_session(
                 detail="사용자를 찾을 수 없습니다."
             )
         
-        # 친구 존재 확인
-        friend = db.query(Friend).filter(Friend.friends_id == session_data.friends_id).first()
-        if not friend:
+        # 페르소나 존재 확인
+        persona = db.query(Persona).filter(Persona.persona_id == session_data.persona_id).first()
+        if not persona:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="친구를 찾을 수 없습니다."
+                detail="페르소나를 찾을 수 없습니다."
             )
         
         # 새 세션 생성
         new_session = ChatSession(
             user_id=session_data.user_id,
-            friends_id=session_data.friends_id,
-            session_name=session_data.session_name or f"{user.nickname}와 {friend.friends_name}의 대화",
+            persona_id=session_data.persona_id,
+            session_name=session_data.session_name or f"{user.nickname}와 {persona.name}의 대화",
             is_active=True
         )
         
@@ -57,7 +80,7 @@ async def create_chat_session(
         return ChatSessionResponse(
             chat_sessions_id=new_session.chat_sessions_id,
             user_id=new_session.user_id,
-            friends_id=new_session.friends_id,
+            persona_id=new_session.persona_id,
             session_name=new_session.session_name,
             is_active=new_session.is_active,
             created_at=new_session.created_at,
@@ -79,17 +102,17 @@ async def get_user_sessions(
 ):
     """사용자의 메시지가 있는 채팅 세션 목록 조회"""
     try:
-        # 메시지가 최소 1개 이상 있는 세션만 조회
+        # 메시지가 최소 1개 이상 있는 세션만 조회 (가장 최근 대화 순으로 정렬)
         sessions = db.query(ChatSession).filter(
             ChatSession.user_id == user_id,
             ChatSession.is_active == True
-        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).distinct().order_by(ChatSession.created_at.desc()).all()
+        ).join(ChatMessage, ChatSession.chat_sessions_id == ChatMessage.session_id).group_by(ChatSession.chat_sessions_id).order_by(ChatSession.updated_at.desc()).all()
         
         return [
             ChatSessionResponse(
                 chat_sessions_id=session.chat_sessions_id,
                 user_id=session.user_id,
-                friends_id=session.friends_id,
+                persona_id=session.persona_id,
                 session_name=session.session_name,
                 is_active=session.is_active,
                 created_at=session.created_at,
@@ -140,7 +163,7 @@ async def get_session_detail(
         return ChatSessionDetailResponse(
             chat_sessions_id=session.chat_sessions_id,
             user_id=session.user_id,
-            friends_id=session.friends_id,
+            persona_id=session.persona_id,
             session_name=session.session_name,
             is_active=session.is_active,
             created_at=session.created_at,
@@ -181,18 +204,47 @@ async def send_message(
                 detail="비활성화된 세션입니다."
             )
         
-        # AI 서비스를 통한 메시지 처리
+        # persona_id를 페르소나 타입으로 매핑
+        persona_type = get_persona_type_from_persona_id(session.persona_id, db)
+        
+        # 사용자 닉네임 가져오기
+        user_nickname = "사용자"  # 기본값
+
+        # 그림 요약 결과 불러오기
+        from app.utils.drawing import get_latest_drawing_analysis
+        drawing_analysis = get_latest_drawing_analysis(session.user_id, db)
+        summary_dict = drawing_analysis
+
+        try:
+            if session.user_id:
+                user = db.query(UserInformation).filter(UserInformation.user_id == session.user_id).first()
+                if user and user.nickname:
+                    user_nickname = user.nickname
+        except Exception:
+            user_nickname = "사용자"  # 오류 시 기본값
+        
+        # AI 서비스를 통한 메시지 처리 (페르소나 타입과 사용자 닉네임 포함)
         ai_service = AIService(db)
-        ai_response_content = ai_service.process_message(session_id, message_request.content)
+        ai_response_content = ai_service.process_message(
+            session_id=session_id, 
+            user_message=message_request.content,
+            persona_type=persona_type,
+            user_nickname=user_nickname,
+            user_analysis_result=summary_dict,
+            persona_type_for_analysis=persona_type
+        )
         
         # AI 서비스에서 이미 메시지를 저장했으므로 최근 메시지들을 다시 가져옴
         recent_messages = db.query(ChatMessage).filter(
             ChatMessage.session_id == session_id
         ).order_by(ChatMessage.created_at.desc()).limit(2).all()
         
-        # 가장 최근의 사용자 메시지와 AI 응답 메시지
-        assistant_message = recent_messages[0]  # 가장 최근 (AI 응답)
-        user_message = recent_messages[1]  # 그 다음 최근 (사용자 메시지)
+        # 시간순으로 정렬하여 사용자 메시지가 먼저, AI 응답이 나중에 오도록 수정
+        recent_messages.sort(key=lambda x: x.created_at)
+        
+        # 이제 순서가 올바름: 사용자 메시지 -> AI 응답
+        user_message = recent_messages[0]  # 먼저 생성된 사용자 메시지
+        assistant_message = recent_messages[1]  # 나중에 생성된 AI 응답
         
         return SendMessageResponse(
             user_message=ChatMessageResponse(
@@ -291,3 +343,102 @@ async def get_session_messages(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"메시지 조회 중 오류가 발생했습니다: {str(e)}"
         )
+
+@router.get("/sessions/{session_id}/personalized-greeting", response_model=dict)
+async def get_personalized_greeting(
+    session_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """세션의 개인화된 인사 메시지 조회 (백그라운드 처리용)"""
+    try:
+        # 세션 존재 확인
+        session = db.query(ChatSession).filter(
+            ChatSession.chat_sessions_id == session_id
+        ).first()
+        
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="세션을 찾을 수 없습니다."
+            )
+        
+        # persona_id를 페르소나 타입으로 매핑
+        persona_type = get_persona_type_from_persona_id(session.persona_id, db)
+        
+        # 사용자 닉네임 가져오기
+        user_nickname = "사용자"  # 기본값
+        try:
+            if session.user_id:
+                user = db.query(UserInformation).filter(UserInformation.user_id == session.user_id).first()
+                if user and user.nickname:
+                    user_nickname = user.nickname
+        except Exception:
+            user_nickname = "사용자"  # 오류 시 기본값
+        
+        # AI 서비스에서 개인화된 인사 메시지 생성
+        ai_service = AIService(db)
+        
+        # 그림 분석 결과를 DB에서 직접 로드
+        try:
+            from prompt_chaining import load_latest_analysis_result
+            print(f"[개인화 인사] DB에서 그림 분석 결과 로드 시도 - 사용자: {user_nickname}, 사용자ID: {session.user_id}")
+            user_analysis_result = load_latest_analysis_result(user_id=session.user_id, db_session=db)
+            print(f"[개인화 인사] DB 조회 결과: {user_analysis_result is not None}")
+            if user_analysis_result:
+                print(f"[개인화 인사] 분석 결과 - test_id: {user_analysis_result.test_id}, persona_type: {user_analysis_result.persona_type}")
+        except Exception as e:
+            print(f"[개인화 인사] DB에서 그림 분석 결과 로드 실패: {e}")
+            user_analysis_result = None
+        
+        # 개인화된 인사만 생성 (기본 인사는 프론트엔드에서 처리)
+        try:
+            if user_analysis_result:
+                print(f"[개인화 인사] AI 서비스로 개인화된 인사 생성 요청")
+                greeting = ai_service._generate_personalized_greeting(persona_type, user_analysis_result, user_nickname)
+                print(f"[개인화 인사] 생성된 인사: {greeting}")
+                
+                # 🆕 개인화된 인사를 채팅 메시지로 저장 (사이드바 히스토리에 표시되도록)
+                if greeting and greeting.strip():
+                    # 해당 세션에 assistant 메시지가 있는지 확인 (더 간단한 중복 방지)
+                    existing_messages = db.query(ChatMessage).filter(
+                        ChatMessage.session_id == session_id,
+                        ChatMessage.sender_type == "assistant"
+                    ).count()
+                    
+                    if existing_messages == 0:
+                        # 첫 번째 assistant 메시지가 없는 경우에만 개인화된 인사 저장
+                        seoul_tz = pytz.timezone('Asia/Seoul')
+                        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+                        
+                        greeting_message = ChatMessage(
+                            session_id=session_id,
+                            sender_type="assistant",
+                            content=greeting,
+                            created_at=seoul_time
+                        )
+                        db.add(greeting_message)
+                        db.commit()
+                        print(f"[개인화 인사] 채팅 메시지로 저장 완료: {greeting}")
+                    else:
+                        print(f"[개인화 인사] 이미 assistant 메시지가 존재함 ({existing_messages}개), 저장 생략")
+            else:
+                print(f"[개인화 인사] 그림 분석 결과 없음 - 빈 인사 반환")
+                greeting = ""  # 그림 분석 결과가 없으면 빈 문자열
+        except Exception as e:
+            print(f"[개인화 인사] 인사 생성 오류: {e}")
+            greeting = ""  # 오류 발생 시 빈 문자열
+        
+        return {
+            "persona_type": persona_type,
+            "persona_id": session.persona_id,
+            "greeting": greeting
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"개인화된 인사 메시지 조회 중 오류가 발생했습니다: {str(e)}"
+        )
+

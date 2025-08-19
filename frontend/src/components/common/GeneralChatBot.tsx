@@ -48,7 +48,7 @@ const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ isOpen, onClose }) => {
       // 새 채팅 세션 생성 (일반 챗봇용)
       const sessionRequest: CreateSessionRequest = {
         user_id: userId,
-        friends_id: 1 // 내면이 캐릭터 ID
+        persona_id: 1 // 내면이 캐릭터 ID
       };
 
       const session = await chatService.createSession(sessionRequest);

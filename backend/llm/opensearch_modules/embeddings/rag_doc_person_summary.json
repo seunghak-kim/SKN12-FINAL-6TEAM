@@ -1,0 +1,126 @@
+{
+  "표정": {
+    "count": 4,
+    "embedding_dim": 1024
+  },
+  "두 발": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "크기": {
+    "count": 5,
+    "embedding_dim": 1024
+  },
+  "눈": {
+    "count": 9,
+    "embedding_dim": 1024
+  },
+  "코": {
+    "count": 7,
+    "embedding_dim": 1024
+  },
+  "입": {
+    "count": 5,
+    "embedding_dim": 1024
+  },
+  "호주머니": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "몸": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "팔": {
+    "count": 4,
+    "embedding_dim": 1024
+  },
+  "손": {
+    "count": 8,
+    "embedding_dim": 1024
+  },
+  "다리": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "성별": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "위치": {
+    "count": 4,
+    "embedding_dim": 1024
+  },
+  "신발": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "발": {
+    "count": 5,
+    "embedding_dim": 1024
+  },
+  "움직임": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "단추": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "손발": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "분위기": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "자세": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "모습": {
+    "count": 2,
+    "embedding_dim": 1024
+  },
+  "선": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "큰 눈": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "생략된 코": {
+    "count": 1,
+    "embedding_dim": 1024
+  },
+  "전체 그림의 평가": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "방향": {
+    "count": 4,
+    "embedding_dim": 1024
+  },
+  "머리": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "얼굴": {
+    "count": 2,
+    "embedding_dim": 1024
+  },
+  "목": {
+    "count": 3,
+    "embedding_dim": 1024
+  },
+  "어깨": {
+    "count": 2,
+    "embedding_dim": 1024
+  },
+  "기타": {
+    "count": 9,
+    "embedding_dim": 1024
+  }
+}

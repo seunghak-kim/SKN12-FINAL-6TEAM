@@ -8,29 +8,41 @@ from typing import List, Optional
 from app.schemas.rating import RatingCreate, RatingUpdate, RatingResponse
 from app.models.rating import Rating
 from app.database import get_db
+from .auth import get_current_user
 
 router = APIRouter()
 
 @router.post("/", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
-async def create_rating(rating_data: RatingCreate, db: Session = Depends(get_db)):
+async def create_rating(
+    rating_data: RatingCreate, 
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """새 평가 생성"""
-    # 같은 사용자의 같은 세션에 대한 평가가 이미 있는지 확인
-    existing_rating = db.query(Rating).filter(
-        Rating.user_id == rating_data.user_id,
-        Rating.session_id == rating_data.session_id
-    ).first()
-    
-    if existing_rating:
+    # 사용자 인증 확인
+    if current_user["user_id"] != rating_data.user_id:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="이미 이 세션에 대한 평가가 존재합니다."
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="다른 사용자의 평가를 생성할 수 없습니다."
+        )
+    
+    # 모든 사용자의 의견 수용을 위해 중복 평가 허용 (모든 평가 데이터 보존)
+    
+    # 세션 정보에서 persona_id 가져오기
+    from app.models.chat import ChatSession
+    session = db.query(ChatSession).filter(ChatSession.chat_sessions_id == rating_data.session_id).first()
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="해당 세션을 찾을 수 없습니다."
         )
     
     new_rating = Rating(
         user_id=rating_data.user_id,
         session_id=rating_data.session_id,
-        rating_score=rating_data.rating_score,
-        rating_comment=rating_data.rating_comment
+        persona_id=session.persona_id,  # 세션에서 persona_id 자동 설정
+        rating=rating_data.rating,
+        comment=rating_data.comment
     )
     
     db.add(new_rating)
@@ -38,11 +50,11 @@ async def create_rating(rating_data: RatingCreate, db: Session = Depends(get_db)
     db.refresh(new_rating)
     
     return RatingResponse(
-        rating_id=new_rating.rating_id,
+        ratings_id=new_rating.ratings_id,
         user_id=new_rating.user_id,
         session_id=new_rating.session_id,
-        rating_score=new_rating.rating_score,
-        rating_comment=new_rating.rating_comment,
+        rating=new_rating.rating,
+        comment=new_rating.comment,
         created_at=new_rating.created_at
     )
 
@@ -67,11 +79,11 @@ async def get_ratings(
     
     return [
         RatingResponse(
-            rating_id=rating.rating_id,
+            ratings_id=rating.ratings_id,
             user_id=rating.user_id,
             session_id=rating.session_id,
-            rating_score=rating.rating_score,
-            rating_comment=rating.rating_comment,
+            rating=rating.rating,
+            comment=rating.comment,
             created_at=rating.created_at
         )
         for rating in ratings
@@ -81,7 +93,7 @@ async def get_ratings(
 async def get_rating(rating_id: int, db: Session = Depends(get_db)):
     """특정 평가 조회"""
     rating = db.query(Rating).filter(
-        Rating.rating_id == rating_id
+        Rating.ratings_id == rating_id
     ).first()
     
     if not rating:
@@ -91,11 +103,11 @@ async def get_rating(rating_id: int, db: Session = Depends(get_db)):
         )
     
     return RatingResponse(
-        rating_id=rating.rating_id,
+        ratings_id=rating.ratings_id,
         user_id=rating.user_id,
         session_id=rating.session_id,
-        rating_score=rating.rating_score,
-        rating_comment=rating.rating_comment,
+        rating=rating.rating,
+        comment=rating.comment,
         created_at=rating.created_at
     )
 
@@ -103,7 +115,7 @@ async def get_rating(rating_id: int, db: Session = Depends(get_db)):
 async def update_rating(rating_id: int, rating_data: RatingUpdate, db: Session = Depends(get_db)):
     """평가 수정"""
     rating = db.query(Rating).filter(
-        Rating.rating_id == rating_id
+        Rating.ratings_id == rating_id
     ).first()
     
     if not rating:
@@ -112,21 +124,21 @@ async def update_rating(rating_id: int, rating_data: RatingUpdate, db: Session =
             detail="평가를 찾을 수 없습니다."
         )
     
-    if rating_data.rating_score is not None:
-        rating.rating_score = rating_data.rating_score
+    if rating_data.rating is not None:
+        rating.rating = rating_data.rating
     
-    if rating_data.rating_comment is not None:
-        rating.rating_comment = rating_data.rating_comment
+    if rating_data.comment is not None:
+        rating.comment = rating_data.comment
     
     db.commit()
     db.refresh(rating)
     
     return RatingResponse(
-        rating_id=rating.rating_id,
+        ratings_id=rating.ratings_id,
         user_id=rating.user_id,
         session_id=rating.session_id,
-        rating_score=rating.rating_score,
-        rating_comment=rating.rating_comment,
+        rating=rating.rating,
+        comment=rating.comment,
         created_at=rating.created_at
     )
 
@@ -134,7 +146,7 @@ async def update_rating(rating_id: int, rating_data: RatingUpdate, db: Session =
 async def delete_rating(rating_id: int, db: Session = Depends(get_db)):
     """평가 삭제"""
     rating = db.query(Rating).filter(
-        Rating.rating_id == rating_id
+        Rating.ratings_id == rating_id
     ).first()
     
     if not rating:
@@ -154,8 +166,8 @@ async def get_session_average_rating(session_id: str, db: Session = Depends(get_
     from sqlalchemy import func
     
     result = db.query(
-        func.avg(Rating.rating_score).label('average_rating'),
-        func.count(Rating.rating_id).label('total_ratings')
+        func.avg(Rating.rating).label('average_rating'),
+        func.count(Rating.ratings_id).label('total_ratings')
     ).filter(
         Rating.session_id == session_id
     ).first()
@@ -172,8 +184,8 @@ async def get_user_average_rating(user_id: int, db: Session = Depends(get_db)):
     from sqlalchemy import func
     
     result = db.query(
-        func.avg(Rating.rating_score).label('average_rating'),
-        func.count(Rating.rating_id).label('total_ratings')
+        func.avg(Rating.rating).label('average_rating'),
+        func.count(Rating.ratings_id).label('total_ratings')
     ).filter(
         Rating.user_id == user_id
     ).first()

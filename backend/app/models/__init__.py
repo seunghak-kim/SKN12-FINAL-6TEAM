@@ -1,9 +1,8 @@
 from .user import Base, SocialUser, User, UserInformation
 from .chat import ChatSession, ChatMessage
-from .friend import Friend
+from .persona import Persona
 from .test import DrawingTest, DrawingTestResult
 from .rating import Rating
-from .agreement import Agreement
 
 __all__ = [
     'Base',
@@ -12,9 +11,8 @@ __all__ = [
     'UserInformation',
     'ChatSession',
     'ChatMessage',
-    'Friend',
+    'Persona',
     'DrawingTest',
     'DrawingTestResult',
-    'Rating',
-    'Agreement'
+    'Rating'
 ]

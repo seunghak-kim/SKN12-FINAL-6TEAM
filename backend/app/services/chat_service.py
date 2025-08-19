@@ -4,6 +4,7 @@ import json
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 from uuid import UUID
+import pytz
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
@@ -15,6 +16,9 @@ from ..schemas.chat import (
     SendMessageRequest,
     SendMessageResponse,
 )
+
+from ..utils.drawing import get_latest_drawing_summary
+
 
 class ConversationMemory:
     """대화 메모리 관리 클래스 - 데이터베이스 기반"""
@@ -104,11 +108,16 @@ class ChatService:
         }
     
     def _load_prompts(self) -> Dict[str, str]:
-        """프롬프트 로드"""
+        """체이닝된 프롬프트 로드"""
         try:
-            prompts_path = os.path.join(os.path.dirname(__file__), '../..', 'prompts', 'nemyeon.md')
-            with open(prompts_path, 'r', encoding='utf-8') as f:
-                content = f.read()
+            # 체이닝 시스템을 사용하여 프롬프트 로드
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+            from prompt_chaining import get_chained_prompt
+            
+            # 내면형(nemyeon) 체이닝된 프롬프트 로드
+            content = get_chained_prompt('nemyeon')
             
             # 정확한 섹션 매칭을 위한 정규식
             sections = {
@@ -147,20 +156,25 @@ class ChatService:
     
     def create_session(self, session_data: ChatSessionCreate) -> ChatSession:
         """새 채팅 세션 생성"""
-        print(f"새 세션 생성 시도: user_id={session_data.user_id}, friends_id={session_data.friends_id}")
+        print(f"새 세션 생성 시도: user_id={session_data.user_id}, persona_id={session_data.persona_id}")
         
         # 간단한 존재 확인 (관계 없이 직접 확인)
         from ..models.user import User
-        from ..models.chat import Friend
+        from ..models.persona import Persona
         user_exists = self.db.query(User).filter(User.user_id == session_data.user_id).first() is not None
-        friend_exists = self.db.query(Friend).filter(Friend.friends_id == session_data.friends_id).first() is not None
+        persona_exists = self.db.query(Persona).filter(Persona.persona_id == session_data.persona_id).first() is not None
         
-        print(f"사용자 존재: {user_exists}, 친구 존재: {friend_exists}")
+        print(f"사용자 존재: {user_exists}, 페르소나 존재: {persona_exists}")
+        
+        seoul_tz = pytz.timezone('Asia/Seoul')
+        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
         
         db_session = ChatSession(
             user_id=session_data.user_id,
-            friends_id=session_data.friends_id,
-            session_name=session_data.session_name
+            persona_id=session_data.persona_id,
+            session_name=session_data.session_name,
+            created_at=seoul_time,
+            updated_at=seoul_time
         )
         
         self.db.add(db_session)
@@ -203,10 +217,14 @@ class ChatService:
     
     def add_message(self, session_id: UUID, sender_type: str, content: str) -> ChatMessage:
         """메시지 추가"""
+        seoul_tz = pytz.timezone('Asia/Seoul')
+        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+        
         message = ChatMessage(
             session_id=session_id,
             sender_type=sender_type,
-            content=content
+            content=content,
+            created_at=seoul_time
         )
         
         self.db.add(message)
@@ -251,4 +269,12 @@ class ChatService:
             return True
         return False
     
-   
+
+    def generate_prompt(self, user_id: int, user_message: str, prompt_template: str) -> str:
+        # ① 그림 검사 요약 불러오기
+        summary = get_latest_drawing_summary(user_id, self.db) or "아직 그림검사 결과가 없어요!"
+
+        # ② 프롬프트에 삽입
+        filled_prompt = prompt_template.replace("{summary}", summary)
+
+        return filled_prompt

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..services.auth_service import AuthService
 from pydantic import BaseModel
+import os
 
 router = APIRouter()
 auth_service = AuthService()
@@ -160,8 +161,9 @@ async def google_callback(
         # 임시로 Redis나 메모리에 저장하는 대신 간단히 쿠키 사용
         from fastapi.responses import RedirectResponse
         
+        frontend_url = os.getenv("FRONTEND_URL", "http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com")
         response = RedirectResponse(
-            url=f"http://localhost:3000/auth-callback?session={session_id}&is_new={str(result.is_new_user).lower()}"
+            url=f"{frontend_url}/auth-callback?session={session_id}&is_new={str(result.is_new_user).lower()}"
         )
         
         # 쿠키에 토큰 저장 (HttpOnly, Secure 설정)
@@ -231,8 +233,16 @@ async def check_nickname_availability(
 ):
     """닉네임 중복 검사"""
     try:
+        # slang 단어 포함 여부 확인
+        from .user import check_slang_in_nickname
+        if check_slang_in_nickname(request.nickname):
+            return {"available": False, "message": "부적절한 단어가 포함된 닉네임입니다.", "reason": "slang"}
+        
         is_available = auth_service.check_nickname_availability(db, request.nickname)
-        return {"available": is_available, "nickname": request.nickname}
+        if not is_available:
+            return {"available": False, "message": "이미 사용 중인 닉네임입니다.", "reason": "duplicate"}
+        
+        return {"available": True, "message": "사용 가능한 닉네임입니다.", "reason": "available"}
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -282,6 +292,14 @@ async def complete_signup(
     """회원가입 완료 (닉네임 설정)"""
     try:
         from ..schemas.user import UserUpdate
+        from .user import check_slang_in_nickname
+        
+        # slang 단어 포함 여부 확인
+        if check_slang_in_nickname(request.nickname):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="사용할 수 없는 닉네임입니다."
+            )
         
         # 닉네임 중복 확인
         is_available = auth_service.check_nickname_availability(db, request.nickname)

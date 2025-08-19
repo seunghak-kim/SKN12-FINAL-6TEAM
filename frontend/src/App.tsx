@@ -7,6 +7,7 @@ import ResultsPage from './components/pages/ResultsPage';
 import ResultDetailPage from './components/pages/ResultDetailPage';
 import CharactersPage from './components/pages/CharactersPage';
 import ChatPage from './components/pages/ChatPage';
+import BeforeTest from './components/pages/BeforeTest';
 import MyPage from './components/pages/MyPage';
 import LandingPage from './components/pages/LandingPage';
 import NicknamePage from './components/pages/NicknamePage';
@@ -14,6 +15,7 @@ import AuthCallbackPage from './components/pages/AuthCallbackPage';
 // import FloatingChatBot from './components/common/FloatingChatBot';
 import { useAppState } from './hooks/useAppState';
 import { authService } from './services/authService';
+import { testService } from './services/testService';
 import './App.css';
 import './components/DreamSearchApp.css';
 
@@ -25,7 +27,6 @@ const AppContent: React.FC = () => {
     showRatingModal,
     currentTestResult,
     getAvailableCharacters,
-    handleGoogleLogin,
     handleStartDreamSearch,
     handleCharacterSelect,
     handleStartChat,
@@ -35,7 +36,9 @@ const AppContent: React.FC = () => {
     handleDeleteAccount,
     handleContinueChat,
     handleUpdateProfile,
-    handleInitializeChat
+    handleInitializeChat,
+    updateTestResult,
+    setCharacterFromTestResult
   } = useAppState();
 
   // URL에서 토큰 처리 (보안 이슈 해결용 임시 처리)
@@ -95,7 +98,7 @@ const AppContent: React.FC = () => {
         navigate('/main');
         break;
       case 'test':
-        navigate('/test');
+        navigate('/test-instruction');
         break;
       case 'test-instruction':
         navigate('/test-instruction');
@@ -112,6 +115,9 @@ const AppContent: React.FC = () => {
       case 'chat':
         navigate('/chat');
         break;
+      case 'before-test':
+        navigate('/before-test');
+        break;
       case 'characters':
         navigate('/characters');
         break;
@@ -123,16 +129,32 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleStartAnalysis = (imageFile: File | null, description: string) => {
-    // 여기서 이미지와 설명을 저장하거나 처리할 수 있습니다
-    console.log('Analysis started with:', { imageFile, description });
-    handleStartDreamSearch();
+  const handleStartAnalysis = async (imageFile: File | null, description: string) => {
+    if (!imageFile) {
+      console.error('이미지 파일이 없습니다.');
+      return;
+    }
+
+    try {
+      console.log('실제 분석 시작:', { imageFile, description });
+      
+      // 실제 분석 API 호출
+      const result = await testService.uploadDrawingImage(imageFile);
+      console.log('분석 완료:', result);
+      
+      // 분석 완료 후 결과 페이지로 이동
+      handleStartDreamSearch();
+    } catch (error) {
+      console.error('분석 실패:', error);
+      // 에러 발생 시에도 결과 페이지로 이동 (기존 동작 유지)
+      handleStartDreamSearch();
+    }
   };
 
   return (
     <div className="App font-sans min-h-screen bg-gray-100">
       <Routes>
-        <Route path="/" element={<LandingPage onGoogleLogin={handleGoogleLogin} />} />
+        <Route path="/" element={<LandingPage />} />
         <Route 
           path="/main" 
           element={
@@ -172,6 +194,7 @@ const AppContent: React.FC = () => {
               onStartChat={handleStartChat}
               onNavigate={handleNavigate}
               currentTestResult={currentTestResult}
+              updateTestResult={updateTestResult}
             />
           } 
         />
@@ -186,7 +209,7 @@ const AppContent: React.FC = () => {
               onNavigate={handleNavigate}
               onInitializeChat={handleInitializeChat}
               // userId prop 제거 - ChatPage에서 내부적으로 로그인된 사용자 ID를 가져옴
-              friendsId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
+              personaId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
             />
           } 
         />
@@ -216,10 +239,17 @@ const AppContent: React.FC = () => {
           path="/characters" 
           element={
             <CharactersPage
-              characters={getAvailableCharacters()}
               selectedCharacter={selectedCharacter}
               onCharacterSelect={handleCharacterSelect}
               onStartChat={handleStartChat}
+              onNavigate={handleNavigate}
+            />
+          } 
+        />
+        <Route 
+          path="/before-test" 
+          element={
+            <BeforeTest
               onNavigate={handleNavigate}
             />
           } 

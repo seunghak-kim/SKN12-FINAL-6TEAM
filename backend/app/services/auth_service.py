@@ -1,6 +1,7 @@
 import os
 import jwt
 from datetime import datetime, timedelta, timezone
+import pytz
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from sqlalchemy.orm import Session
@@ -73,11 +74,58 @@ class AuthService:
             ).first()
             
             if user_info:
-                print(f"Existing user found: {user_info.user_id}, nickname: {user_info.nickname}")
+                print(f"Existing user found: {user_info.user_id}, nickname: {user_info.nickname}, status: {user_info.status}")
+                
+                # INACTIVE 사용자 복구 체크
+                if user_info.status == "INACTIVE":
+                    from datetime import datetime, timezone, timedelta
+                    
+                    # 1년 이내인지 확인
+                    if user_info.deleted_at:
+                        one_year_ago = datetime.now(timezone.utc) - timedelta(days=365)
+                        
+                        # deleted_at이 timezone-naive인 경우 UTC로 간주
+                        deleted_at = user_info.deleted_at
+                        if deleted_at.tzinfo is None:
+                            deleted_at = deleted_at.replace(tzinfo=timezone.utc)
+                        
+                        if deleted_at > one_year_ago:
+                            # 1년 이내면 복구
+                            user_info.status = "ACTIVE"
+                            user_info.deleted_at = None
+                            db.commit()
+                            db.refresh(user_info)
+                            print(f"User reactivated: {user_info.user_id}")
+                        else:
+                            # 1년 초과면 로그인 거부
+                            print(f"User account expired: {user_info.user_id}")
+                            return None, False
+                    else:
+                        # deleted_at이 없는 INACTIVE 사용자도 복구 (기존 데이터 호환성)
+                        user_info.status = "ACTIVE"
+                        db.commit()
+                        db.refresh(user_info)
+                        print(f"User reactivated (no deleted_at): {user_info.user_id}")
+                
                 # temp_user_로 시작하는 닉네임이면 신규 사용자로 판단
                 is_new_user = user_info.nickname.startswith('temp_user_')
                 print(f"Is new user check: {is_new_user} (nickname: {user_info.nickname})")
                 return user_info, is_new_user
+            else:
+                # social_user는 있지만 user_info가 없는 경우 (데이터 불일치 상황)
+                print(f"Social user exists but no user_info found. Creating user_info for existing social_user: {social_user.social_user_id}")
+                temp_nickname = f"temp_user_{social_user.social_user_id}"
+                new_user_info = UserInformation(
+                    nickname=temp_nickname,
+                    social_user_id=social_user.social_user_id,
+                    status='ACTIVE'
+                )
+                
+                db.add(new_user_info)
+                db.commit()
+                db.refresh(new_user_info)
+                print(f"User info created for existing social user: {new_user_info.user_id}")
+                return new_user_info, True  # 신규 사용자로 판단
         
         # 새 사용자 생성
         print(f"Creating new user with email: {email}")
@@ -195,7 +243,7 @@ class AuthService:
                 "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
                 "code": authorization_code,
                 "grant_type": "authorization_code",
-                "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
+                "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI")
             }
             
             token_response = requests.post(token_url, data=token_data)

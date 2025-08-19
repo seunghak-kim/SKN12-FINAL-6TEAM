@@ -13,7 +13,7 @@ export class ChatService {
   // 새 채팅 세션 생성
   async createSession(data: CreateSessionRequest): Promise<ChatSession> {
     try {
-      return await apiClient.post<ChatSession>('/chat/sessions', data);
+      return await apiClient.post<ChatSession>('/api/chat/sessions', data);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -22,7 +22,7 @@ export class ChatService {
   // 사용자의 모든 채팅 세션 조회
   async getUserSessions(userId: number): Promise<ChatSession[]> {
     try {
-      return await apiClient.get<ChatSession[]>(`/chat/sessions?user_id=${userId}`);
+      return await apiClient.get<ChatSession[]>(`/api/chat/sessions?user_id=${userId}`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -31,7 +31,7 @@ export class ChatService {
   // 특정 채팅 세션 상세 조회 (메시지 포함)
   async getSessionDetail(sessionId: string): Promise<ChatSessionDetail> {
     try {
-      return await apiClient.get<ChatSessionDetail>(`/chat/sessions/${sessionId}`);
+      return await apiClient.get<ChatSessionDetail>(`/api/chat/sessions/${sessionId}`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -40,7 +40,7 @@ export class ChatService {
   // 메시지 전송
   async sendMessage(sessionId: string, data: SendMessageRequest): Promise<SendMessageResponse> {
     try {
-      return await apiClient.post<SendMessageResponse>(`/chat/sessions/${sessionId}/messages`, data);
+      return await apiClient.post<SendMessageResponse>(`/api/chat/sessions/${sessionId}/messages`, data);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -50,7 +50,7 @@ export class ChatService {
   // 세션 삭제
   async deleteSession(sessionId: string): Promise<{ message: string }> {
     try {
-      return await apiClient.delete<{ message: string }>(`/chat/sessions/${sessionId}`);
+      return await apiClient.delete<{ message: string }>(`/api/chat/sessions/${sessionId}`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -59,7 +59,16 @@ export class ChatService {
   // 세션의 모든 메시지 조회
   async getSessionMessages(sessionId: string): Promise<ChatMessage[]> {
     try {
-      return await apiClient.get<ChatMessage[]>(`/chat/sessions/${sessionId}/messages`);
+      return await apiClient.get<ChatMessage[]>(`/api/chat/sessions/${sessionId}/messages`);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // 개인화된 인사 메시지 조회 (백그라운드 처리용)
+  async getPersonalizedGreeting(sessionId: string): Promise<{ persona_type: string; persona_id: number; greeting: string }> {
+    try {
+      return await apiClient.get<{ persona_type: string; persona_id: number; greeting: string }>(`/api/chat/sessions/${sessionId}/personalized-greeting`);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -82,15 +91,48 @@ export class ChatService {
 
   // 백엔드 메시지를 프론트엔드 형식으로 변환
   static convertToFrontendMessage(message: ChatMessage) {
+    // created_at 값이 유효한지 확인하고 안전하게 처리
+    let timestamp = '';
+    try {
+      if (message.created_at) {
+        const date = new Date(message.created_at);
+        if (!isNaN(date.getTime())) {
+          timestamp = date.toLocaleTimeString("ko-KR", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+        } else {
+          // created_at이 유효하지 않으면 현재 시간 사용
+          timestamp = new Date().toLocaleTimeString("ko-KR", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+        }
+      } else {
+        // created_at이 없으면 현재 시간 사용
+        timestamp = new Date().toLocaleTimeString("ko-KR", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
+    } catch (error) {
+      console.error('timestamp 변환 오류:', error, 'created_at:', message.created_at);
+      // 오류 발생시 현재 시간 사용
+      timestamp = new Date().toLocaleTimeString("ko-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
     return {
       id: message.chat_messages_id,
       type: message.sender_type,
       content: message.content,
-      timestamp: new Date(message.created_at).toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })
+      timestamp: timestamp
     };
   }
 

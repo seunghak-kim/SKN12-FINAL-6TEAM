@@ -27,7 +27,7 @@ export interface FrontendChatMessage {
 export interface ChatSession {
   chat_sessions_id: string;
   user_id: number;
-  friends_id: number;
+  persona_id: number;
   session_name?: string;
   is_active: boolean;
   created_at: string;
@@ -56,7 +56,7 @@ export interface SendMessageResponse {
 // 세션 생성 요청
 export interface CreateSessionRequest {
   user_id: number;
-  friends_id: number;
+  persona_id: number;
   session_name?: string;
 }
 
@@ -89,13 +89,20 @@ export interface TestResult {
   date: string;
   description: string;
   images?: string[];
+  personalityScores?: {
+    추진이: number;
+    내면이: number;
+    관계이: number;
+    쾌락이: number;
+    안정이: number;
+  };
 }
 
-// 백엔드 API - 친구 정보
-export interface FriendInfo {
-  friends_id: number;
-  friends_name: string;
-  friends_description: string;
+// 백엔드 API - 페르소나 정보
+export interface PersonaInfo {
+  persona_id: number;
+  persona_name: string;
+  persona_description: string;
   tts_audio_url?: string;
   tts_voice_type?: string;
 }
@@ -103,10 +110,17 @@ export interface FriendInfo {
 // 백엔드 API - 그림 테스트 결과
 export interface DrawingTestResult {
   result_id: number;
-  friends_type?: number;
+  persona_type?: number;
   summary_text?: string;
   created_at: string;
-  friend_info?: FriendInfo;
+  persona_info?: PersonaInfo;
+  personality_scores?: {
+    추진이: number;
+    내면이: number;
+    관계이: number;
+    쾌락이: number;
+    안정이: number;
+  };
 }
 
 // 백엔드 API - 그림 테스트
@@ -123,6 +137,7 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  profileImageUrl?: string;
   joinDate: string;
   totalTests: number;
   totalChats: number;
@@ -148,4 +163,60 @@ export interface ApiError {
   error: string;
   detail?: string;
   code?: number;
+}
+
+// Pipeline API - 이미지 분석 응답
+export interface PipelineAnalysisResponse {
+  test_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  message: string;
+}
+
+// Pipeline API - 분석 단계 정보
+export interface AnalysisStep {
+  name: string;
+  description: string;
+  completed: boolean;
+  current: boolean;
+}
+
+// Pipeline API - 분석 상태 응답
+export interface PipelineStatusResponse {
+  test_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  message: string;
+  steps?: AnalysisStep[];
+  current_step?: number;
+  completed_steps?: number;
+  total_steps?: number;
+  estimated_remaining?: string;
+  result?: DrawingTestResult;
+  error?: string;
+  cancelled?: boolean;
+}
+
+// Rating API - 평가 요청
+export interface RatingRequest {
+  session_id: string;
+  user_id: number;
+  rating: number;  // 1-5
+  comment?: string;
+}
+
+// Rating API - 평가 응답  
+export interface RatingResponse {
+  ratings_id: number;
+  session_id: string;
+  user_id: number;
+  rating: number;
+  comment?: string;
+  created_at: string;
+}
+
+// Rating API - 평균 평점 응답
+export interface AverageRatingResponse {
+  session_id?: string;
+  user_id?: number;
+  average_rating: number;
+  total_ratings: number;
 }

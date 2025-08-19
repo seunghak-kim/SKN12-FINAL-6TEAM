@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../common/Navigation';
+import PipelineHealthCheck from '../common/PipelineHealthCheck';
+import PipelineTestPanel from '../common/PipelineTestPanel';
 import ConsentModal from '../common/ConsentModal';
-import AnalysisModal from '../common/AnalysisModal';
+import { Button } from "../../components/ui/button"
 
 interface TestInstructionPageProps {
-  onStartAnalysis: (imageFile: File | null, description: string) => void;
+  onStartAnalysis: (imageFile: File | null, description: string) => Promise<void>;
   onNavigate?: (screen: string) => void;
 }
 
@@ -16,6 +18,8 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
   const [description, setDescription] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showHealthCheck, setShowHealthCheck] = useState(false);
+  const [showTestPanel, setShowTestPanel] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
 
   const handleImageSelect = (file: File) => {
@@ -55,17 +59,20 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
     }
   };
 
-  const handleStartTest = () => {
+  const handleStartTest = async () => {
+    // 개인정보 동의 팝업 표시
     setShowConsentModal(true);
   };
 
   const handleConsentAgree = () => {
     setShowConsentModal(false);
+    navigate('/test');
   };
 
   const handleConsentClose = () => {
     setShowConsentModal(false);
   };
+
 
   const handleAnalysis = async () => {
     if (!selectedImage) return;
@@ -73,25 +80,47 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
     setIsAnalyzing(true);
     
     try {
-      // 이미지 업로드 및 테스트 생성
+      // 새로운 파이프라인 API 사용
       const { testService } = await import('../../services/testService');
-      const uploadResult = await testService.uploadDrawingImage(selectedImage);
       
-      // 업로드 성공 후 결과 페이지로 이동하면서 testId 전달
-      setTimeout(() => {
-        setIsAnalyzing(false);
-        navigate('/results', { 
-          state: { 
-            testId: uploadResult.test_id,
-            imageUrl: uploadResult.image_url 
-          } 
-        });
-      }, 2000);
+      
+      // 이미지 분석 시작
+      const analysisResult = await testService.analyzeImage(selectedImage, description);
+      
+      const testId = analysisResult.test_id;
+      
+      // 분석 상태 폴링 시작
+      await testService.pollAnalysisStatus(testId.toString(), (status) => {
+        
+        // 진행률에 따른 UI 업데이트 (AnalysisModal에서 처리)
+        // 여기서는 로그만 출력
+        if (status.status === 'processing') {
+        }
+      });
+      
+      
+      // 분석 완료 후 결과 페이지로 이동
+      setIsAnalyzing(false);
+      navigate('/results', { 
+        state: { 
+          testId: testId,
+          fromPipeline: true
+        } 
+      });
       
     } catch (error) {
-      console.error('이미지 업로드 실패:', error);
+      console.error('❌ 파이프라인 분석 실패:', error);
       setIsAnalyzing(false);
-      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+      
+      // 분석 실패해도 결과 페이지로 이동 (0% UI 표시)
+      navigate('/results', { 
+        state: { 
+          testId: null, // testId가 없음을 표시
+          fromPipeline: true,
+          error: true, // 분석 실패 플래그
+          errorMessage: error instanceof Error ? error.message : '분석 중 오류가 발생했습니다.'
+        } 
+      });
     }
   };
 
@@ -103,148 +132,154 @@ const TestInstructionPage: React.FC<TestInstructionPageProps> = ({ onStartAnalys
   const canAnalyze = selectedImage !== null && !isAnalyzing;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
       <Navigation onNavigate={onNavigate} />
-      
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">HTP 심리검사</h1>
-          <p className="text-gray-600">그림을 업로드하고 설명을 작성해주세요</p>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* 이미지 업로드 섹션 */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex items-center mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                <span className="text-2xl">🖼️</span>
+       {/* Subtle particles background */}
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: `url('/images/subtle-particles.png')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      ></div>
+
+      {/* Glowing orb */}
+      <div
+        className="absolute top-1/4 right-1/4 w-48 h-48 opacity-50 animate-pulse"
+        style={{
+          backgroundImage: `url('/images/glowing-orb.png')`,
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          animationDuration: "3s",
+        }}
+      ></div>
+
+      {/* Enhanced decorative elements */}
+      <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-full opacity-30 blur-xl animate-pulse"></div>
+      <div
+        className="absolute bottom-1/3 left-1/4 w-24 h-24 bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 rounded-full opacity-40 blur-lg animate-pulse"
+        style={{ animationDelay: "1.5s" }}
+      ></div>
+
+      {/* Enhanced orbital rings */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div
+          className="w-[600px] h-[600px] border border-cyan-400/15 rounded-full animate-spin"
+          style={{ animationDuration: "25s" }}
+        ></div>
+        <div
+          className="absolute w-[700px] h-[700px] border border-purple-400/10 rounded-full animate-spin"
+          style={{ animationDuration: "35s" }}
+        ></div>
+        <div
+          className="absolute w-[800px] h-[800px] border border-pink-400/5 rounded-full animate-spin"
+          style={{ animationDuration: "45s" }}
+        ></div>
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-8 py-16">
+        <div className="max-w-2xl mx-auto text-center">
+          {/* Large purple circle container with enhanced mystical effect */}
+          <div className="relative w-[500px] h-[500px] mx-auto mb-12 bg-gradient-to-br from-purple-700 via-purple-800 via-indigo-800 to-purple-900 rounded-full flex flex-col items-center justify-center p-8 shadow-2xl border border-purple-400/20">
+            {/* Inner glow effect */}
+            <div className="absolute inset-4 bg-gradient-to-br from-purple-600/20 via-pink-500/10 to-cyan-400/20 rounded-full blur-xl"></div>
+
+            <div className="relative z-10 flex flex-col items-center justify-center h-full pt-8">
+              <h1 className="text-2xl font-bold text-white mb-4 text-center drop-shadow-lg">My Moody의 HTP 검사란?</h1>
+
+              <div className="text-white/90 text-sm mb-6 leading-relaxed text-center max-w-xs">
+                H(House)-T(Tree)-P(Person)으로
+                <br />
+                이루어진 그림 심리 검사로,
+                <br />
+                My Moody만의 해석 체계를 기반으로 한
+                <br />
+                간이 심리 테스트입니다
               </div>
-              <h2 className="text-xl font-semibold text-gray-800">그림 업로드</h2>
+
+              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 w-full max-w-xs border border-white/10">
+                <h2 className="text-white font-bold mb-3 text-center text-sm">HTP 심리검사 순서</h2>
+
+                <div className="text-left text-white/90 text-xs space-y-2">
+                  <div className="flex items-start">
+                    <div className="w-5 h-5 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-xs font-bold mr-2 mt-0.5 flex-shrink-0 shadow-lg">
+                      1
+                    </div>
+                    <div>
+                      <div className="font-semibold mb-1 text-xs">집, 나무, 사람 검사</div>
+                      <div className="text-xs text-white/70 leading-relaxed">
+                        집, 나무, 사람을 요소별로 한 번에 그려주시면 검사가 완료됩니다
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start">
+                    <div className="w-5 h-5 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-xs font-bold mr-2 mt-0.5 flex-shrink-0 shadow-lg">
+                      2
+                    </div>
+                    <div>
+                      <div className="font-semibold mb-1 text-xs">그림 완성 및 결과 확인</div>
+                      <div className="text-xs text-white/70 leading-relaxed">
+                        심리 분석 결과와 나에게 맞는 페르소나를 확인합니다
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* V-shaped arrow pointing down with animation */}
+              <div className="mt-12 flex justify-center">
+                <div 
+                  className="animate-bounce"
+                  style={{ animationDuration: "2s" }}
+                >
+                  <svg 
+                    width="24" 
+                    height="16" 
+                    viewBox="0 0 24 16" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-white opacity-80"
+                  >
+                    <path 
+                      d="M2 2L12 12L22 2" 
+                      stroke="currentColor" 
+                      strokeWidth="3" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
-            
-            <div 
-              className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
-                isDragOver 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : selectedImage 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-300 hover:border-gray-400'
-              }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
+          </div>
+
+          {/* Enhanced button with better visibility and spacing */}
+          <div className="mb-20">
+            <Button
+              onClick={handleStartTest}
+              className="bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-700 hover:via-pink-700 hover:to-indigo-700 text-white px-12 py-5 rounded-full text-lg font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 border-2 border-white/30 hover:border-white/50 transform hover:scale-105"
             >
-              {imagePreview ? (
-                <div className="relative">
-                  <img 
-                    src={imagePreview} 
-                    alt="업로드된 그림" 
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <button 
-                      className="bg-white text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                      onClick={() => document.getElementById('file-input')?.click()}
-                    >
-                      이미지 변경
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="text-6xl text-gray-400">☁️</div>
-                  <div>
-                    <p className="text-gray-600 mb-3">파일을 드래그해서 놓거나 클릭하여 선택하세요</p>
-                    <button 
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center space-x-2"
-                      onClick={() => document.getElementById('file-input')?.click()}
-                    >
-                      <span>📁</span>
-                      <span>파일 선택하기</span>
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-500">JPG, PNG 파일만 업로드 가능합니다</p>
-                </div>
-              )}
-              
-              <input
-                id="file-input"
-                type="file"
-                accept="image/*"
-                onChange={handleFileInput}
-                className="hidden"
-              />
-            </div>
-          </div>
+              그림 검사 하러 가기
+            </Button>
 
-          {/* 설명 입력 섹션 */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex items-center mb-6">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                <span className="text-2xl">✏️</span>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-800">그림 설명</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="그림에 대한 설명을 입력하세요. 예: 어떤 기분으로 그렸는지, 특별한 의미가 있는지 등..."
-                className="w-full h-32 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                rows={6}
-                maxLength={500}
-              />
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-blue-600 font-medium">선택사항</span>
-                <span className="text-gray-500">{description.length}/500</span>
-              </div>
-            </div>
+            {/* Subtle glow effect around button */}
+            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-indigo-600/20 rounded-full blur-xl opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
           </div>
-        </div>
-
-        {/* 분석 시작 버튼 */}
-        <div className="text-center mt-8">
-          <button 
-            className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 ${
-              canAnalyze 
-                ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-            onClick={handleAnalysis}
-            disabled={!canAnalyze}
-          >
-            {isAnalyzing ? (
-              <span className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>분석 중...</span>
-              </span>
-            ) : canAnalyze ? (
-              <span className="flex items-center space-x-2">
-                <span>🔍</span>
-                <span>분석 시작하기</span>
-              </span>
-            ) : (
-              '이미지를 업로드해주세요'
-            )}
-          </button>
-          
-          {canAnalyze && !isAnalyzing && (
-            <p className="text-gray-600 mt-4 text-sm">
-              업로드된 이미지를 분석하여 심리 상태를 파악합니다
-            </p>
-          )}
         </div>
       </div>
 
-      <ConsentModal 
+
+      {/* ConsentModal */}
+      <ConsentModal
         isOpen={showConsentModal}
         onClose={handleConsentClose}
         onAgree={handleConsentAgree}
       />
-      
-      <AnalysisModal isOpen={isAnalyzing} onComplete={handleAnalysisComplete} />
     </div>
   );
 };
