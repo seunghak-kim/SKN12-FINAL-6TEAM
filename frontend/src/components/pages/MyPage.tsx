@@ -257,7 +257,7 @@ const MyPage: React.FC<MyPageProps> = ({
           testType: 'Drawing' as const,
           result: test.result?.summary_text || '결과 분석 중입니다.',
           characterMatch: test.result?.persona_info?.persona_name || getPersonaName(test.result?.persona_type || null),
-          date: test.submitted_at,
+          date: new Date(test.submitted_at).toISOString(),
           description: test.result?.summary_text || '자세한 내용은 결과보기를 확인하세요.',
           images: [test.image_url]
         })));
