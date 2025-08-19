@@ -1,6 +1,8 @@
 import os
 from typing import Dict, Any, Optional, Tuple
 from uuid import UUID
+from datetime import datetime
+import pytz
 from sqlalchemy.orm import Session
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -199,10 +201,14 @@ class AIService:
             print(f"   총합: 입력 {total_tokens['total_input']}, 출력 {total_tokens['total_output']}, 전체 {total_tokens['grand_total']}")
             
             # 사용자 메시지 저장
+            seoul_tz = pytz.timezone('Asia/Seoul')
+            seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+            
             user_msg = ChatMessage(
                 session_id=session_id,
                 sender_type="user",
-                content=user_message
+                content=user_message,
+                created_at=seoul_time
             )
             self.db.add(user_msg)
             self.db.flush()
@@ -211,7 +217,8 @@ class AIService:
             assistant_msg = ChatMessage(
                 session_id=session_id,
                 sender_type="assistant",
-                content=persona_response
+                content=persona_response,
+                created_at=seoul_time
             )
             self.db.add(assistant_msg)
             
@@ -230,10 +237,14 @@ class AIService:
             
             # 사용자 메시지는 저장
             try:
+                seoul_tz = pytz.timezone('Asia/Seoul')
+                seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+                
                 user_msg = ChatMessage(
                     session_id=session_id,
                     sender_type="user",
-                    content=user_message
+                    content=user_message,
+                    created_at=seoul_time
                 )
                 self.db.add(user_msg)
                 self.db.commit()

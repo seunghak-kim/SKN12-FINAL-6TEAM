@@ -4,6 +4,7 @@ import json
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 from uuid import UUID
+import pytz
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
@@ -211,10 +212,14 @@ class ChatService:
     
     def add_message(self, session_id: UUID, sender_type: str, content: str) -> ChatMessage:
         """메시지 추가"""
+        seoul_tz = pytz.timezone('Asia/Seoul')
+        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+        
         message = ChatMessage(
             session_id=session_id,
             sender_type=sender_type,
-            content=content
+            content=content,
+            created_at=seoul_time
         )
         
         self.db.add(message)

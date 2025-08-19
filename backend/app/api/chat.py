@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
+from datetime import datetime
+import pytz
 
 from ..database import get_db
 from ..services.ai_service import AIService
@@ -405,10 +407,14 @@ async def get_personalized_greeting(
                     
                     if existing_messages == 0:
                         # 첫 번째 assistant 메시지가 없는 경우에만 개인화된 인사 저장
+                        seoul_tz = pytz.timezone('Asia/Seoul')
+                        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+                        
                         greeting_message = ChatMessage(
                             session_id=session_id,
                             sender_type="assistant",
-                            content=greeting
+                            content=greeting,
+                            created_at=seoul_time
                         )
                         db.add(greeting_message)
                         db.commit()

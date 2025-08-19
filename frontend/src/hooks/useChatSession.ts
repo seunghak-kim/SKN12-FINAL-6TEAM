@@ -83,8 +83,8 @@ export const useChatSession = (): UseChatSessionReturn => {
       .then(personalizedGreeting => {
         console.log('createSession - 개인화된 인사 API 응답:', personalizedGreeting);
         if (personalizedGreeting.greeting) {
-          console.log('createSession - 개인화된 인사 설정:', personalizedGreeting.greeting);
-          setGreeting(personalizedGreeting.greeting);
+          console.log('createSession - 개인화된 인사 생성됨, 메시지 로드 예정');
+          // setGreeting() 제거 - 메시지로만 처리하여 중복 표시 방지
           
           // 개인화된 인사가 생성되면 메시지 한 번만 로드
           setTimeout(async () => {
