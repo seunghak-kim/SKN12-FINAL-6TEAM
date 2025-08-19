@@ -54,7 +54,7 @@ class AIService:
             "쾌락형": ("쾌락이", "창의적이고 새로운 경험을 추구하는"),
             "내면형": ("내면이", "깊이 있는 사고와 내적 성장을 중시하는"),
             "추진형": ("추진이", "목표 지향적이고 실행력이 뛰어난"),
-            "관계형": ("관계이", "사람들과의 관계를 중시하는"),
+            "관계형": ("햇살이", "사람들과의 관계를 중시하는"),
             "안정형": ("안정이", "안정감과 균형을 추구하는")
         }
         
@@ -94,7 +94,7 @@ class AIService:
                 "쾌락이": "쾌락형",
                 "내면이": "내면형", 
                 "추진이": "추진형",
-                "관계이": "관계형",
+                "햇살이": "관계형",
                 "안정이": "안정형"
             }
             
@@ -223,8 +223,7 @@ class AIService:
             self.db.add(assistant_msg)
             
             # 세션의 updated_at 업데이트 (가장 최근 대화 시간 반영)
-            from sqlalchemy.sql import func
-            session.updated_at = func.now()
+            session.updated_at = seoul_time
             self.db.add(session)
             
             self.db.commit()

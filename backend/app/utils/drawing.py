@@ -32,7 +32,7 @@ def get_latest_drawing_analysis(user_id: int, db: Session) -> Dict[str, Any]:
         "personality_scores": {
             "추진이": float(result.dog_scores) if result.dog_scores else 0.0,
             "내면이": float(result.cat_scores) if result.cat_scores else 0.0,
-            "관계이": float(result.rabbit_scores) if result.rabbit_scores else 0.0,
+            "햇살이": float(result.rabbit_scores) if result.rabbit_scores else 0.0,
             "쾌락이": float(result.bear_scores) if result.bear_scores else 0.0,
             "안정이": float(result.turtle_scores) if result.turtle_scores else 0.0,
         },

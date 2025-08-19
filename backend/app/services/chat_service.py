@@ -166,10 +166,15 @@ class ChatService:
         
         print(f"사용자 존재: {user_exists}, 페르소나 존재: {persona_exists}")
         
+        seoul_tz = pytz.timezone('Asia/Seoul')
+        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+        
         db_session = ChatSession(
             user_id=session_data.user_id,
             persona_id=session_data.persona_id,
-            session_name=session_data.session_name
+            session_name=session_data.session_name,
+            created_at=seoul_time,
+            updated_at=seoul_time
         )
         
         self.db.add(db_session)
