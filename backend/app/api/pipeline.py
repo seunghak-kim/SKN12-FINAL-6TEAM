@@ -13,6 +13,7 @@ import uuid
 import json
 import asyncio
 from datetime import datetime
+import pytz
 from pathlib import Path
 
 # 내부 모듈
@@ -500,11 +501,14 @@ def save_analysis_result_sync(
         else:
             # 새 결과 생성
             print(f"🆕 새 결과 생성")
+            seoul_tz = pytz.timezone('Asia/Seoul')
+            seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+            
             test_result_data = {
                 'test_id': test_id,
                 'persona_type': persona_type_id,
                 'summary_text': summary_text,
-                'created_at': datetime.now(),
+                'created_at': seoul_time,
                 'dog_scores': persona_scores['dog_scores'],
                 'cat_scores': persona_scores['cat_scores'],
                 'rabbit_scores': persona_scores['rabbit_scores'],
