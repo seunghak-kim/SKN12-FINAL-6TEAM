@@ -31,7 +31,7 @@ class DrawingTestResult(Base):
     turtle_scores = Column(DECIMAL(5,2))
     thumbs_up = Column(Integer)
     thumbs_down = Column(Integer)
-    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    created_at = Column(DateTime, nullable=False)
     
     # 관계 정의
     test = relationship("DrawingTest", back_populates="result")
