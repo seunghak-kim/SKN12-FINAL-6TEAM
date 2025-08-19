@@ -62,6 +62,7 @@ class CORSStaticFiles(StaticFiles):
 
 app.mount("/images", CORSStaticFiles(directory="result/images"), name="images")
 app.mount("/uploads", CORSStaticFiles(directory="uploads"), name="uploads")
+app.mount("/assets", CORSStaticFiles(directory="assets"), name="assets")
 
 # 라우터 등록
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
