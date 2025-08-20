@@ -144,7 +144,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
             <div className="w-full aspect-video">
               <iframe
                 className="w-full h-full rounded-lg shadow-lg"
-                src="https://www.youtube.com/embed/3piNFM7Fwb8?autoplay=1&mute=1&loop=1&playlist=3piNFM7Fwb8&controls=0&showinfo=0&modestbranding=1"
+                src="https://www.youtube.com/watch?v=5rwwYM1B3ZA&ab_channel=MYMOODY?autoplay=1&mute=1&loop=1&playlist=3piNFM7Fwb8&controls=0&showinfo=0&modestbranding=1"
                 title="서비스 시연 영상"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
