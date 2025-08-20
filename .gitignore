@@ -56,7 +56,6 @@ __pycache__/
 
 # ML/AI 관련 파일들
 *.pth
-*.pt
 *.h5
 *.pkl
 *.joblib
