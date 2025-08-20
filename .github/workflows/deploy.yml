@@ -3,7 +3,7 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-      - main
+      #- main 현재 메인 작업으로 메인에서 자동 배포 안되게 설정
       - docker
   workflow_dispatch:
 
@@ -30,8 +30,8 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             cd SKN12-FINAL-6TEAM/
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch origin docker
+            git reset --hard origin/docker
             docker compose down
             docker compose build --no-cache
             docker compose up -d
