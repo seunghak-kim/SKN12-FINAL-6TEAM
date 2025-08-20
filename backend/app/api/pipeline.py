@@ -13,10 +13,7 @@ import uuid
 import json
 import asyncio
 from datetime import datetime
-<<<<<<< HEAD
-=======
 import pytz
->>>>>>> origin/docker
 from pathlib import Path
 
 # 내부 모듈
@@ -229,12 +226,6 @@ async def analyze_drawing_image(
         print(f"✅ 파이프라인 호환성 저장 완료: {pipeline_image_path}")
         
         # 6. 데이터베이스에 테스트 레코드 생성 (원본 이미지 경로 저장)
-<<<<<<< HEAD
-        drawing_test = DrawingTest(
-            user_id=current_user["user_id"],
-            image_url=f"result/images/original/{unique_id}.jpg",  # 원본 이미지 경로
-            submitted_at=datetime.now()
-=======
         seoul_tz = pytz.timezone('Asia/Seoul')
         utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
         seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
@@ -243,7 +234,6 @@ async def analyze_drawing_image(
             user_id=current_user["user_id"],
             image_url=f"result/images/original/{unique_id}.jpg",  # 원본 이미지 경로
             submitted_at=seoul_time
->>>>>>> origin/docker
         )
         
         db.add(drawing_test)
@@ -298,12 +288,8 @@ def run_analysis_pipeline(
     
     try:
         analysis_start_time = time.time()
-<<<<<<< HEAD
-        analysis_start_datetime = datetime.fromtimestamp(analysis_start_time)
-=======
         seoul_tz = pytz.timezone('Asia/Seoul')
         analysis_start_datetime = datetime.fromtimestamp(analysis_start_time, tz=seoul_tz)
->>>>>>> origin/docker
         print(f"🚀 [PERFORMANCE] 백그라운드 분석 시작: {unique_id}")
         print(f"🕐 [PERFORMANCE] 분석 시작시간: {analysis_start_datetime.strftime('%H:%M:%S.%f')[:-3]} ({analysis_start_time:.3f}초)")
         
@@ -313,11 +299,7 @@ def run_analysis_pipeline(
         
         analysis_end_time = time.time()
         analysis_duration = analysis_end_time - analysis_start_time
-<<<<<<< HEAD
-        analysis_end_datetime = datetime.fromtimestamp(analysis_end_time)
-=======
         analysis_end_datetime = datetime.fromtimestamp(analysis_end_time, tz=seoul_tz)
->>>>>>> origin/docker
         print(f"📊 [PERFORMANCE] 파이프라인 실행 완료: {result.status}")
         print(f"🕐 [PERFORMANCE] 분석 완료시간: {analysis_end_datetime.strftime('%H:%M:%S.%f')[:-3]} ({analysis_end_time:.3f}초)")
         print(f"⏱️  [PERFORMANCE] 분석 소요시간: {analysis_duration:.2f}초 ({analysis_duration/60:.1f}분)")
@@ -329,11 +311,7 @@ def run_analysis_pipeline(
         
         total_end_time = time.time() 
         total_duration = total_end_time - analysis_start_time
-<<<<<<< HEAD
-        total_end_datetime = datetime.fromtimestamp(total_end_time)
-=======
         total_end_datetime = datetime.fromtimestamp(total_end_time, tz=seoul_tz)
->>>>>>> origin/docker
         print(f"✅ [PERFORMANCE] 분석 완료 및 저장: {unique_id}")
         print(f"🕐 [PERFORMANCE] 최종 완료시간: {total_end_datetime.strftime('%H:%M:%S.%f')[:-3]} ({total_end_time:.3f}초)")
         print(f"⏱️  [PERFORMANCE] 총 소요시간 (분석+저장): {total_duration:.2f}초 ({total_duration/60:.1f}분)")
@@ -358,22 +336,15 @@ def run_analysis_pipeline(
         
         # 빈 결과로 오류 상태 저장
         try:
-<<<<<<< HEAD
-=======
             seoul_tz = pytz.timezone('Asia/Seoul')
             utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
             seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
             
->>>>>>> origin/docker
             error_result = DrawingTestResult(
                 test_id=test_id,
                 persona_type=None,
                 summary_text=f"분석 중 오류가 발생했습니다: {str(e)}",
-<<<<<<< HEAD
-                created_at=datetime.now()
-=======
                 created_at=seoul_time
->>>>>>> origin/docker
             )
             
             db.add(error_result)
@@ -521,11 +492,6 @@ def save_analysis_result_sync(
         if existing_result:
             # 기존 결과 업데이트
             print(f"🔄 기존 결과 업데이트 - 이전 persona_type: {existing_result.persona_type}")
-<<<<<<< HEAD
-            existing_result.persona_type = persona_type_id
-            existing_result.summary_text = summary_text
-            existing_result.created_at = datetime.now()
-=======
             seoul_tz = pytz.timezone('Asia/Seoul')
             utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
             seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
@@ -533,7 +499,6 @@ def save_analysis_result_sync(
             existing_result.persona_type = persona_type_id
             existing_result.summary_text = summary_text
             existing_result.created_at = seoul_time
->>>>>>> origin/docker
             
             # 확률 점수 업데이트 (안전한 값으로)
             existing_result.dog_scores = persona_scores['dog_scores']
@@ -549,22 +514,15 @@ def save_analysis_result_sync(
         else:
             # 새 결과 생성
             print(f"🆕 새 결과 생성")
-<<<<<<< HEAD
-=======
             seoul_tz = pytz.timezone('Asia/Seoul')
             utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
             seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
             
->>>>>>> origin/docker
             test_result_data = {
                 'test_id': test_id,
                 'persona_type': persona_type_id,
                 'summary_text': summary_text,
-<<<<<<< HEAD
-                'created_at': datetime.now(),
-=======
                 'created_at': seoul_time,
->>>>>>> origin/docker
                 'dog_scores': persona_scores['dog_scores'],
                 'cat_scores': persona_scores['cat_scores'],
                 'rabbit_scores': persona_scores['rabbit_scores'],

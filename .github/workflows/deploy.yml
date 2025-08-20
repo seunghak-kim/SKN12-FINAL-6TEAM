@@ -3,11 +3,7 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-<<<<<<< HEAD
-      #- main 현재 메인 작업으로 메인에서 자동 배포 안되게 설정
-=======
-      - main
->>>>>>> origin/docker
+      #- main
       - docker
   workflow_dispatch:
 
@@ -39,8 +35,4 @@ jobs:
             docker compose down
             docker compose build --no-cache
             docker compose up -d
-<<<<<<< HEAD
             docker system prune -f
-=======
-            docker system prune -f
->>>>>>> origin/docker

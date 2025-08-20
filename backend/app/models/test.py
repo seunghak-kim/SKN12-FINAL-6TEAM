@@ -31,11 +31,7 @@ class DrawingTestResult(Base):
     turtle_scores = Column(DECIMAL(5,2))
     thumbs_up = Column(Integer)
     thumbs_down = Column(Integer)
-<<<<<<< HEAD
-    created_at = Column(DateTime, nullable=False, server_default=func.now())
-=======
     created_at = Column(DateTime, nullable=False)
->>>>>>> origin/docker
     
     # 관계 정의
     test = relationship("DrawingTest", back_populates="result")

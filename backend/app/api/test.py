@@ -51,12 +51,8 @@ async def upload_drawing_image(
         
         # 데이터베이스에 테스트 생성
         seoul_tz = pytz.timezone('Asia/Seoul')
-<<<<<<< HEAD
-        seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
-=======
         utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
         seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
->>>>>>> origin/docker
         
         new_test = DrawingTest(
             user_id=current_user["user_id"],
@@ -206,12 +202,8 @@ async def create_test_result(
         new_result = DrawingTestResult(
             test_id=result_data.test_id,
             persona_type=result_data.persona_type,
-<<<<<<< HEAD
-            summary_text=result_data.summary_text or "분석 결과가 생성되지 않았습니다."
-=======
             summary_text=result_data.summary_text or "분석 결과가 생성되지 않았습니다.",
             created_at=seoul_time
->>>>>>> origin/docker
         )
         
         db.add(new_result)
