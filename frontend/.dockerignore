@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 node_modules
 npm-debug.log*
 yarn-debug.log*
@@ -10,4 +11,18 @@ README.md
 coverage
 .DS_Store
 *.tgz
+=======
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.git
+.gitignore
+README.md
+.env
+.nyc_output
+coverage
+.DS_Store
+*.tgz
+>>>>>>> origin/docker
 .npmrc

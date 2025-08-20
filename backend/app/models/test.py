@@ -10,7 +10,7 @@ class DrawingTest(Base):
     test_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('user_informations.user_id'), nullable=False)
     image_url = Column(String(2048))
-    submitted_at = Column(DateTime, nullable=False, server_default=func.now())
+    submitted_at = Column(DateTime, nullable=False)
     
     # 관계 정의
     user_information = relationship("UserInformation", back_populates="drawing_tests")
@@ -31,7 +31,11 @@ class DrawingTestResult(Base):
     turtle_scores = Column(DECIMAL(5,2))
     thumbs_up = Column(Integer)
     thumbs_down = Column(Integer)
+<<<<<<< HEAD
     created_at = Column(DateTime, nullable=False, server_default=func.now())
+=======
+    created_at = Column(DateTime, nullable=False)
+>>>>>>> origin/docker
     
     # 관계 정의
     test = relationship("DrawingTest", back_populates="result")

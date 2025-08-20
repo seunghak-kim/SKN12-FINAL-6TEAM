@@ -7,6 +7,7 @@ from typing import List
 import os
 import uuid
 from datetime import datetime
+import pytz
 import shutil
 
 # 필요한 경우에만 스키마를 import하도록 주석 처리
@@ -50,7 +51,12 @@ async def upload_drawing_image(
         
         # 데이터베이스에 테스트 생성
         seoul_tz = pytz.timezone('Asia/Seoul')
+<<<<<<< HEAD
         seoul_time = datetime.now(seoul_tz).replace(tzinfo=None)
+=======
+        utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
+>>>>>>> origin/docker
         
         new_test = DrawingTest(
             user_id=current_user["user_id"],
@@ -193,10 +199,19 @@ async def create_test_result(
         }
     else:
         # 새 결과 생성
+        seoul_tz = pytz.timezone('Asia/Seoul')
+        utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        seoul_time = utc_now.astimezone(seoul_tz).replace(tzinfo=None)
+        
         new_result = DrawingTestResult(
             test_id=result_data.test_id,
             persona_type=result_data.persona_type,
+<<<<<<< HEAD
             summary_text=result_data.summary_text or "분석 결과가 생성되지 않았습니다."
+=======
+            summary_text=result_data.summary_text or "분석 결과가 생성되지 않았습니다.",
+            created_at=seoul_time
+>>>>>>> origin/docker
         )
         
         db.add(new_result)
