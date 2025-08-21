@@ -24,7 +24,7 @@
   | :-----------------------------------------------------: | :--------------------------------------------------: | :----------------------------------------------------: | :-------------------------------------------------: | :---------------------------------------------------: |
   | <img src="./assets/img/team/seunghak.jpeg" width="100"> | <img src="./assets/img/team/uiheon.jpg" width="100"> | <img src="./assets/img/team/jeongmin.png" width="100"> | <img src="./assets/img/team/jibok.jpg" width="100"> | <img src="./assets/img/team/seongji.jpg" width="100"> |
   |                  **백엔드** | **데이터 엔지니어** | **PM** | **AI/ML 엔지니어** | **프론트엔드**| 
-  **안정형**                      |                     **내면형**                      |                      **관계형**                          |                      **추진형**                      |                      **쾌락형**       |
+  **내면형**                      |                     **안정형**                      |                      **관계형**                          |                      **추진형**                      |                      **쾌락형**       |
 
   ## 📅 WBS (2025년 6월 30일 ~ 8월 21일)
   <p align="center">
@@ -174,18 +174,18 @@
   ## ⚙️ 시스템 아키텍처
 
   <p align="center">
-    <img src="./assets/img/architecture.jpg" width="60%">
+    <img src="./assets/img/architecture1.jpg" width="60%">
   </p>
 
 
   ## 🖥️화면 구성
 
   <p align="center">
-    <img src="./assets/img/main.png"  style="margin: 10px;">
-    <img src="./assets/img/upload.png" style="margin: 10px;"><br>
-    <img src="./assets/img/result.png"  style="margin: 10px;">
-    <img src="./assets/img/chatbot.png" style="margin: 10px;">
-    <img src="./assets/img/mypage.png" style="margin: 10px;">
+    <img src="./assets/img/main.png"  style="margin: 10px;"width="70%">
+    <img src="./assets/img/upload.png" style="margin: 10px;" width="70%"><br>
+    <img src="./assets/img/result.png"  style="margin: 10px;"width="70%">
+    <img src="./assets/img/chatbot.png" style="margin: 10px;"width="70%">
+    <img src="./assets/img/mypage.png" style="margin: 10px;"width="70%">
   </p>
 
 
@@ -197,8 +197,14 @@
     <img src="./assets/img/baepo.png">
   </p>
 
+- QR 접속
 
-  ### 🔄 배포 프로세스
+  <p align="center">
+    <img src="./assets/img/QR.jpeg" width="30%">
+  </p>
+
+
+### 🔄 배포 프로세스
 
   #### 1. 서버 준비
   ```bash
