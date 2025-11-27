@@ -39,7 +39,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     // 컴포넌트 언마운트 시 정리
     return () => {
       document.body.style.overflow = 'unset';
@@ -53,11 +53,11 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   // 결과 카드를 이미지로 저장
   const handleSaveAsImage = async () => {
     if (!resultCardRef.current) return;
-    
+
     try {
       // html2canvas 동적 import
       const html2canvas = await import('html2canvas');
-      
+
       const canvas = await html2canvas.default(resultCardRef.current, {
         background: '#0F103F',
         logging: false,
@@ -67,11 +67,11 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           return element.classList.contains('exclude-from-image');
         }
       });
-      
+
       // 캔버스를 blob으로 변환
       canvas.toBlob((blob: Blob | null) => {
         if (!blob) return;
-        
+
         // 다운로드 링크 생성
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -84,7 +84,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }, 'image/png');
-      
+
     } catch (error) {
       console.error('이미지 저장 중 오류가 발생했습니다:', error);
       alert('이미지 저장에 실패했습니다. 다시 시도해주세요.');
@@ -92,11 +92,11 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   };
 
   // thumbs up/down 피드백 처리
-  const handleThumbsFeedback = async (feedbackType: 'like' | 'dislike') => {    
+  const handleThumbsFeedback = async (feedbackType: 'like' | 'dislike') => {
     try {
       // testData 구조 확인
       const testId = testData?.test_id || testData?.testId || testData?.id;
-      
+
       if (testId) {
         await testService.updateThumbsFeedback(testId, feedbackType);
         setSatisfaction(feedbackType);
@@ -105,7 +105,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         // testId가 없어도 UI는 업데이트
         setSatisfaction(feedbackType);
       }
-      
+
       // 3초 후 메시지 자동 사라짐
       setTimeout(() => {
         setSatisfaction(null);
@@ -114,7 +114,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       console.error('피드백 전송 실패:', error);
       // 에러가 발생해도 UI는 업데이트 (사용자 경험 향상)
       setSatisfaction(feedbackType);
-      
+
       // 3초 후 메시지 자동 사라짐
       setTimeout(() => {
         setSatisfaction(null);
@@ -127,7 +127,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   const getCharacterName = (personalityType: string) => {
     const typeToCharacter: { [key: string]: string } = {
       '추진형': '추진이',
-      '내면형': '내면이', 
+      '내면형': '내면이',
       '관계형': '햇살이',
       '쾌락형': '쾌락이',
       '안정형': '안정이'
@@ -135,17 +135,17 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     return typeToCharacter[personalityType];
   };
 
-// 확률 값에 따른 색상 가져오기
-const getColorForType = (type: string) => {
-  const colorMap: { [key: string]: string } = {
-    '추진형': 'from-[#DC143C] to-[#FF6347]',
-    '쾌락형': 'from-[#FF6347] to-[#E6B800]',
-    '안정형': 'from-[#E6B800] to-[#3CB371]',
-    '내면형': 'from-[#3CB371] to-[#6495ED]',
-    '관계형': 'from-[#6495ED] to-[#9932CC]'
+  // 확률 값에 따른 색상 가져오기
+  const getColorForType = (type: string) => {
+    const colorMap: { [key: string]: string } = {
+      '추진형': 'from-[#DC143C] to-[#FF6347]',
+      '쾌락형': 'from-[#FF6347] to-[#E6B800]',
+      '안정형': 'from-[#E6B800] to-[#3CB371]',
+      '내면형': 'from-[#3CB371] to-[#6495ED]',
+      '관계형': 'from-[#6495ED] to-[#9932CC]'
+    };
+    return colorMap[type];
   };
-  return colorMap[type];
-};
 
   // 확률 값에 따른 캐릭터 이미지 가져오기
   const getCharacterImageForType = (type: string) => {
@@ -161,19 +161,19 @@ const getColorForType = (type: string) => {
 
   // TestInstructionPage에서 전달받은 데이터 처리
   useEffect(() => {
-    const stateData = location.state as { 
-      testId: number | null; 
-      imageUrl?: string; 
-      error?: boolean; 
+    const stateData = location.state as {
+      testId: number | null;
+      imageUrl?: string;
+      error?: boolean;
       errorMessage?: string;
       fromPipeline?: boolean;
     } | null;
-    
+
     if (stateData?.error) {
       // 분석 실패 시 0% 데이터 표시
       setTestData({ testId: null, error: true, errorMessage: stateData.errorMessage });
       setAnalysisResult(stateData.errorMessage || '분석 중 오류가 발생했습니다.');
-      
+
       // 모든 페르소나를 0%로 설정
       setProbabilities({
         '추진형': 0,
@@ -205,10 +205,10 @@ const getColorForType = (type: string) => {
       } catch (error) {
         console.error('테스트 정보 가져오기 실패:', error);
       }
-      
+
       // 2. 분석 상태 조회하여 파이프라인 결과 가져오기
       const pipelineData = await fetchAnalysisStatus(testId);
-      
+
       // 3. 그 다음 DB에 저장 (파이프라인 데이터를 직접 전달)  
       await createTestResult(testId, pipelineData);
     } catch (error) {
@@ -218,17 +218,11 @@ const getColorForType = (type: string) => {
 
   const fetchAnalysisStatus = async (testId: number) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`}/api/v1/pipeline/analysis-status/${testId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        
+      const data = await testService.getAnalysisStatus(testId.toString());
+
+      if (data) {
+
+
         if (data.status === 'completed' && data.result) {
           // API에서 직접 확률 데이터 가져오기
           const probabilities = data.result.probabilities;
@@ -237,21 +231,21 @@ const getColorForType = (type: string) => {
             // 실제 성격 유형 업데이트
             const mainType = getMainPersonalityType(probabilities);
             if (mainType) {
-            setActualPersonalityType(mainType);
-            // 캐릭터 이름으로 변환해서 useAppState에 반영
-            const characterName = getCharacterName(mainType);
-            updateTestResult(characterName);
+              setActualPersonalityType(mainType);
+              // 캐릭터 이름으로 변환해서 useAppState에 반영
+              const characterName = getCharacterName(mainType);
+              updateTestResult(characterName);
             }
           } else {
             console.warn('Warning 확률 데이터가 비어있음');
           }
-          
+
           // result_text가 있으면 분석 결과 업데이트
           if (data.result.result_text || data.result.summary_text) {
-            const analysisText = data.result.result_text || data.result.summary_text;
+            const analysisText = data.result.result_text || data.result.summary_text || '';
             setAnalysisResult(analysisText);
           }
-          
+
           // 이미지 URL 업데이트 (API 응답에 image_url이 있는 경우)
           if (data.result.image_url || data.image_url) {
             setTestData((prev: any) => ({
@@ -259,7 +253,7 @@ const getColorForType = (type: string) => {
               imageUrl: data.result.image_url || data.image_url
             }));
           }
-          
+
           // 파이프라인 데이터 반환 (createTestResult에 전달용)
           return {
             predicted_personality: data.result.predicted_personality,
@@ -269,23 +263,18 @@ const getColorForType = (type: string) => {
             analysis_method: data.result.analysis_method
           };
         }
-        
+
         return data; // 진행 중이나 다른 상태인 경우
-      } else {
-        console.error('분석 상태 조회 실패:', response.status, response.statusText);
-        return null;
       }
     } catch (error) {
       console.error('분석 상태 조회 오류:', error);
       return null;
     }
-    
-    return null; // 기본 반환값
   };
 
   const createTestResult = async (testId: number, pipelineData?: any) => {
     setIsCreatingResult(true);
-        
+
     try {
       // 파이프라인 데이터 직접 사용 (state에 의존하지 않음)
       const predictedPersonality = pipelineData?.predicted_personality || actualPersonalityType;
@@ -299,37 +288,31 @@ const getColorForType = (type: string) => {
         '쾌락형': 4,
         '안정형': 5
       };
-      const finalPersonaType = pipelinePersonaType || personalityMapping[predictedPersonality] || 2;      
-      const response = await fetch(`${process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`}/api/v1/test/drawing-test-results`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify({
+      const finalPersonaType = pipelinePersonaType || personalityMapping[predictedPersonality] || 2;
+
+      try {
+        const response = await testService.createDrawingTestResult({
           test_id: testId,
           persona_type: finalPersonaType
           // summary_text 제거: 파이프라인에서 이미 상세한 분석 결과 저장됨
-        })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API 에러 응답:', errorData);
-        // 파이프라인 결과 텍스트를 사용
-        if (pipelineData?.result_text) {
-          setAnalysisResult(pipelineData.result_text);
-        }
-      } else {
-        await response.json();
+        });
+
+        console.log('Drawing test result created:', response);
+
         // 파이프라인 결과 텍스트를 사용
         if (pipelineData?.result_text) {
           setAnalysisResult(pipelineData.result_text);
         } else {
           console.warn('Warning pipelineData.result_text가 비어있음');
         }
+      } catch (apiError) {
+        console.error('API 호출 실패:', apiError);
+        // API 호출 실패해도 파이프라인 결과는 표시
+        if (pipelineData?.result_text) {
+          setAnalysisResult(pipelineData.result_text);
+        }
       }
-      
+
     } catch (error) {
       console.error('테스트 결과 생성 실패:', error);
       // 에러가 있어도 테스트 결과는 표시
@@ -353,14 +336,14 @@ const getColorForType = (type: string) => {
       '쾌락형': 4,
       '안정형': 5
     };
-    
+
     const character: SearchResult = {
       id: personalityMapping[personalityType]?.toString() || "2",
       name: getCharacterName(personalityType),
       description: analysisResult || "분석 결과를 바탕으로 대화해보세요.",
       avatar: getCharacterImageForType(personalityType)
     };
-    
+
     onCharacterSelect(character);
     // 새로운 캐릭터와의 대화 시작이므로 기존 세션 정보 삭제
     localStorage.removeItem('lastChatSession');
@@ -373,9 +356,9 @@ const getColorForType = (type: string) => {
     if (!probabilities || Object.keys(probabilities).length === 0) {
       return null;
     }
-    
+
     return Object.entries(probabilities)
-      .sort(([,a], [,b]) => b - a)[0][0];
+      .sort(([, a], [, b]) => b - a)[0][0];
   };
 
   // 주 성격 유형의 확률 값 가져오기
@@ -406,7 +389,7 @@ const getColorForType = (type: string) => {
       <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full opacity-30 blur-2xl"></div>
 
       <div className="relative z-10 container mx-auto px-8 py-8">
-      
+
         {/* Main result card */}
         <div className="max-w-4xl mx-auto mb-8">
           <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
@@ -416,13 +399,13 @@ const getColorForType = (type: string) => {
               <div className="flex items-center justify-center space-x-8 mb-6">
                 {/* 왼쪽: 캐릭터 */}
                 {actualPersonalityType ? (
-                <div className={`w-32 h-32 ${getColorForType(actualPersonalityType)} flex items-center justify-center flex-shrink-0 overflow-hidden`}>
-                  <img 
-                    src={getCharacterImageForType(actualPersonalityType)} 
-                    alt={getCharacterName(actualPersonalityType)}
-                    className="w-32 h-32 object-cover"
-                  />
-                </div>
+                  <div className={`w-32 h-32 ${getColorForType(actualPersonalityType)} flex items-center justify-center flex-shrink-0 overflow-hidden`}>
+                    <img
+                      src={getCharacterImageForType(actualPersonalityType)}
+                      alt={getCharacterName(actualPersonalityType)}
+                      className="w-32 h-32 object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="w-32 h-32 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-gray-600 text-xs">분석 중...</span>
@@ -455,12 +438,15 @@ const getColorForType = (type: string) => {
                 <div className="flex-shrink-0">
                   {testData?.imageUrl ? (
                     <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
-                      <img 
-                        src={testService.getImageUrl(testData.imageUrl)} 
-                        alt="분석된 그림" 
+                      <img
+                        src={testService.getImageUrl(testData.imageUrl) || "/placeholder.svg"}
+                        alt="분석된 그림"
                         className="w-32 h-32 object-contain rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
                         onLoad={() => console.log('✅ 이미지 로드 성공:', testService.getImageUrl(testData.imageUrl))}
-                        onError={() => console.error('❌ 이미지 로드 실패:', testService.getImageUrl(testData.imageUrl))}
+                        onError={(e) => {
+                          console.error('❌ 이미지 로드 실패:', testService.getImageUrl(testData.imageUrl));
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-opacity duration-200 flex items-center justify-center">
                         <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium transition-opacity duration-200">
@@ -470,18 +456,18 @@ const getColorForType = (type: string) => {
                     </div>
                   ) : (
                     (() => {
-                      const imageUrl = testData?.image_url || testData?.imageUrl;                      
+                      const imageUrl = testData?.image_url || testData?.imageUrl;
                       if (imageUrl) {
-                        const fullImageUrl = testService.getImageUrl(imageUrl);                        
+                        const fullImageUrl = testService.getImageUrl(imageUrl);
                         return (
                           <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
-                            <img 
-                              src={fullImageUrl}
+                            <img
+                              src={fullImageUrl || "/placeholder.svg"}
                               alt="분석한 그림"
                               className="w-32 h-32 object-contain rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
                               onError={(e) => {
                                 console.error('❌ 오른쪽 이미지 로드 실패:', fullImageUrl);
-                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.src = "/placeholder.svg";
                               }}
                             />
                             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-opacity duration-200 flex items-center justify-center">
@@ -517,12 +503,12 @@ const getColorForType = (type: string) => {
               </div>
 
               {actualPersonalityType ? (
-              <Button
-                onClick={() => handlePersonalityClick(actualPersonalityType)}
-                className="exclude-from-image w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium"
-              >
-                {getCharacterName(actualPersonalityType)}와 대화하기
-              </Button>
+                <Button
+                  onClick={() => handlePersonalityClick(actualPersonalityType)}
+                  className="exclude-from-image w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-full font-medium"
+                >
+                  {getCharacterName(actualPersonalityType)}와 대화하기
+                </Button>
               ) : (
                 <Button
                   disabled
@@ -541,27 +527,25 @@ const getColorForType = (type: string) => {
                   <div className="flex items-center justify-between">
                     <h3 className="text-white text-lg font-bold">나와 매칭된 결과가 마음에 드시나요?</h3>
                     <div className="flex space-x-1">
-                    <button
-                      onClick={() => handleThumbsFeedback("like")}
-                      className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
-                        satisfaction === "like"
+                      <button
+                        onClick={() => handleThumbsFeedback("like")}
+                        className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${satisfaction === "like"
                           ? "bg-green-500 text-white shadow-lg scale-110"
                           : "bg-white/20 text-white/70 hover:bg-white/30 hover:scale-105"
-                      }`}
-                    >
-                      <ThumbsUp size={20} />
-                    </button>
-                    <button
-                      onClick={() => handleThumbsFeedback("dislike")}
-                      className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
-                        satisfaction === "dislike"
+                          }`}
+                      >
+                        <ThumbsUp size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleThumbsFeedback("dislike")}
+                        className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${satisfaction === "dislike"
                           ? "bg-red-500 text-white shadow-lg scale-110"
                           : "bg-white/20 text-white/70 hover:bg-white/30 hover:scale-105"
-                      }`}
-                    >
-                      <ThumbsDown size={20} />
-                    </button>
-                  </div>
+                          }`}
+                      >
+                        <ThumbsDown size={20} />
+                      </button>
+                    </div>
                   </div>
                   {satisfaction && (
                     <div className="mt-3 text-center">
@@ -571,7 +555,7 @@ const getColorForType = (type: string) => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* 저장 버튼 박스 */}
                 <div className="flex-[1] bg-slate-700/60 backdrop-blur-lg rounded-r-2xl p-4 border border-white/20 shadow-2xl border-l-0">
                   <div className="flex items-center justify-center h-full space-x-3">
@@ -587,47 +571,47 @@ const getColorForType = (type: string) => {
               </div>
             </div>
 
-            </div>
           </div>
+        </div>
 
 
         {/* Other character options */}
         {getOtherPersonalities().length > 0 && (
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-slate-700/60 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
-            <h2 className="text-white text-xl font-bold text-center mb-8">다른 페르소나 결과</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {getOtherPersonalities().map((personality) => (
-                <div
-                  key={personality.type}
-                  className="bg-slate-600/60 rounded-2xl p-6 text-center backdrop-blur-sm border border-white/10 hover:bg-slate-600/70 transition-all duration-300"
-                >
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-slate-700/60 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
+              <h2 className="text-white text-xl font-bold text-center mb-8">다른 페르소나 결과</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {getOtherPersonalities().map((personality) => (
                   <div
-                    className={`w-24 h-24 ${getColorForType(personality.type)} flex items-center justify-center mx-auto mb-4 overflow-hidden`}
+                    key={personality.type}
+                    className="bg-slate-600/60 rounded-2xl p-6 text-center backdrop-blur-sm border border-white/10 hover:bg-slate-600/70 transition-all duration-300"
                   >
-                    <img 
-                      src={getCharacterImageForType(personality.type)} 
-                      alt={getCharacterName(personality.type)}
-                      className="w-26 h-26 object-cover"
-                    />
+                    <div
+                      className={`w-24 h-24 ${getColorForType(personality.type)} flex items-center justify-center mx-auto mb-4 overflow-hidden`}
+                    >
+                      <img
+                        src={getCharacterImageForType(personality.type)}
+                        alt={getCharacterName(personality.type)}
+                        className="w-26 h-26 object-cover"
+                      />
+                    </div>
+                    <h3 className="text-white font-bold mb-2">{getCharacterName(personality.type)}</h3>
+                    <p className="text-white/70 text-sm mb-1">나와 {personality.probability}%만큼</p>
+                    <p className="text-white/70 text-sm mb-4">가까워요!</p>
+                    <Button
+                      onClick={() => handlePersonalityClick(personality.type)}
+                      className={`w-full bg-gradient-to-r ${getColorForType(personality.type)} hover:opacity-90 text-white py-2 px-4 rounded-full text-sm font-medium shadow-lg transition-all duration-300`}
+                    >
+                      {getCharacterName(personality.type)}와 대화하기
+                    </Button>
                   </div>
-                  <h3 className="text-white font-bold mb-2">{getCharacterName(personality.type)}</h3>
-                  <p className="text-white/70 text-sm mb-1">나와 {personality.probability}%만큼</p>
-                  <p className="text-white/70 text-sm mb-4">가까워요!</p>
-                  <Button
-                    onClick={() => handlePersonalityClick(personality.type)}
-                    className={`w-full bg-gradient-to-r ${getColorForType(personality.type)} hover:opacity-90 text-white py-2 px-4 rounded-full text-sm font-medium shadow-lg transition-all duration-300`}
-                  >
-                    {getCharacterName(personality.type)}와 대화하기
-                  </Button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
         )}
 
-      <style>{`
+        <style>{`
         @keyframes fade-in {
           from {
             opacity: 0;
@@ -642,11 +626,11 @@ const getColorForType = (type: string) => {
           animation: fade-in 0.5s ease-out;
         }
       `}</style>
-    
+
 
         {/* 이미지 모달 - Portal로 body에 직접 렌더링 */}
         {showImageModal && testData?.imageUrl && createPortal(
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
             style={{ zIndex: 999999 }}
             onClick={() => setShowImageModal(false)}
@@ -662,11 +646,15 @@ const getColorForType = (type: string) => {
               >
                 ✕
               </button>
-              <img 
-                src={testService.getImageUrl(testData.imageUrl)}
+              <img
+                src={testService.getImageUrl(testData.imageUrl) || "/placeholder.svg"}
                 alt="분석된 그림 확대보기"
                 className="max-w-full max-h-full object-contain rounded-lg"
                 onClick={(e) => e.stopPropagation()}
+                onError={(e) => {
+                  console.error('❌ 모달 이미지 로드 실패:', testService.getImageUrl(testData.imageUrl));
+                  e.currentTarget.src = "/placeholder.svg";
+                }}
               />
             </div>
           </div>,

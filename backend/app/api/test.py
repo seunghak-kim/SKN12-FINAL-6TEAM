@@ -329,6 +329,79 @@ async def debug_table_status(db: Session = Depends(get_db)):
     except Exception as e:
         return {"error": str(e)}
 
+@router.get("/drawing-test-results/{test_id}/detail")
+async def get_test_result_detail(
+    test_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """특정 테스트의 상세 결과 조회 (본인 또는 관리자만 가능)"""
+    
+    # 테스트 조회
+    test = db.query(DrawingTest).filter(DrawingTest.test_id == test_id).first()
+    
+    if not test:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="테스트를 찾을 수 없습니다."
+        )
+        
+    # 권한 확인 (본인 또는 관리자)
+    is_owner = test.user_id == current_user["user_id"]
+    is_admin = False
+    
+    if not is_owner:
+        # 관리자 권한 확인
+        from app.models.user import UserInformation
+        user_info = db.query(UserInformation).filter(UserInformation.user_id == current_user["user_id"]).first()
+        if user_info and user_info.role == 'ADMIN':
+            is_admin = True
+            
+    if not is_owner and not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="접근 권한이 없습니다."
+        )
+        
+    # 응답 데이터 구성
+    test_data = {
+        "test_id": test.test_id,
+        "user_id": test.user_id,
+        "image_url": test.image_url,
+        "submitted_at": test.submitted_at,
+        "result": None
+    }
+    
+    # 결과가 있다면 포함
+    if test.result:
+        # DB의 *_scores를 personality_scores로 변환
+        personality_scores = {
+            "추진이": float(test.result.dog_scores) if test.result.dog_scores else 0.0,
+            "내면이": float(test.result.cat_scores) if test.result.cat_scores else 0.0,
+            "햇살이": float(test.result.rabbit_scores) if test.result.rabbit_scores else 0.0,
+            "쾌락이": float(test.result.bear_scores) if test.result.bear_scores else 0.0,
+            "안정이": float(test.result.turtle_scores) if test.result.turtle_scores else 0.0,
+        }
+        
+        test_data["result"] = {
+            "result_id": test.result.result_id,
+            "persona_type": test.result.persona_type,
+            "summary_text": test.result.summary_text,
+            "created_at": test.result.created_at,
+            "personality_scores": personality_scores,
+            "persona_info": None
+        }
+        
+        # 페르소나 정보도 포함
+        if test.result.persona:
+            test_data["result"]["persona_info"] = {
+                "persona_id": test.result.persona.persona_id,
+                "name": test.result.persona.name,
+                "description": test.result.persona.description
+            }
+            
+    return test_data
+
 @router.get("/drawing-test-results/{result_id}")
 async def get_test_result(result_id: int, db: Session = Depends(get_db)):
     """특정 테스트 결과 조회"""
@@ -447,4 +520,5 @@ async def delete_drawing_test(
         "message": "테스트가 성공적으로 삭제되었습니다.",
         "test_id": test_id
     }
+
 

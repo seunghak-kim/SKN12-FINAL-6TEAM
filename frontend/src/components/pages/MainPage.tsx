@@ -8,10 +8,23 @@ interface MainPageProps {
   onNavigate?: (screen: string) => void;
 }
 
+import { authService } from '../../services/authService';
+
 const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const user = await authService.getCurrentUser();
+      if (user && user.role === 'ADMIN') {
+        setIsAdmin(true);
+      }
+    };
+    checkAdminStatus();
+  }, []);
 
   // URL 파라미터 확인하여 자동으로 동의서 팝업 표시
   useEffect(() => {
@@ -105,7 +118,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
 
       <div className="relative z-10 container mx-auto px-8 py-16">
 
-      {/* Hero Section */}
+        {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-full mr-4 opacity-80"></div>
@@ -133,12 +146,24 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
           >
             그림검사 시작하기
           </Button>
+
+          {/* Admin Dashboard Button */}
+          {isAdmin && (
+            <div className="mt-4">
+              <Button
+                onClick={() => navigate('/admin/dashboard')}
+                className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-full text-sm font-medium shadow-lg transition-all duration-300 border border-gray-600"
+              >
+                관리자 대시보드
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* About Service Section */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-12">About Service</h2>
-          
+
           {/* Demo Video Section */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-2xl mx-auto mb-12 shadow-xl">
             <div className="w-full aspect-video">
@@ -182,7 +207,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Service Card 3 */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl">
               <div className="w-48 h-48 mx-auto mb-6 flex items-center justify-center">
                 <img src="/assets/frame3.png" alt="맞춤형 상담" className="w-full h-full object-contain" />
               </div>
@@ -223,7 +248,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
           </div>
         </footer>
       </div>
-    </div>
+    </div >
   );
 };
 

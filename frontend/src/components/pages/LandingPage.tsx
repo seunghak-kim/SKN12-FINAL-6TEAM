@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../services/authService"
 import { Button } from "../../components/ui/button"
@@ -10,6 +10,11 @@ type LandingPageProps = {}
 
 const LandingPage: React.FC<LandingPageProps> = () => {
   const navigate = useNavigate()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [nickname, setNickname] = useState("")
+  const [isSignupMode, setIsSignupMode] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     // URL에서 토큰 확인 (Google OAuth 콜백에서 전달됨)
@@ -76,7 +81,7 @@ const LandingPage: React.FC<LandingPageProps> = () => {
       const clientId =
         process.env.REACT_APP_GOOGLE_CLIENT_ID ||
         "689738363605-i65c3ar97vnts2jeh648dj3v9b23njq4.apps.googleusercontent.com"
-        
+
       const redirectUri = process.env.REACT_APP_GOOGLE_REDIRECT_URI || "http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/auth/google/callback"
 
       const scope = "openid email profile"
@@ -102,8 +107,49 @@ const LandingPage: React.FC<LandingPageProps> = () => {
     }
   }
 
+  const handleLocalLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !password) {
+      alert("이메일과 비밀번호를 입력해주세요.")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await authService.login(email, password)
+      if (response) {
+        navigate("/main")
+      }
+    } catch (error: any) {
+      alert(error.message || "로그인에 실패했습니다.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !password || !nickname) {
+      alert("모든 필드를 입력해주세요.")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await authService.signup(email, password, nickname)
+      if (response) {
+        alert("회원가입이 완료되었습니다!")
+        navigate("/main")
+      }
+    } catch (error: any) {
+      alert(error.message || "회원가입에 실패했습니다.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden flex flex-col md:flex-row">
       {/* Custom floating animation styles */}
       <style>
         {`
@@ -156,68 +202,113 @@ const LandingPage: React.FC<LandingPageProps> = () => {
       <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-pink-400 to-orange-500 rounded-full opacity-20 blur-xl"></div>
       <div className="absolute top-1/2 left-10 w-24 h-24 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full opacity-30 blur-lg"></div>
 
-      {/* Orbital rings
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-96 h-96 border border-cyan-400/20 rounded-full"></div>
-        <div className="absolute w-96 h-96 border border-purple-400/10 rounded-full"></div>
-        <div className="absolute w-96 h-96 border border-pink-400/10 rounded-full"></div>
-      </div> */}
-
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-8">
+      {/* Left Side: Introduction & Characters */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8 z-10">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">그림을 그리고</h1>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">당신의 심리를 확인해보세요</h2>
         </div>
 
         {/* Animal characters with floating animation */}
-        <div className="flex items-center justify-center mb-12 space-x-6">
-          <div className="w-[210px] h-[210px] flex-shrink-0 flex items-center justify-center float-1">
-            <img
-              src="/assets/persona/추진이.png"
-              alt="추진이"
-              className="w-full h-full object-contain drop-shadow-lg"
-            />
+        <div className="flex items-center justify-center space-x-4 flex-wrap gap-y-4">
+          <div className="w-[150px] h-[150px] flex-shrink-0 flex items-center justify-center float-1">
+            <img src="/assets/persona/추진이.png" alt="추진이" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
-          <div className="w-[210px] h-[210px] flex-shrink-0 flex items-center justify-center float-2">
-            <img
-              src="/assets/persona/쾌락이.png"
-              alt="쾌락이"
-              className="w-full h-full object-contain drop-shadow-lg"
-            />
+          <div className="w-[150px] h-[150px] flex-shrink-0 flex items-center justify-center float-2">
+            <img src="/assets/persona/쾌락이.png" alt="쾌락이" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
-          <div className="w-[210px] h-[210px] flex-shrink-0 flex items-center justify-center float-3">
-            <img
-              src="/assets/persona/안정이.png"
-              alt="안정이"
-              className="w-full h-full object-contain drop-shadow-lg"
-            />
+          <div className="w-[150px] h-[150px] flex-shrink-0 flex items-center justify-center float-3">
+            <img src="/assets/persona/안정이.png" alt="안정이" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
-          <div className="w-[210px] h-[210px] flex-shrink-0 flex items-center justify-center float-4">
-            <img
-              src="/assets/persona/내면이.png"
-              alt="내면이"
-              className="w-full h-full object-contain drop-shadow-lg"
-            />
+          <div className="w-[150px] h-[150px] flex-shrink-0 flex items-center justify-center float-4">
+            <img src="/assets/persona/내면이.png" alt="내면이" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
-          <div className="w-[210px] h-[210px] flex-shrink-0 flex items-center justify-center float-5">
-            <img
-              src="/assets/persona/햇살이.png"
-              alt="햇살이"
-              className="w-full h-full object-contain drop-shadow-lg"
-            />
+          <div className="w-[150px] h-[150px] flex-shrink-0 flex items-center justify-center float-5">
+            <img src="/assets/persona/햇살이.png" alt="햇살이" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
         </div>
+      </div>
 
-        {/* Google login button */}
-        <Button
-          onClick={handleGoogleLogin}
-          className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-12 py-4 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center"
-        >
-          <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center mr-3">
-            <img src="/assets/google-logo.jpg" alt="Google" className="w-4 h-4 object-contain" />
+      {/* Right Side: Login/Signup Form */}
+      <div className="flex-1 flex items-center justify-center p-8 z-10 bg-black/20 backdrop-blur-sm md:min-h-screen">
+        <div className="w-full max-w-md bg-white/10 p-8 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20">
+          <h2 className="text-3xl font-bold text-white mb-6 text-center">
+            {isSignupMode ? "회원가입" : "로그인"}
+          </h2>
+
+          <form onSubmit={isSignupMode ? handleSignup : handleLocalLogin} className="space-y-4">
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">이메일</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="example@email.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">비밀번호</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="********"
+                required
+              />
+            </div>
+
+            {isSignupMode && (
+              <div>
+                <label className="block text-white text-sm font-medium mb-2">닉네임</label>
+                <input
+                  type="text"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  placeholder="닉네임을 입력하세요"
+                  required
+                />
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-lg font-bold shadow-lg transition-all duration-300"
+            >
+              {isLoading ? "처리중..." : (isSignupMode ? "가입하기" : "로그인")}
+            </Button>
+          </form>
+
+          <div className="mt-6 flex items-center justify-between">
+            <div className="h-px bg-white/30 flex-1"></div>
+            <span className="text-white/50 px-4 text-sm">또는</span>
+            <div className="h-px bg-white/30 flex-1"></div>
           </div>
-          구글 로그인으로 시작하기
-        </Button>
+
+          <div className="mt-6">
+            <Button
+              onClick={handleGoogleLogin}
+              className="w-full bg-white hover:bg-gray-100 text-gray-800 py-3 rounded-lg font-bold shadow-lg transition-all duration-300 flex items-center justify-center"
+            >
+              <img src="/assets/google-logo.jpg" alt="Google" className="w-5 h-5 mr-3" />
+              구글로 계속하기
+            </Button>
+          </div>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setIsSignupMode(!isSignupMode)}
+              className="text-white/80 hover:text-white underline text-sm transition-colors"
+            >
+              {isSignupMode ? "이미 계정이 있으신가요? 로그인" : "계정이 없으신가요? 회원가입"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

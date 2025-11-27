@@ -3,6 +3,7 @@ import sys
 import json
 import logging
 import traceback
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Any
@@ -57,25 +58,26 @@ class PipelineConfig:
     max_retries: int = 3
 
 
-@dataclass 
+@dataclass
 class PipelineResult:
     """파이프라인 실행 결과"""
     status: PipelineStatus
     image_base: str
     timestamp: datetime
-    
+
     # 각 단계별 결과
     detection_success: bool = False
     analysis_success: bool = False
     classification_success: bool = False
-    
+
     # 결과 데이터
     detected_objects: Optional[Dict] = None
     psychological_analysis: Optional[Dict] = None
     personality_type: Optional[str] = None
     confidence_score: Optional[float] = None
     keyword_analysis: Optional[Dict] = None  # 키워드 분석 결과 직접 저장
-    
+    analyzed_image_url: Optional[str] = None  # YOLO 탐지 결과 이미지 URL
+
     # 오류 정보
     error_message: Optional[str] = None
     error_stage: Optional[str] = None
@@ -91,9 +93,12 @@ class HTPAnalysisPipeline:
         Args:
             config: 파이프라인 설정. None이면 기본 설정 사용
         """
+        print("HTPAnalysisPipeline 초기화 시작")
         self.config = config or self._create_default_config()
         self.logger = self._setup_logging()
+        self._status_cache = {}  # 상태 캐싱을 위한 딕셔너리
         self._validate_environment()
+        print("HTPAnalysisPipeline 초기화 완료")
     
     def _create_default_config(self) -> PipelineConfig:
         """기본 설정 생성"""
@@ -215,6 +220,20 @@ class HTPAnalysisPipeline:
             if detection_image_path.exists():
                 result.detection_success = True
                 result.detected_objects = {"detection_image": str(detection_image_path)}
+
+                # YOLO 탐지 결과 이미지를 result/images/analyzed/ 디렉토리로 복사
+                analyzed_dir = Path("result/images/analyzed")
+                analyzed_dir.mkdir(parents=True, exist_ok=True)
+                analyzed_image_dest = analyzed_dir / f"{result.image_base}.jpg"
+
+                try:
+                    shutil.copy2(detection_image_path, analyzed_image_dest)
+                    # 상대 경로로 URL 저장 (nginx가 /images/에서 서빙)
+                    result.analyzed_image_url = f"result/images/analyzed/{result.image_base}.jpg"
+                    self.logger.info(f"분석 이미지 복사 완료: {analyzed_image_dest}")
+                except Exception as e:
+                    self.logger.warning(f"분석 이미지 복사 실패: {e}")
+
                 self.logger.info(f"객체 탐지 완료: {detection_image_path}")
                 return True
             else:
@@ -393,11 +412,12 @@ class HTPAnalysisPipeline:
     
 
     
-    def analyze_image(self, image_input: str) -> PipelineResult:
+    def analyze_image(self, image_input: str, ui_wait: bool = False) -> PipelineResult:
         """이미지 분석 전체 파이프라인 실행
         
         Args:
             image_input: 이미지 파일명 또는 경로
+            ui_wait: UI 표시를 위한 인위적인 대기 시간 사용 여부 (API 사용 시 False 권장)
             
         Returns:
             PipelineResult: 분석 결과
@@ -416,6 +436,16 @@ class HTPAnalysisPipeline:
             image_base=image_base,
             timestamp=datetime.now()
         )
+        
+        # 초기 상태 캐싱
+        self._status_cache[image_base] = {
+            "image_base": image_base,
+            "detection_completed": False,
+            "analysis_completed": False,
+            "classification_completed": False,
+            "final_result": None,
+            "status": "running"
+        }
         
         self.logger.info(f"🚀 [TIMING] 이미지 분석 시작: {image_base} - 시작시간: {datetime.now().strftime('%H:%M:%S')} ({start_time:.3f}초)")
         
@@ -439,11 +469,16 @@ class HTPAnalysisPipeline:
             self.logger.info(f"✅ [TIMING] 1단계 (객체탐지) 완료: {stage_time:.2f}초")
             
             # UI 표시를 위한 최소 대기 시간 (1단계가 너무 빨리 끝났을 때)
-            min_display_time = 2.0  # 최소 2초 표시
-            if stage_time < min_display_time:
-                wait_time = min_display_time - stage_time
-                self.logger.info(f"⏱️ 1단계 UI 표시 대기: {wait_time:.1f}초")
-                time.sleep(wait_time)
+            if ui_wait:
+                min_display_time = 2.0  # 최소 2초 표시
+                if stage_time < min_display_time:
+                    wait_time = min_display_time - stage_time
+                    self.logger.info(f"⏱️ 1단계 UI 표시 대기: {wait_time:.1f}초")
+                    time.sleep(wait_time)
+            
+            # 상태 업데이트
+            if image_base in self._status_cache:
+                self._status_cache[image_base]["detection_completed"] = True
             
             # 2단계: 심리 분석 (재시도 로직 포함)
             stage_start = time.time()
@@ -455,10 +490,14 @@ class HTPAnalysisPipeline:
             self.logger.info(f"✅ [TIMING] 2단계 (심리분석) 완료: {stage_time:.2f}초")
             
             # UI 표시를 위한 최소 대기 시간 (2단계)
-            if stage_time < min_display_time:
+            if ui_wait and stage_time < min_display_time:
                 wait_time = min_display_time - stage_time
                 self.logger.info(f"⏱️ 2단계 UI 표시 대기: {wait_time:.1f}초")
                 time.sleep(wait_time)
+            
+            # 상태 업데이트
+            if image_base in self._status_cache:
+                self._status_cache[image_base]["analysis_completed"] = True
             
             # 3단계: 성격 분류
             stage_start = time.time()
@@ -478,6 +517,11 @@ class HTPAnalysisPipeline:
             self.logger.info(f"🕐 [TIMING] 완료시간: {datetime.fromtimestamp(end_time).strftime('%H:%M:%S.%f')[:-3]}")
             self.logger.info(f"⏱️  [TIMING] 총 소요시간: {total_time:.2f}초 ({total_time/60:.1f}분)")
             
+            # 상태 업데이트
+            if image_base in self._status_cache:
+                self._status_cache[image_base]["classification_completed"] = True
+                self._status_cache[image_base]["status"] = "completed"
+            
         except Exception as e:
             end_time = time.time()
             total_time = end_time - start_time
@@ -488,6 +532,11 @@ class HTPAnalysisPipeline:
             result.status = PipelineStatus.ERROR
             result.error_message = str(e)
             result.traceback = traceback.format_exc()
+            
+            # 상태 업데이트 (에러)
+            if image_base in self._status_cache:
+                self._status_cache[image_base]["status"] = "error"
+                self._status_cache[image_base]["error"] = str(e)
         
         return result
     
@@ -500,6 +549,11 @@ class HTPAnalysisPipeline:
         Returns:
             Dict: 분석 상태 정보
         """
+        # 1. 메모리 캐시 확인
+        if image_base in self._status_cache:
+            return self._status_cache[image_base]
+            
+        # 2. 캐시에 없으면 파일 시스템 확인 (Fallback)
         status = {
             "image_base": image_base,
             "detection_completed": False,
@@ -532,12 +586,6 @@ class HTPAnalysisPipeline:
         status["analysis_completed"] = analysis_path.exists()
         status["classification_completed"] = kobert_completed
         
-        self.logger.info(f"상태 확인 - 탐지: {status['detection_completed']}, 분석: {status['analysis_completed']}, 분류: {status['classification_completed']}")
-        self.logger.info(f"파일 경로 확인:")
-        self.logger.info(f"  탐지: {detection_path} (존재: {detection_path.exists()})")
-        self.logger.info(f"  분석: {analysis_path} (존재: {analysis_path.exists()})")
-        self.logger.info(f"  분류: KoBERT 결과가 analysis_path에 포함됨 (완료: {kobert_completed})")
-        
         if analysis_path.exists():
             try:
                 with open(analysis_path, 'r', encoding='utf-8') as f:
@@ -545,6 +593,9 @@ class HTPAnalysisPipeline:
                 status["final_result"] = analysis_data
             except Exception as e:
                 self.logger.error(f"분석 결과 파일 읽기 오류: {e}")
+        
+        # 캐시에 저장 (다음 조회를 위해)
+        self._status_cache[image_base] = status
         
         return status
 

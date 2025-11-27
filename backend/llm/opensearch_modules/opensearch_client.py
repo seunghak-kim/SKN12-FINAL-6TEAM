@@ -16,7 +16,7 @@ from collections import defaultdict
 from tqdm import tqdm
 import logging
 
-from opensearch_config import OpenSearchConfig
+from opensearch_config import OpenSearchConfig, EmbeddingConfig
 
 logger = logging.getLogger(__name__)
 
@@ -84,54 +84,69 @@ class OpenSearchConnection:
 class OpenSearchEmbeddingClient:
     """Complete OpenSearch embedding client with KURE-v1 and reranker support"""
     
-    def __init__(self, host: str = 'localhost', port: int = 9200, 
-                 username: str = 'admin', password: str = 'MyStrongPassword123!', 
-                 model_name: str = 'nlpai-lab/KURE-v1',
-                 reranker_model: str = "BAAI/bge-reranker-v2-m3"):
+    def __init__(self, host: str = None, port: int = None, 
+                 username: str = None, password: str = None, 
+                 model_name: str = None,
+                 reranker_model: str = None):
         """
         OpenSearch 임베딩 클라이언트 초기화 (KURE-v1 기반 + Reranker)
         
         Args:
-            host: OpenSearch 호스트
-            port: OpenSearch 포트
-            username: 인증 사용자명
-            password: 인증 비밀번호
-            model_name: KURE-v1 임베딩 모델
-            reranker_model: 리랭킹 모델 (BGE reranker 또는 다른 CrossEncoder)
+            host: OpenSearch 호스트 (None일 경우 환경변수 사용)
+            port: OpenSearch 포트 (None일 경우 환경변수 사용)
+            username: 인증 사용자명 (None일 경우 환경변수 사용)
+            password: 인증 비밀번호 (None일 경우 환경변수 사용)
+            model_name: KURE-v1 임베딩 모델 (None일 경우 환경변수 사용)
+            reranker_model: 리랭킹 모델 (None일 경우 환경변수 사용)
         """
+        # 환경 변수 설정 로드
+        os_config = OpenSearchConfig.from_env()
+        emb_config = EmbeddingConfig.from_env()
+        
+        # 인자가 제공되면 사용하고, 아니면 환경변수 설정 사용
+        self.host = host if host is not None else os_config.host
+        self.port = port if port is not None else os_config.port
+        self.username = username if username is not None else os_config.username
+        self.password = password if password is not None else os_config.password
+        
+        self.model_name = model_name if model_name is not None else emb_config.model_name
+        self.reranker_model = reranker_model if reranker_model is not None else emb_config.reranker_model
+        
         # OpenSearch 연결 설정
         try:
-            auth = (username, password) if username and password else None
+            auth = (self.username, self.password) if self.username and self.password else None
             self.client = OpenSearch(
-                hosts=[{'host': host, 'port': port}],
+                hosts=[{'host': self.host, 'port': self.port}],
                 http_auth=auth,
-                use_ssl=True,
-                verify_certs=False,
-                ssl_assert_hostname=False,
-                ssl_show_warn=False,
-                timeout=30
+                use_ssl=os_config.use_ssl,
+                verify_certs=os_config.verify_certs,
+                ssl_assert_hostname=os_config.ssl_assert_hostname,
+                ssl_show_warn=os_config.ssl_show_warn,
+                timeout=os_config.timeout
             )
             # 연결 테스트
             self.client.info()
-            print(f"OpenSearch 연결 성공: {host}:{port}")
+            print(f"OpenSearch 연결 성공: {self.host}:{self.port}")
         except Exception as e:
             print(f"OpenSearch 연결 실패: {e}")
             raise
         
         # KURE-v1 모델 로드 
         try:
-            self.model = SentenceTransformer(model_name)
-            self.model.max_seq_length = 8192
-            print(f"임베딩 모델 로드 성공: {model_name}")
+            print(f"임베딩 모델 로드 시작: {self.model_name} (다운로드 필요 시 시간이 소요될 수 있습니다)")
+            self.model = SentenceTransformer(self.model_name)
+            self.model.max_seq_length = emb_config.max_seq_length
+            print(f"임베딩 모델 로드 성공: {self.model_name}")
         except Exception as e:
             print(f"임베딩 모델 로드 실패: {e}")
             raise
             
         # 리랭킹 모델 로드
         try: 
-            self.reranker = CrossEncoder(reranker_model)
+            print(f"Reranker 모델 로드 시작: {self.reranker_model}")
+            self.reranker = CrossEncoder(self.reranker_model)
             self.reranker_available = True
-            print(f"Reranker 모델 로드 성공: {reranker_model}")
+            print(f"Reranker 모델 로드 성공: {self.reranker_model}")
         except Exception as e:
             print(f"Reranker 모델 로드 실패: {e}")
             self.reranker = None 

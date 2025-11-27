@@ -41,10 +41,9 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
       }
 
       try {
-        // 모든 테스트 결과를 가져와서 해당 ID 찾기
-        const allResults = await testService.getMyTestResults();
-        const foundResult = allResults.find(result => result.test_id.toString() === id);
-        
+        // 특정 ID의 테스트 결과 상세 조회 (관리자 접근 가능)
+        const foundResult = await testService.getTestResultDetail(id);
+
         if (foundResult) {
           // persona_type에 따른 올바른 캐릭터 이름 매핑
           const getCharacterName = (personaType?: number) => {
@@ -62,7 +61,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
           const personalityData: PersonalityType[] = [
             { name: "추진이", percentage: foundResult.result?.personality_scores?.추진이 || 0, color: "from-[#DC143C] to-[#FF6347]" },
             { name: "내면이", percentage: foundResult.result?.personality_scores?.내면이 || 0, color: "from-[#3CB371] to-[#6495ED]" },
-            { name: "햇살이", percentage: foundResult.result?.personality_scores?.햇살이 || 0, color: "from-[#6495ED] to-[#9932CC]" },
+            { name: "햇살이", percentage: foundResult.result?.personality_scores?.관계이 || 0, color: "from-[#6495ED] to-[#9932CC]" },
             { name: "쾌락이", percentage: foundResult.result?.personality_scores?.쾌락이 || 0, color: "from-[#FF6347] to-[#E6B800]" },
             { name: "안정이", percentage: foundResult.result?.personality_scores?.안정이 || 0, color: "from-[#E6B800] to-[#3CB371]" },
           ];
@@ -80,7 +79,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
             personalityScores: foundResult.result?.personality_scores || {
               추진이: 0,
               내면이: 0,
-              햇살이: 0,
+              관계이: 0,
               쾌락이: 0,
               안정이: 0
             }
@@ -181,7 +180,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
 
   const getCharacterFeatures = (character: string): string[] => {
     switch (character) {
-      case '추진이': 
+      case '추진이':
         return [
           '도전적인 상황에서도 앞으로 나아가는 동력',
           '효율적이고 실용적인 문제 해결 능력',
@@ -216,7 +215,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
           '갈등을 피하고 평화를 추구',
           '인내심과 포용력이 뛰어남'
         ];
-      default: 
+      default:
         return ['특별한 개성과 매력', '독특한 관점과 사고방식'];
     }
   };
@@ -236,7 +235,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
   // 대화하기 버튼 클릭 핸들러 - 올바른 캐릭터 정보를 전달하여 채팅 페이지로 이동
   const handleChatClick = () => {
     const characterId = getCharacterId(testResult.characterMatch);
-    
+
     // SearchResult 객체 생성
     const searchResult: SearchResult = {
       id: characterId,
@@ -253,7 +252,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
 
     // 기존 세션 정보 제거하여 새 세션 강제 생성
     localStorage.removeItem('lastChatSession');
-    
+
     // 채팅 페이지로 이동하면서 캐릭터 정보를 state로 전달 (URL 파라미터 제거)
     navigate("/chat", {
       state: {
@@ -299,7 +298,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
               {/* Image Display */}
               {testResult.images && testResult.images[0] && (
                 <div className="flex justify-center">
-                  <div 
+                  <div
                     className="relative cursor-pointer group"
                     onClick={() => setSelectedImageIndex(0)}
                   >
@@ -307,6 +306,10 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
                       src={testService.getImageUrl(testResult.images[0]) || "/placeholder.svg"}
                       alt="분석된 그림"
                       className="w-32 h-32 object-cover rounded-2xl"
+                      onError={(e) => {
+                        console.error('❌ 이미지 로드 실패:', testService.getImageUrl(testResult.images![0]));
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-2xl flex items-center justify-center transition-all duration-200">
                       <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium transition-opacity duration-200">
@@ -359,7 +362,7 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
             <div className="mt-8">
               <div className="bg-slate-600/50 rounded-2xl p-6 mb-8">
                 <p className="text-white/90 text-lg italic mb-4 whitespace-pre-line">"{getCharacterDescription(testResult.characterMatch)}"</p>
-                
+
                 <h3 className="text-white font-bold mb-4">{testResult.characterMatch}의 특징</h3>
                 <ul className="text-white/90 text-sm space-y-2 text-left max-w-md mx-auto">
                   {getCharacterFeatures(testResult.characterMatch).map((feature, index) => (
@@ -383,16 +386,20 @@ const ResultDetailPage: React.FC<ResultDetailPageProps> = ({
 
       {/* Image Modal */}
       {selectedImageIndex !== null && testResult && testResult.images && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedImageIndex(null)}
         >
           <div className="relative max-w-4xl max-h-full">
-            <img 
-              src={testService.getImageUrl(testResult.images[selectedImageIndex]) || "/placeholder.svg"} 
+            <img
+              src={testService.getImageUrl(testResult.images[selectedImageIndex]) || "/placeholder.svg"}
               alt={`분석된 그림 ${selectedImageIndex + 1}`}
               className="max-w-full max-h-full object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
+              onError={(e) => {
+                console.error('❌ 모달 이미지 로드 실패:', testService.getImageUrl(testResult.images![selectedImageIndex]));
+                e.currentTarget.src = "/placeholder.svg";
+              }}
             />
             <button
               onClick={() => setSelectedImageIndex(null)}

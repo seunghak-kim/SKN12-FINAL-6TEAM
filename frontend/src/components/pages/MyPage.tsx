@@ -26,13 +26,13 @@ const MyPage: React.FC<MyPageProps> = ({
   onUpdateProfile
 }) => {
   const navigate = useNavigate();
-  
+
   // API에서 가져온 실제 데이터 상태
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  
+
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editingName, setEditingName] = useState(userProfile?.name || '');
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -45,31 +45,31 @@ const MyPage: React.FC<MyPageProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  
+
   // 회원탈퇴 모달 상태
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
-  
+
   // 현재 로그인된 사용자 ID 상태
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  
+
   // 실제 사용자 정보 로드
   useEffect(() => {
     const loadCurrentUser = async () => {
       try {
         console.log('🔍 MyPage - 사용자 인증 상태 확인 시작');
-        
+
         // 1. localStorage에서 토큰 확인
         const token = localStorage.getItem('access_token');
         console.log('🔑 저장된 토큰:', token ? `${token.substring(0, 20)}...` : 'None');
-        
+
         // 2. authService에서 직접 userId 가져오기
         const userId = authService.getCurrentUserId();
         console.log('👤 authService에서 가져온 userId:', userId);
-        
+
         // 3. authService 인증 상태 확인
         const isAuthenticated = authService.isAuthenticated();
         console.log('🔐 인증 상태:', isAuthenticated);
-        
+
         if (userId && isAuthenticated) {
           setCurrentUserId(userId);
           console.log('✅ 마이페이지 - 현재 로그인된 사용자 ID:', userId);
@@ -92,13 +92,13 @@ const MyPage: React.FC<MyPageProps> = ({
         navigate('/');
       }
     };
-    
+
     loadCurrentUser();
   }, [navigate]);
-  
+
   // 디바운스 타이머 레퍼런스
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // 무한 스크롤 관련 상태
   const [displayedChats, setDisplayedChats] = useState<ChatHistory[]>([]);
   const [displayedTests, setDisplayedTests] = useState<TestResult[]>([]);
@@ -110,7 +110,7 @@ const MyPage: React.FC<MyPageProps> = ({
   const [hasMoreTests, setHasMoreTests] = useState(true);
   const chatObserverRef = useRef<HTMLDivElement>(null);
   const testObserverRef = useRef<HTMLDivElement>(null);
-  
+
   const ITEMS_PER_PAGE = 5;
 
   // 캐릭터 ID에 따른 아바타 매핑
@@ -160,10 +160,10 @@ const MyPage: React.FC<MyPageProps> = ({
       console.log('❌ currentUserId가 없어서 데이터 로드 중단');
       return;
     }
-    
+
     try {
       setIsLoadingProfile(true);
-      
+
       // 토큰 재확인
       const token = localStorage.getItem('access_token');
       if (!token) {
@@ -172,7 +172,7 @@ const MyPage: React.FC<MyPageProps> = ({
         navigate('/');
         return;
       }
-      
+
       // 사용자 프로필 로드
       try {
         console.log('👤 프로필 로드 시작...');
@@ -193,23 +193,23 @@ const MyPage: React.FC<MyPageProps> = ({
         });
         setEditingName('사용자');
       }
-      
+
       // 채팅 히스토리는 간소화
       try {
         const sessions = await chatService.getUserSessions(currentUserId);
-        
+
         // 각 세션의 메시지 데이터 로드
         const chatHistoryWithMessages = await Promise.all(
           sessions.map(async (session) => {
             try {
               const messages = await chatService.getSessionMessages(session.chat_sessions_id);
-              const lastMessage = messages.length > 0 
+              const lastMessage = messages.length > 0
                 ? messages[messages.length - 1]
                 : null;
-              
+
               const personaName = getPersonaName(session.persona_id);
               const avatar = getCharacterAvatar(session.persona_id);
-              
+
               return {
                 id: session.chat_sessions_id,
                 characterId: session.persona_id?.toString() || '',
@@ -228,7 +228,7 @@ const MyPage: React.FC<MyPageProps> = ({
               console.error(`❌ 세션 ${session.chat_sessions_id} 메시지 로드 실패:`, error);
               const personaName = getPersonaName(session.persona_id);
               const avatar = getCharacterAvatar(session.persona_id);
-              
+
               return {
                 id: session.chat_sessions_id,
                 characterId: session.persona_id?.toString() || '',
@@ -241,17 +241,17 @@ const MyPage: React.FC<MyPageProps> = ({
             }
           })
         );
-        
+
         setChatHistory(chatHistoryWithMessages);
       } catch (chatError) {
         console.error('❌ 채팅 히스토리 로드 실패:', chatError);
         setChatHistory([]);
       }
-      
+
       // 테스트 결과 로드
       try {
         const tests = await testService.getMyTestResults();
-        
+
         setTestResults(tests.map(test => ({
           id: test.test_id.toString(),
           testType: 'Drawing' as const,
@@ -265,10 +265,10 @@ const MyPage: React.FC<MyPageProps> = ({
         console.error('❌ 테스트 결과 로드 실패:', testError);
         setTestResults([]);
       }
-      
+
     } catch (error: any) {
       console.error('❌ 사용자 데이터 로드 전체 실패:', error);
-      
+
       // 401 에러인 경우 로그인 페이지로 리다이렉트
       if (error.response?.status === 401) {
         alert('인증이 만료되었습니다. 다시 로그인해주세요.');
@@ -312,18 +312,18 @@ const MyPage: React.FC<MyPageProps> = ({
   // 더 많은 채팅 로드
   const loadMoreChats = useCallback(async () => {
     if (isLoadingChats || !hasMoreChats) return;
-    
+
     setIsLoadingChats(true);
-    
+
     // 실제 구현에서는 API 호출
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const sortedChats = [...chatHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const nextPage = chatPage + 1;
     const startIndex = nextPage * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     const newChats = sortedChats.slice(startIndex, endIndex);
-    
+
     setDisplayedChats(prev => [...prev, ...newChats]);
     setChatPage(nextPage);
     setHasMoreChats(endIndex < sortedChats.length);
@@ -333,18 +333,18 @@ const MyPage: React.FC<MyPageProps> = ({
   // 더 많은 검사 결과 로드
   const loadMoreTests = useCallback(async () => {
     if (isLoadingTests || !hasMoreTests) return;
-    
+
     setIsLoadingTests(true);
-    
+
     // 실제 구현에서는 API 호출
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const sortedTests = [...testResults].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const nextPage = testPage + 1;
     const startIndex = nextPage * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     const newTests = sortedTests.slice(startIndex, endIndex);
-    
+
     setDisplayedTests(prev => [...prev, ...newTests]);
     setTestPage(nextPage);
     setHasMoreTests(endIndex < sortedTests.length);
@@ -391,7 +391,7 @@ const MyPage: React.FC<MyPageProps> = ({
 
   const handleContinueChat = (chat: ChatHistory) => {
     console.log('🔄 이어서 대화하기:', chat.characterName);
-    
+
     if (onContinueChat) {
       onContinueChat(chat.id, chat.characterName);
     }
@@ -417,7 +417,7 @@ const MyPage: React.FC<MyPageProps> = ({
   // 디바운스된 닉네임 검사
   const debouncedNicknameCheck = useCallback(async (nickname: string) => {
     if (!currentUserId) return;
-    
+
     const error = validateNickname(nickname);
     if (error) {
       setNameError(error);
@@ -435,7 +435,7 @@ const MyPage: React.FC<MyPageProps> = ({
 
     setIsCheckingNickname(true);
     setNameError(null);
-    
+
     try {
       const result = await userService.checkNickname(currentUserId, nickname);
       if (result.available) {
@@ -465,12 +465,12 @@ const MyPage: React.FC<MyPageProps> = ({
     setNicknameCheckResult(null);
     setIsNicknameChecked(false);
     setNameError(null);
-    
+
     // 디바운스된 자동 닉네임 검사 (800ms 후)
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    
+
     debounceTimerRef.current = setTimeout(() => {
       if (newName.trim() && newName !== userProfile?.name) {
         debouncedNicknameCheck(newName);
@@ -480,7 +480,7 @@ const MyPage: React.FC<MyPageProps> = ({
 
   const handleProfileSave = useCallback(async () => {
     if (!currentUserId) return;
-    
+
     // 닉네임이 기존과 동일하지 않은 경우에만 중복검사 확인
     if (editingName !== userProfile?.name && (!isNicknameChecked || nicknameCheckResult !== 'available')) {
       setNameError('닉네임 중복 검사를 완료해주세요.');
@@ -507,11 +507,11 @@ const MyPage: React.FC<MyPageProps> = ({
     try {
       // 백엔드 업데이트
       await userService.updateUser(currentUserId, { nickname: editingName });
-      
+
       // 닉네임 검사 결과 초기화
       setNicknameCheckResult(null);
       setIsNicknameChecked(false);
-      
+
       setSaveSuccess(true);
       // 성공 딜레이 단축: 1.5초 → 0.8초
       setTimeout(() => {
@@ -521,7 +521,7 @@ const MyPage: React.FC<MyPageProps> = ({
     } catch (error) {
       console.error('프로필 저장 실패:', error);
       setSaveError('프로필 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
-      
+
       // 실패 시 원래 상태로 롤백
       if (originalProfile) {
         setUserProfile(originalProfile);
@@ -586,10 +586,10 @@ const MyPage: React.FC<MyPageProps> = ({
 
       // 서버에 업로드
       const response = await userService.uploadProfileImage(currentUserId, file);
-      
+
       // 프로필 새로고침
       await loadUserData();
-      
+
       console.log('이미지 업로드 성공:', response.message);
     } catch (error) {
       console.error('이미지 업로드 실패:', error);
@@ -615,17 +615,17 @@ const MyPage: React.FC<MyPageProps> = ({
         const userId = parseInt(userProfile.id);
         console.log('탈퇴 시도 - userProfile:', userProfile);
         console.log('탈퇴 시도 - userId:', userId);
-        
+
         // 회원 탈퇴 API 호출
         await userService.deleteAccount(userId);
-        
+
         // 성공시 로컬 스토리지에서 토큰 제거
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        
+
         // 모달 닫기
         setShowDeleteAccountModal(false);
-        
+
         // 랜딩페이지로 이동
         navigate('/', { replace: true });
       } else {
@@ -657,16 +657,16 @@ const MyPage: React.FC<MyPageProps> = ({
   };
 
   const groupByDate = (items: any[]) => {
-  return items.reduce((groups: { [key: string]: any[] }, item) => {
-    // 날짜만 추출 (YYYY-MM-DD)
-    const dateKey = new Date(item.date).toISOString().split('T')[0];
-    if (!groups[dateKey]) {
-      groups[dateKey] = [];
-    }
-    groups[dateKey].push(item);
-    return groups;
-  }, {});
-};
+    return items.reduce((groups: { [key: string]: any[] }, item) => {
+      // 날짜만 추출 (YYYY-MM-DD)
+      const dateKey = new Date(item.date).toISOString().split('T')[0];
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(item);
+      return groups;
+    }, {});
+  };
 
 
   const chatsByDate = groupByDate(displayedChats);
@@ -675,8 +675,8 @@ const MyPage: React.FC<MyPageProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0F103F] via-[#1a1b4a] via-[#2a2b5a] to-[#3a3b6a] relative overflow-hidden">
       <Navigation onNavigate={onNavigate} activeTab="mypage" />
-      
-    {/* Minimal particles background */}
+
+      {/* Minimal particles background */}
       <div
         className="absolute inset-0 opacity-25"
         style={{
@@ -713,15 +713,42 @@ const MyPage: React.FC<MyPageProps> = ({
           <div className="bg-slate-700/50 backdrop-blur-sm border border-white/20 shadow-xl rounded-3xl p-6">
             <div className="flex items-center space-x-4">
               <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-400/30 via-pink-400/20 to-cyan-400/30 rounded-full flex items-center justify-center border-2 border-white/30 overflow-hidden">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-400/30 via-pink-400/20 to-cyan-400/30 rounded-full flex items-center justify-center border-2 border-white/30 overflow-hidden">
                   {profileImage || userProfile?.profileImageUrl ? (
-                    <img 
-                      src={profileImage || userProfile?.profileImageUrl || ''} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover"  
-                      style={{ 
+                    <img
+                      src={
+                        profileImage ||
+                        (() => {
+                          const imageUrl = userProfile?.profileImageUrl || '';
+                          // 이미 절대 URL인 경우
+                          if (imageUrl.startsWith('http')) {
+                            // http://localhost:8000/api/uploads/... -> http://localhost:8000/uploads/...
+                            return imageUrl.replace('/api/uploads/', '/uploads/');
+                          }
+                          // 상대 경로인 경우
+                          const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+                          const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+                          return `${baseUrl}${imageUrl}`;
+                        })()
+                      }
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      style={{
                         objectFit: 'cover',
                         aspectRatio: '1 / 1'
+                      }}
+                      onError={(e) => {
+                        const imageUrl = userProfile?.profileImageUrl || '';
+                        let fullUrl = imageUrl;
+                        if (imageUrl.startsWith('http')) {
+                          fullUrl = imageUrl.replace('/api/uploads/', '/uploads/');
+                        } else {
+                          const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+                          const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+                          fullUrl = `${baseUrl}${imageUrl}`;
+                        }
+                        console.error('❌ 프로필 이미지 로드 실패:', fullUrl);
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
                   ) : (
@@ -757,9 +784,8 @@ const MyPage: React.FC<MyPageProps> = ({
                           type="text"
                           value={editingName}
                           onChange={handleNameChange}
-                          className={`flex-1 px-3 py-2 border rounded-md bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                            nameError ? 'border-red-300' : 'border-gray-300'
-                          }`}
+                          className={`flex-1 px-3 py-2 border rounded-md bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${nameError ? 'border-red-300' : 'border-gray-300'
+                            }`}
                           placeholder="닉네임을 입력하세요"
                         />
                       </div>
@@ -777,9 +803,8 @@ const MyPage: React.FC<MyPageProps> = ({
                           <span>{nameError}</span>
                         </div>
                       ) : nicknameCheckResult ? (
-                        <div className={`mt-2 flex items-center space-x-1 text-sm ${
-                          nicknameCheckResult === 'available' ? 'text-green-400' : 'text-red-400'
-                        }`}>
+                        <div className={`mt-2 flex items-center space-x-1 text-sm ${nicknameCheckResult === 'available' ? 'text-green-400' : 'text-red-400'
+                          }`}>
                           {nicknameCheckResult === 'available' ? (
                             <>
                               <Check className="w-4 h-4" />
@@ -826,26 +851,24 @@ const MyPage: React.FC<MyPageProps> = ({
                       <button
                         onClick={handleProfileSave}
                         disabled={
-                          (editingName !== userProfile?.name && (!isNicknameChecked || nicknameCheckResult !== 'available')) || 
+                          (editingName !== userProfile?.name && (!isNicknameChecked || nicknameCheckResult !== 'available')) ||
                           isSaving
                         }
-                        className={`px-4 py-2 rounded-md text-sm transition-colors ${
-                          (editingName !== userProfile?.name && (!isNicknameChecked || nicknameCheckResult !== 'available')) || 
+                        className={`px-4 py-2 rounded-md text-sm transition-colors ${(editingName !== userProfile?.name && (!isNicknameChecked || nicknameCheckResult !== 'available')) ||
                           isSaving
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                        }`}
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                          }`}
                       >
                         {isSaving ? '저장 중...' : '저장'}
                       </button>
                       <button
                         onClick={handleProfileCancel}
                         disabled={isSaving}
-                        className={`px-4 py-2 rounded-md text-sm transition-colors ${
-                          isSaving
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                        }`}
+                        className={`px-4 py-2 rounded-md text-sm transition-colors ${isSaving
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                          }`}
                       >
                         취소
                       </button>
@@ -887,172 +910,172 @@ const MyPage: React.FC<MyPageProps> = ({
           </div>
         </div>
 
-{/* Chat History와 Test Results - 2분할 배치 */}
-<div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-  {/* Chat History */}
-  <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl p-6">
-    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-      <MessageCircle className="w-5 h-5 text-white" />
-      <span>채팅 히스토리</span>
-    </h3>
-    <div className="space-y-4 max-h-[500px] overflow-y-auto">
-      {displayedChats.length === 0 ? (
-        <div className="text-center py-8 text-white/50">
-          <MessageCircle className="w-12 h-12 mx-auto mb-3 text-white/20" />
-          <p>아직 채팅 기록이 없습니다.</p>
+        {/* Chat History와 Test Results - 2분할 배치 */}
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Chat History */}
+          <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl p-6">
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-white" />
+              <span>채팅 히스토리</span>
+            </h3>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+              {displayedChats.length === 0 ? (
+                <div className="text-center py-8 text-white/50">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-3 text-white/20" />
+                  <p>아직 채팅 기록이 없습니다.</p>
+                </div>
+              ) : (
+                <>
+                  {Object.entries(chatsByDate)
+                    .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+                    .map(([date, chats]) => (
+                      <div key={date} className="space-y-2">
+                        <h4 className="text-sm font-medium text-white/60">{formatDate(date)}</h4>
+                        {chats.map((chat: ChatHistory) => (
+                          <div
+                            key={chat.id}
+                            className="bg-slate-600/50 rounded-2xl p-4 border border-white/10 hover:bg-slate-600/60 transition-all duration-300"
+                          >
+                            <div className="flex items-center justify-between">
+                              {/* 텍스트 왼쪽 정렬 */}
+                              <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                                  <img
+                                    src={chat.characterAvatar}
+                                    alt={chat.characterName}
+                                    className="w-32 h-32 object-contain"
+                                  />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-white text-left">{chat.characterName}</p>
+                                  <p className="text-sm text-white/60 text-left">
+                                    {chat.messages?.length || 0}개 메시지 ·{" "}
+                                    {chat.messages?.[chat.messages.length - 1]?.timestamp
+                                      ? formatTime(chat.messages[chat.messages.length - 1].timestamp)
+                                      : "시간 정보 없음"}
+                                  </p>
+                                </div>
+                              </div>
+                              {/* 버튼 오른쪽 정렬 */}
+                              <button
+                                className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-white px-4 py-2 rounded-full text-sm border border-white/10"
+                                onClick={() => handleContinueChat(chat)}
+                              >
+                                이어서 대화하기
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  {isLoadingChats && (
+                    <div className="flex justify-center py-4">
+                      <Loader className="w-6 h-6 animate-spin text-white" />
+                    </div>
+                  )}
+                  {hasMoreChats && <div ref={chatObserverRef} className="h-4" />}
+                  {!hasMoreChats && displayedChats.length > 0 && (
+                    <div className="text-white/50 text-center text-sm mt-4">
+                      모든 채팅 기록을 불러왔습니다.
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Test Results */}
+          <div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl p-6">
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-white" />
+              <span>그림 검사 결과</span>
+            </h3>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+              {displayedTests.length === 0 ? (
+                <div className="text-center py-8 text-white/50">
+                  <FileText className="w-12 h-12 mx-auto mb-3 text-white/20" />
+                  <p>아직 검사 결과가 없습니다.</p>
+                </div>
+              ) : (
+                <>
+                  {Object.entries(testsByDate)
+                    .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+                    .map(([date, tests]) => (
+                      <div key={date} className="space-y-2">
+                        <h4 className="text-sm font-medium text-white/60">{formatDate(date)}</h4>
+                        {tests.map((test: TestResult) => (
+                          <div
+                            key={test.id}
+                            className="bg-slate-600/50 rounded-2xl p-4 border border-white/10 hover:bg-slate-600/60 transition-all duration-300"
+                          >
+                            <div className="flex items-center justify-between">
+                              {/* 왼쪽: 페르소나와 정보 */}
+                              <div className="flex items-center space-x-3">
+                                {test.images?.[0] && (
+                                  <img
+                                    src={testService.getImageUrl(test.images[0])}
+                                    alt="Test Result"
+                                    className="w-12 h-12 rounded-lg border border-white/10"
+                                  />
+                                )}
+                                <div>
+                                  <p className="text-white font-bold text-left">페르소나: {test.characterMatch}</p>
+                                  <p className="text-sm text-white/60 text-left">
+                                    검사 완료: {formatTime(test.date)}
+                                  </p>
+                                </div>
+                              </div>
+                              {/* 오른쪽 버튼 */}
+                              <button
+                                className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 text-white px-4 py-2 rounded-full text-sm border border-white/10"
+                                onClick={() => navigate(`/result-detail/${test.id}`)}
+                              >
+                                자세히 보기
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  {isLoadingTests && (
+                    <div className="flex justify-center py-4">
+                      <Loader className="w-6 h-6 animate-spin text-white" />
+                    </div>
+                  )}
+                  {hasMoreTests && <div ref={testObserverRef} className="h-4" />}
+                  {!hasMoreTests && displayedTests.length > 0 && (
+                    <div className="text-white/50 text-center text-sm mt-4">
+                      모든 검사 결과를 불러왔습니다.
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      ) : (
-        <>
-          {Object.entries(chatsByDate)
-            .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-            .map(([date, chats]) => (
-              <div key={date} className="space-y-2">
-                <h4 className="text-sm font-medium text-white/60">{formatDate(date)}</h4>
-                {chats.map((chat: ChatHistory) => (
-                  <div
-                    key={chat.id}
-                    className="bg-slate-600/50 rounded-2xl p-4 border border-white/10 hover:bg-slate-600/60 transition-all duration-300"
-                  >
-                    <div className="flex items-center justify-between">
-                      {/* 텍스트 왼쪽 정렬 */}
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
-                          <img 
-                            src={chat.characterAvatar} 
-                            alt={chat.characterName}
-                            className="w-32 h-32 object-contain"
-                          />
-                        </div>
-                        <div>
-                          <p className="font-medium text-white text-left">{chat.characterName}</p>
-                          <p className="text-sm text-white/60 text-left">
-                            {chat.messages?.length || 0}개 메시지 ·{" "}
-                            {chat.messages?.[chat.messages.length - 1]?.timestamp
-                              ? formatTime(chat.messages[chat.messages.length - 1].timestamp)
-                              : "시간 정보 없음"}
-                          </p>
-                        </div>
-                      </div>
-                      {/* 버튼 오른쪽 정렬 */}
-                      <button
-                        className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-white px-4 py-2 rounded-full text-sm border border-white/10"
-                        onClick={() => handleContinueChat(chat)}
-                      >
-                        이어서 대화하기
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          {isLoadingChats && (
-            <div className="flex justify-center py-4">
-              <Loader className="w-6 h-6 animate-spin text-white" />
-            </div>
-          )}
-          {hasMoreChats && <div ref={chatObserverRef} className="h-4" />}
-          {!hasMoreChats && displayedChats.length > 0 && (
-            <div className="text-white/50 text-center text-sm mt-4">
-              모든 채팅 기록을 불러왔습니다.
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  </div>
 
-  {/* Test Results */}
-<div className="bg-slate-700/50 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl p-6">
-  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-    <FileText className="w-5 h-5 text-white" />
-    <span>그림 검사 결과</span>
-  </h3>
-  <div className="space-y-4 max-h-[500px] overflow-y-auto">
-    {displayedTests.length === 0 ? (
-      <div className="text-center py-8 text-white/50">
-        <FileText className="w-12 h-12 mx-auto mb-3 text-white/20" />
-        <p>아직 검사 결과가 없습니다.</p>
-      </div>
-    ) : (
-      <>
-        {Object.entries(testsByDate)
-          .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-          .map(([date, tests]) => (
-            <div key={date} className="space-y-2">
-              <h4 className="text-sm font-medium text-white/60">{formatDate(date)}</h4>
-                {tests.map((test: TestResult) => (
-                  <div
-                    key={test.id}
-                    className="bg-slate-600/50 rounded-2xl p-4 border border-white/10 hover:bg-slate-600/60 transition-all duration-300"
-                  >
-                    <div className="flex items-center justify-between">
-                      {/* 왼쪽: 페르소나와 정보 */}
-                      <div className="flex items-center space-x-3">
-                        {test.images?.[0] && (
-                          <img
-                            src={testService.getImageUrl(test.images[0])}
-                            alt="Test Result"
-                            className="w-12 h-12 rounded-lg border border-white/10"
-                          />
-                        )}
-                        <div>
-                          <p className="text-white font-bold text-left">페르소나: {test.characterMatch}</p>
-                          <p className="text-sm text-white/60 text-left">
-                            검사 완료: {formatTime(test.date)}
-                          </p>
-                        </div>
-                      </div>
-                      {/* 오른쪽 버튼 */}
-                      <button
-                        className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 text-white px-4 py-2 rounded-full text-sm border border-white/10"
-                        onClick={() => navigate(`/result-detail/${test.id}`)}
-                      >
-                        자세히 보기
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-          ))}
-        {isLoadingTests && (
-          <div className="flex justify-center py-4">
-            <Loader className="w-6 h-6 animate-spin text-white" />
+
+
+        {/* 회원탈퇴 섹션 */}
+        <div className="max-w-5xl mx-auto mt-8">
+          <div className="flex justify-start">
+            <Button
+              onClick={handleDeleteAccountClick}
+              className="bg-gradient-to-r from-slate-600/50 to-slate-700/50 hover:from-slate-600/70 hover:to-slate-700/70 text-white px-6 py-3 rounded-full font-medium border border-white/10"
+            >
+              회원탈퇴
+            </Button>
           </div>
-        )}
-        {hasMoreTests && <div ref={testObserverRef} className="h-4" />}
-        {!hasMoreTests && displayedTests.length > 0 && (
-          <div className="text-white/50 text-center text-sm mt-4">
-            모든 검사 결과를 불러왔습니다.
-          </div>
-        )}
-      </>
-    )}
-  </div>
-</div>
-</div>
+        </div>
 
-
-
-  {/* 회원탈퇴 섹션 */}
-  <div className="max-w-5xl mx-auto mt-8">
-      <div className="flex justify-start">
-        <Button
-          onClick={handleDeleteAccountClick}
-          className="bg-gradient-to-r from-slate-600/50 to-slate-700/50 hover:from-slate-600/70 hover:to-slate-700/70 text-white px-6 py-3 rounded-full font-medium border border-white/10"
-        >
-          회원탈퇴
-        </Button>
+        {/* DeleteAccountModal */}
+        <DeleteAccountModal
+          isOpen={showDeleteAccountModal}
+          onClose={handleDeleteAccountClose}
+          onConfirm={handleDeleteAccountConfirm}
+        />
       </div>
     </div>
-
-    {/* DeleteAccountModal */}
-    <DeleteAccountModal
-      isOpen={showDeleteAccountModal}
-      onClose={handleDeleteAccountClose}
-      onConfirm={handleDeleteAccountConfirm}
-    />
-  </div>
-  </div>
   );
 };
 

@@ -2,8 +2,8 @@ import { apiClient } from './apiClient';
 import { DrawingTest, PipelineAnalysisResponse, PipelineStatusResponse } from '../types';
 
 class TestService {
-  private readonly BASE_PATH = '/api/v1/test';
-  private readonly PIPELINE_PATH = '/api/v1/pipeline';
+  private readonly BASE_PATH = '/v1/test';
+  private readonly PIPELINE_PATH = '/v1/pipeline';
 
   /**
    * 현재 사용자의 그림 테스트 결과 조회
@@ -23,19 +23,19 @@ class TestService {
   async getUserTestStatus(): Promise<{ hasTests: boolean; latestResult?: DrawingTest }> {
     try {
       const testResults = await this.getMyTestResults();
-      
+
       if (testResults.length === 0) {
         return { hasTests: false };
       }
 
       // 최신 테스트 결과 반환 (submitted_at 기준 정렬)
-      const sortedResults = testResults.sort((a, b) => 
+      const sortedResults = testResults.sort((a, b) =>
         new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
       );
-      
-      return { 
-        hasTests: true, 
-        latestResult: sortedResults[0] 
+
+      return {
+        hasTests: true,
+        latestResult: sortedResults[0]
       };
     } catch (error) {
       console.error('Failed to check user test status:', error);
@@ -48,11 +48,11 @@ class TestService {
    */
   async analyzeImage(file: File, description?: string): Promise<PipelineAnalysisResponse> {
     try {
-      console.log('🔍 analyzeImage 호출됨:', { 
-        fileName: file.name, 
-        fileSize: file.size, 
+      console.log('🔍 analyzeImage 호출됨:', {
+        fileName: file.name,
+        fileSize: file.size,
         fileType: file.type,
-        description 
+        description
       });
 
       const formData = new FormData();
@@ -103,7 +103,7 @@ class TestService {
 
       try {
         const status = await this.getAnalysisStatus(testId);
-        
+
         if (onProgress) {
           onProgress(status);
         }
@@ -122,7 +122,7 @@ class TestService {
             });
           }
         });
-        
+
         return poll();
       } catch (error) {
         // 404 등의 오류가 발생하면 중단된 것으로 처리
@@ -141,15 +141,26 @@ class TestService {
    * 이미지 URL을 절대 경로로 변환
    */
   getImageUrl(imageUrl: string): string {
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
-    }
-    
     // 로컬 경로를 절대 URL로 변환
-    const baseUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`;
-    // 'result/images/filename.jpg' -> '/images/filename.jpg'
-    const relativePath = imageUrl.replace('result/', '');
-    return `${baseUrl}/${relativePath}`;
+    // 'result/images/filename.jpg' -> 'http://backend:8000/images/filename.jpg'
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http')) return imageUrl;
+
+    let apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+    // Remove trailing slash
+    if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1);
+    // Remove /api suffix
+    const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+
+    // Remove 'result/' prefix if present to match the mounted static path
+    // Backend mounts 'result/images' to '/images'
+    // So 'result/images/foo.jpg' becomes '/images/foo.jpg'
+    const cleanPath = imageUrl.replace(/^result\//, '').replace(/^\/result\//, '');
+    const relativePath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
+
+    const fullUrl = `${baseUrl}/${relativePath}`;
+    console.log(`🖼️ getImageUrl: ${imageUrl} -> ${fullUrl}`);
+    return fullUrl;
   }
 
   /**
@@ -199,6 +210,29 @@ class TestService {
       return await apiClient.delete(`${this.BASE_PATH}/drawing-tests/${testId}`);
     } catch (error) {
       console.error('Failed to delete drawing test:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 그림검사 결과 생성
+   */
+  async createDrawingTestResult(data: { test_id: number; persona_type: number }): Promise<any> {
+    try {
+      return await apiClient.post(`${this.BASE_PATH}/drawing-test-results`, data);
+    } catch (error) {
+      console.error('Failed to create drawing test result:', error);
+      throw error;
+    }
+  }
+  /**
+   * 특정 테스트 결과 상세 조회 (관리자 접근 가능)
+   */
+  async getTestResultDetail(testId: string): Promise<DrawingTest> {
+    try {
+      return await apiClient.get<DrawingTest>(`${this.BASE_PATH}/drawing-test-results/${testId}/detail`);
+    } catch (error) {
+      console.error('Failed to fetch test result detail:', error);
       throw error;
     }
   }

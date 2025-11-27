@@ -1,5 +1,5 @@
 import os
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,16 +19,27 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")
     
     # URL 설정 
-    FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
     
     # CORS 설정
     ALLOWED_ORIGINS: list = [
         "http://localhost:80", 
         "http://localhost:8080", 
-        FRONTEND_URL
+        "http://localhost:3000"  # Hardcode default for now to avoid reference issue
     ]
     
     class Config:
         env_file = ".env"
+        extra = "ignore"
+
+    # HTP 분석 설정
+    BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    MODEL_DIR: str = os.path.join(BASE_DIR, "llm", "model")
+    TEST_IMG_DIR: str = os.path.join(BASE_DIR, "llm", "test_images")
+    DETECTION_RESULTS_DIR: str = os.path.join(BASE_DIR, "llm", "detection_results")
+    RESULT_DIR: str = os.path.join(BASE_DIR, "result")
+    
+    YOLO_MODEL_PATH: str = "best.pt"
+    SUPPORTED_IMAGE_FORMATS: list = ['.jpg', '.jpeg', '.png', '.bmp', '.gif']
 
 settings = Settings()

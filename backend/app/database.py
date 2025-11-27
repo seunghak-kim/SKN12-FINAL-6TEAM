@@ -65,6 +65,9 @@ def create_tables():
                         # 이미 존재하는 경우 등의 에러는 조용히 무시
                         if "already exists" in str(e).lower() or "duplicate" in str(e).lower():
                             error_count += 1
+                        else:
+                            print(f"❌ SQL execution failed: {e}")
+                            print(f"Statement: {sql_statement[:100]}...")
                         pass
             
             if has_new_creation and error_count == 0:

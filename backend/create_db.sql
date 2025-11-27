@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS "social_users" (
 
 CREATE TABLE IF NOT EXISTS "users" (
   "user_id" serial4 NOT NULL,
+  "email" varchar(255) NOT NULL UNIQUE,
   "user_password" varchar(255) NOT NULL,
   PRIMARY KEY ("user_id")
 );

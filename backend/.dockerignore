@@ -1,0 +1,10 @@
+.env
+venv/
+.venv/
+__pycache__/
+.git/
+.DS_Store
+model_cache/
+uploads/
+result/
+data/

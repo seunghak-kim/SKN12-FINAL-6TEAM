@@ -6,9 +6,7 @@ WORKDIR /app
 # Python 종속성 설치
 COPY requirements.txt .
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-
-
+RUN pip install uv 
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
@@ -19,7 +17,16 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libgomp1 \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
+
+# Python 패키지 설치
+RUN pip install -r requirements.txt
+
+# Pre-download the model to bake it into the image
+# This prevents runtime download errors and improves startup time
+ENV HF_HOME=/app/model_cache
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('nlpai-lab/KURE-v1')"
 
 # 애플리케이션 코드 복사 (필요한 파일만)
 COPY . .

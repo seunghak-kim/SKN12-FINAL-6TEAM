@@ -24,6 +24,7 @@ class User(Base):
     __tablename__ = "users"
     
     user_id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(255), unique=True, nullable=False)  # 이메일 (로그인 ID)
     user_password = Column(String(255), nullable=False)  # bcrypt 해시 길이 고려
     
     # 관계 정의 - users -> user_informations
@@ -41,6 +42,7 @@ class UserInformation(Base):
     nickname = Column(String(20), nullable=False)
     profile_image_url = Column(String(500), nullable=True)  # 프로필 이미지 URL
     status = Column(String(10), nullable=False, default='ACTIVE') # ACTIVE, INACTIVE, DELETE 
+    role = Column(String(10), nullable=False, default='USER') # USER, ADMIN
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     deleted_at = Column(DateTime)
     

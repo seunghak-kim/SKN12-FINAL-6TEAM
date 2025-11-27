@@ -1,5 +1,7 @@
 import os
 import jwt
+import bcrypt
+from datetime import datetime, timedelta, timezone
 from datetime import datetime, timedelta, timezone
 import pytz
 from google.auth.transport import requests
@@ -195,7 +197,8 @@ class AuthService:
             "google_id": google_user_info.get('sub'),
             "name": google_user_info.get('name'),
             "picture": google_user_info.get('picture'),
-            "created_at": user_info.created_at.isoformat() if user_info.created_at else None
+            "created_at": user_info.created_at.isoformat() if user_info.created_at else None,
+            "role": user_info.role # Assuming UserInformation has a 'role' attribute
         }
         
         print(f"Google login result: {result}")
@@ -292,3 +295,46 @@ class AuthService:
         except Exception as e:
             print(f"Google callback handling failed: {e}")
             return None
+
+    def get_user_by_email(self, db: Session, email: str) -> Optional[User]:
+        """이메일로 일반 사용자를 조회합니다."""
+        return db.query(User).filter(User.email == email).first()
+
+    def create_local_user(self, db: Session, email: str, password: str, nickname: str) -> UserInformation:
+        """일반 사용자(이메일/비밀번호)를 생성합니다."""
+        # 1. 비밀번호 해싱
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+        
+        # 2. User 테이블 생성
+        new_user = User(
+            email=email,
+            user_password=hashed_password.decode('utf-8')
+        )
+        db.add(new_user)
+        db.flush()  # user_id 생성을 위해 flush
+        
+        # 3. UserInformation 테이블 생성
+        new_user_info = UserInformation(
+            nickname=nickname,
+            regular_user_id=new_user.user_id,
+            status='ACTIVE'
+        )
+        db.add(new_user_info)
+        db.commit()
+        db.refresh(new_user_info)
+        
+        return new_user_info
+
+    def authenticate_user(self, db: Session, email: str, password: str) -> Optional[UserInformation]:
+        """이메일과 비밀번호로 사용자를 인증합니다."""
+        user = self.get_user_by_email(db, email)
+        if not user:
+            return None
+            
+        # 비밀번호 검증
+        if not bcrypt.checkpw(password.encode('utf-8'), user.user_password.encode('utf-8')):
+            return None
+            
+        # 사용자 정보 반환
+        return db.query(UserInformation).filter(UserInformation.regular_user_id == user.user_id).first()

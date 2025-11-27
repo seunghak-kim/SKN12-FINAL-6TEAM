@@ -10,6 +10,7 @@ export interface User {
   google_id: string;
   name?: string;
   profile_picture?: string;
+  role?: string;
   is_first_login: boolean;
   created_at: string;
   updated_at: string;
@@ -42,7 +43,7 @@ class AuthService {
       // /api로 끝나면 제거
       return apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
     }
-    
+
     // 기본값으로 현재 호스트 사용 (포트 80)
     return `${window.location.protocol}//${window.location.hostname}`;
   }
@@ -51,7 +52,7 @@ class AuthService {
     try {
       // Google API가 로드될 때까지 기다리기
       await this.waitForGoogle();
-      
+
       // Google Identity Services 초기화
       window.google.accounts.id.initialize({
         client_id: this.clientId,
@@ -60,7 +61,7 @@ class AuthService {
         cancel_on_tap_outside: true,  // 외부 클릭시 취소
         itp_support: true  // ITP(Intelligent Tracking Prevention) 지원
       });
-      
+
       this.isGoogleLoaded = true;
     } catch (error) {
       console.error('Google Auth initialization failed:', error);
@@ -73,7 +74,7 @@ class AuthService {
         resolve();
         return;
       }
-      
+
       const checkGoogle = () => {
         if (window.google) {
           resolve();
@@ -81,7 +82,7 @@ class AuthService {
           setTimeout(checkGoogle, 100);
         }
       };
-      
+
       checkGoogle();
     });
   }
@@ -90,11 +91,11 @@ class AuthService {
   private async handleCredentialResponse(response: any) {
     try {
       console.log('🔍 Google credential response received:', response);
-      
+
       const loginResponse = await this.authenticateWithBackend(response.credential);
       if (loginResponse) {
         console.log('✅ Backend authentication successful:', loginResponse);
-        
+
         // 로그인 성공 후 리디렉션 처리
         if (loginResponse.is_first_login) {
           console.log('🆕 First time user, redirecting to nickname page');
@@ -135,7 +136,7 @@ class AuthService {
             }
           );
         }
-        
+
         // One Tap도 시도
         window.google.accounts.id.prompt((notification: any) => {
           console.log('Google One Tap notification:', notification);
@@ -143,7 +144,7 @@ class AuthService {
             console.log('One Tap not displayed, user can use the button');
           }
         });
-        
+
         // 임시로 null 반환 (실제 로그인은 콜백에서 처리)
         resolve(null);
       });
@@ -167,7 +168,7 @@ class AuthService {
       });
 
       console.log('📥 백엔드 응답 상태:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ 백엔드 인증 실패:', errorText);
@@ -176,7 +177,7 @@ class AuthService {
 
       const loginResponse: LoginResponse = await response.json();
       console.log('✅ 로그인 응답:', loginResponse);
-      
+
       // 토큰을 로컬 스토리지에 저장
       this.setAccessToken(loginResponse.access_token);
       this.setUserInfo(loginResponse.user);
@@ -189,11 +190,76 @@ class AuthService {
     }
   }
 
+  async login(email: string, password: string): Promise<LoginResponse | null> {
+    try {
+      console.log('🔄 로컬 로그인 시작...');
+      const response = await fetch(`${this.baseUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || '로그인 실패');
+      }
+
+      const loginResponse: LoginResponse = await response.json();
+      console.log('✅ 로그인 응답:', loginResponse);
+
+      this.setAccessToken(loginResponse.access_token);
+      this.setUserInfo(loginResponse.user);
+
+      return loginResponse;
+    } catch (error) {
+      console.error('❌ Login failed:', error);
+      throw error;
+    }
+  }
+
+  async signup(email: string, password: string, nickname: string): Promise<LoginResponse | null> {
+    try {
+      console.log('🔄 회원가입 시작...');
+      const response = await fetch(`${this.baseUrl}/api/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          nickname,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || '회원가입 실패');
+      }
+
+      const loginResponse: LoginResponse = await response.json();
+      console.log('✅ 회원가입 응답:', loginResponse);
+
+      this.setAccessToken(loginResponse.access_token);
+      this.setUserInfo(loginResponse.user);
+
+      return loginResponse;
+    } catch (error) {
+      console.error('❌ Signup failed:', error);
+      throw error;
+    }
+  }
+
   async completeSignup(nickname: string): Promise<User | null> {
     try {
       const token = this.getAccessToken();
       console.log('Token for signup:', token?.substring(0, 20) + '...');
-      
+
       if (!token) {
         throw new Error('No access token found');
       }
@@ -261,13 +327,13 @@ class AuthService {
   async signOut(): Promise<void> {
     try {
       console.log('Starting sign out process...');
-      
+
       // 1. Google 계정 자동 선택 완전히 비활성화
       if (window.google && window.google.accounts) {
         // 자동 선택 비활성화
         window.google.accounts.id.disableAutoSelect();
         console.log('Google auto-select disabled');
-        
+
         // Google OAuth 세션 취소 (더 강력한 로그아웃)
         try {
           await window.google.accounts.id.revoke(this.getAccessToken() || '', () => {
@@ -277,19 +343,19 @@ class AuthService {
           console.log('Google token revoke failed:', revokeError);
         }
       }
-      
+
       // 2. 모든 Google 관련 쿠키 삭제
       this.clearGoogleCookies();
-      
+
       // 3. 로컬 저장소 데이터 삭제
       this.clearStoredData();
       console.log('Local storage cleared');
-      
+
       // 4. 세션 스토리지도 삭제
       sessionStorage.clear();
-      
+
       console.log('Sign out completed successfully');
-      
+
     } catch (error) {
       console.error('Sign out failed:', error);
       // 오류 발생 시에도 로컬 데이터 삭제
@@ -305,7 +371,7 @@ class AuthService {
       // Google 관련 쿠키들을 삭제
       const cookiesToClear = [
         'g_state',
-        'g_oauth_state', 
+        'g_oauth_state',
         'g_csrf_token',
         'accounts.google.com_session',
         'accounts.google.com_oauth_state',
@@ -315,7 +381,7 @@ class AuthService {
         'HSID',
         'SID'
       ];
-      
+
       cookiesToClear.forEach(cookieName => {
         // 현재 도메인에서 삭제
         document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
@@ -323,7 +389,7 @@ class AuthService {
         document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.google.com;`;
         document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.accounts.google.com;`;
       });
-      
+
       console.log('Google cookies cleared');
     } catch (error) {
       console.error('Failed to clear Google cookies:', error);
@@ -354,7 +420,7 @@ class AuthService {
   private getUserInfo(): User | null {
     const userStr = localStorage.getItem('user_info');
     if (!userStr) return null;
-    
+
     try {
       return JSON.parse(userStr);
     } catch {

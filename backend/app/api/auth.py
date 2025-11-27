@@ -49,6 +49,15 @@ class TestLoginRequest(BaseModel):
     email: str
     name: str
 
+class SignupRequest(BaseModel):
+    email: str
+    password: str
+    nickname: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 @router.post("/google")
 async def google_login(
     request: GoogleTokenRequest,
@@ -75,6 +84,7 @@ async def google_login(
                 "google_id": result.get("google_id", "unknown"),
                 "name": result.get("name", result["nickname"]),
                 "profile_picture": result.get("picture"),
+                "role": result.get("role", "USER"),
                 "is_first_login": result["is_new_user"],
                 "created_at": result.get("created_at", "2025-07-21T00:00:00Z"),
                 "updated_at": result.get("created_at", "2025-07-21T00:00:00Z")
@@ -88,6 +98,101 @@ async def google_login(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Google login failed: {str(e)}"
+        )
+
+@router.post("/signup")
+async def signup(
+    request: SignupRequest,
+    db: Session = Depends(get_db)
+):
+    """일반 회원가입"""
+    try:
+        # 이메일 중복 확인
+        if auth_service.get_user_by_email(db, request.email):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="이미 등록된 이메일입니다."
+            )
+            
+        # 닉네임 중복 확인
+        if not auth_service.check_nickname_availability(db, request.nickname):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="이미 사용 중인 닉네임입니다."
+            )
+            
+        # 사용자 생성
+        user_info = auth_service.create_local_user(
+            db, request.email, request.password, request.nickname
+        )
+        
+        # JWT 토큰 생성
+        access_token = auth_service.create_access_token(
+            data={"sub": str(user_info.user_id), "email": request.email}
+        )
+        
+        return {
+            "message": "회원가입 성공",
+            "user": {
+                "id": user_info.user_id,
+                "email": request.email,
+                "name": user_info.nickname,
+                "is_first_login": True
+            },
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Signup failed: {str(e)}"
+        )
+
+@router.post("/login")
+async def login(
+    request: LoginRequest,
+    db: Session = Depends(get_db)
+):
+    """일반 로그인"""
+    try:
+        user_info = auth_service.authenticate_user(db, request.email, request.password)
+        if not user_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="이메일 또는 비밀번호가 올바르지 않습니다."
+            )
+            
+        # 이메일 조회 (UserInformation에는 email이 없으므로 User 테이블에서 조회해야 하지만,
+        # 여기서는 성능을 위해 request의 email을 사용하거나, 필요시 join 쿼리 사용)
+        # authenticate_user가 UserInformation을 반환하므로, email은 request에서 가져옴
+        
+        # JWT 토큰 생성
+        access_token = auth_service.create_access_token(
+            data={"sub": str(user_info.user_id), "email": request.email}
+        )
+        
+        return {
+            "message": "로그인 성공",
+            "user": {
+                "id": user_info.user_id,
+                "email": request.email,
+                "name": user_info.nickname,
+                "role": user_info.role,
+                "is_first_login": False
+            },
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(e)}"
         )
 
 @router.post("/test-login")
@@ -213,6 +318,7 @@ async def get_current_user_info(
             "email": current_user.get("email", "unknown"),
             "google_id": "unknown",  # 필요시 social_user에서 추출
             "name": user_info.nickname,
+            "role": user_info.role,
             "is_first_login": is_first_login,
             "created_at": user_info.created_at.isoformat() if user_info.created_at else None,
             "updated_at": user_info.created_at.isoformat() if user_info.created_at else None

@@ -27,9 +27,12 @@ app = FastAPI(
 )
 
 # CORS 설정
+from .config import settings
+
+# CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 개발 환경에서만 사용
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -111,7 +114,7 @@ from starlette.exceptions import HTTPException
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    print(f"🚨 422 Validation Error:")
+    print(f"  422 Validation Error:")
     print(f"  URL: {request.url}")
     print(f"  Method: {request.method}")
     print(f"  Errors: {exc.errors()}")

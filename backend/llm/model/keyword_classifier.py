@@ -96,13 +96,15 @@ class KeywordPersonalityClassifier:
             
             # 허깅페이스에서 모델 파일 직접 다운로드
             from huggingface_hub import hf_hub_download
-            import tempfile
-            
+
+            # HF_HOME 환경변수 사용 (Docker 환경 고려)
+            cache_dir = os.getenv('HF_HOME', os.path.join(os.path.expanduser('~'), '.cache', 'huggingface'))
+
             model_file = hf_hub_download(
                 repo_id=HF_MODEL_NAME,
                 filename="best_keyword_classifier.pth",
                 token=HF_TOKEN,
-                cache_dir=tempfile.gettempdir(),
+                cache_dir=cache_dir,
                 force_download=False
             )
             

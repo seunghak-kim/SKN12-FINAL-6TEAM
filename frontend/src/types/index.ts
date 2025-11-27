@@ -112,6 +112,7 @@ export interface DrawingTestResult {
   result_id: number;
   persona_type?: number;
   summary_text?: string;
+  result_text?: string;
   created_at: string;
   persona_info?: PersonaInfo;
   personality_scores?: {
@@ -121,6 +122,10 @@ export interface DrawingTestResult {
     쾌락이: number;
     안정이: number;
   };
+  probabilities?: { [key: string]: number };
+  predicted_personality?: string;
+  analysis_method?: string;
+  image_url?: string;
 }
 
 // 백엔드 API - 그림 테스트

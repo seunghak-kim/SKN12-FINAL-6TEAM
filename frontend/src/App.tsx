@@ -12,6 +12,7 @@ import MyPage from './components/pages/MyPage';
 import LandingPage from './components/pages/LandingPage';
 import NicknamePage from './components/pages/NicknamePage';
 import AuthCallbackPage from './components/pages/AuthCallbackPage';
+import AdminDashboardPage from './components/pages/AdminDashboardPage';
 // import FloatingChatBot from './components/common/FloatingChatBot';
 import { useAppState } from './hooks/useAppState';
 import { authService } from './services/authService';
@@ -45,17 +46,17 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get('token');
-    
+
     if (token) {
       console.warn('Security Warning: Token detected in URL - cleaning up...');
-      
+
       // 토큰을 localStorage에 저장 (임시 처리)
       localStorage.setItem('access_token', token);
-      
+
       // URL에서 토큰 제거
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
-      
+
       // 페이지 새로고침으로 완전한 초기화
       window.location.reload();
     }
@@ -88,7 +89,7 @@ const AppContent: React.FC = () => {
     checkAuthAndRedirect();
 
     // location.pathname이 변경될 때마다 다시 확인
-    const unlisten = () => {}; // Placeholder for cleanup if needed
+    const unlisten = () => { }; // Placeholder for cleanup if needed
     return () => unlisten();
   }, [location.pathname, navigate]);
 
@@ -124,6 +125,9 @@ const AppContent: React.FC = () => {
       case 'nickname':
         navigate('/nickname');
         break;
+      case 'admin':
+        navigate('/admin/dashboard');
+        break;
       default:
         break;
     }
@@ -137,11 +141,11 @@ const AppContent: React.FC = () => {
 
     try {
       console.log('실제 분석 시작:', { imageFile, description });
-      
+
       // 실제 분석 API 호출
-      const result = await testService.uploadDrawingImage(imageFile);
+      const result = await testService.analyzeImage(imageFile);
       console.log('분석 완료:', result);
-      
+
       // 분석 완료 후 결과 페이지로 이동
       handleStartDreamSearch();
     } catch (error) {
@@ -155,51 +159,51 @@ const AppContent: React.FC = () => {
     <div className="App font-sans min-h-screen bg-gray-100">
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route 
-          path="/main" 
+        <Route
+          path="/main"
           element={
-            <MainPage 
-              onStartDreamSearch={handleStartDreamSearch} 
-              onNavigate={handleNavigate} 
+            <MainPage
+              onStartDreamSearch={handleStartDreamSearch}
+              onNavigate={handleNavigate}
             />
-          } 
+          }
         />
-        <Route 
-          path="/test" 
+        <Route
+          path="/test"
           element={
-            <TestPage 
-              onStartAnalysis={handleStartAnalysis} 
-              onNavigate={handleNavigate} 
+            <TestPage
+              onStartAnalysis={handleStartAnalysis}
+              onNavigate={handleNavigate}
             />
-          } 
+          }
         />
-        <Route 
-          path="/test-instruction" 
+        <Route
+          path="/test-instruction"
           element={
-            <TestInstructionPage 
-              onStartAnalysis={handleStartAnalysis} 
-              onNavigate={handleNavigate} 
+            <TestInstructionPage
+              onStartAnalysis={handleStartAnalysis}
+              onNavigate={handleNavigate}
             />
-          } 
+          }
         />
-        <Route 
-          path="/results" 
+        <Route
+          path="/results"
           element={
             <ResultsPage
               characters={getAvailableCharacters()}
               selectedCharacter={selectedCharacter}
               showModal={false}
               onCharacterSelect={handleCharacterSelect}
-              onCloseModal={() => {}}
+              onCloseModal={() => { }}
               onStartChat={handleStartChat}
               onNavigate={handleNavigate}
               currentTestResult={currentTestResult}
               updateTestResult={updateTestResult}
             />
-          } 
+          }
         />
-        <Route 
-          path="/chat" 
+        <Route
+          path="/chat"
           element={
             <ChatPage
               selectedCharacter={selectedCharacter}
@@ -211,10 +215,10 @@ const AppContent: React.FC = () => {
               // userId prop 제거 - ChatPage에서 내부적으로 로그인된 사용자 ID를 가져옴
               personaId={selectedCharacter ? parseInt(selectedCharacter.id) : 1}
             />
-          } 
+          }
         />
-        <Route 
-          path="/mypage" 
+        <Route
+          path="/mypage"
           element={
             <MyPage
               onNewChat={handleNewChat}
@@ -223,20 +227,20 @@ const AppContent: React.FC = () => {
               onContinueChat={handleContinueChat}
               onUpdateProfile={handleUpdateProfile}
             />
-          } 
+          }
         />
-        <Route 
-          path="/result-detail/:id" 
+        <Route
+          path="/result-detail/:id"
           element={
             <ResultDetailPage
               testResults={[]}
               onNavigate={handleNavigate}
               onStartChat={handleStartChat}
             />
-          } 
+          }
         />
-        <Route 
-          path="/characters" 
+        <Route
+          path="/characters"
           element={
             <CharactersPage
               selectedCharacter={selectedCharacter}
@@ -244,18 +248,18 @@ const AppContent: React.FC = () => {
               onStartChat={handleStartChat}
               onNavigate={handleNavigate}
             />
-          } 
+          }
         />
-        <Route 
-          path="/before-test" 
+        <Route
+          path="/before-test"
           element={
             <BeforeTest
               onNavigate={handleNavigate}
             />
-          } 
+          }
         />
-        <Route 
-          path="/nickname" 
+        <Route
+          path="/nickname"
           element={
             <NicknamePage
               onComplete={(nickname) => {
@@ -263,11 +267,15 @@ const AppContent: React.FC = () => {
                 // 여기서 닉네임을 저장하거나 처리할 수 있습니다
               }}
             />
-          } 
+          }
         />
-        <Route 
-          path="/auth-callback" 
-          element={<AuthCallbackPage />} 
+        <Route
+          path="/auth-callback"
+          element={<AuthCallbackPage />}
+        />
+        <Route
+          path="/admin/dashboard"
+          element={<AdminDashboardPage />}
         />
       </Routes>
       {/* <FloatingChatBot /> */}

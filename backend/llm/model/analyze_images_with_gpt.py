@@ -1,4 +1,5 @@
 import base64
+print("DEBUG: analyze_images_with_gpt.py imported")
 import os
 import openai
 from dotenv import load_dotenv
@@ -11,13 +12,14 @@ from PIL import Image, ImageOps
 import io
 from datetime import datetime
 
+load_dotenv()
+
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../opensearch_modules'))
 
 from opensearch_client import OpenSearchEmbeddingClient
-opensearch_client = OpenSearchEmbeddingClient(host='3.39.30.211')
+opensearch_client = OpenSearchEmbeddingClient(host=os.getenv('OPENSEARCH_HOST', 'opensearch-node'))
 
-load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 IMAGE_DIR = os.path.join(os.path.dirname(__file__), '../detection_results/images')
@@ -30,7 +32,7 @@ try:
     opensearch_modules_dir = os.path.join(os.path.dirname(__file__), '../opensearch_modules')
     os.chdir(opensearch_modules_dir)
     
-    opensearch_client = OpenSearchEmbeddingClient(host='3.39.30.211')
+    opensearch_client = OpenSearchEmbeddingClient(host=os.getenv('OPENSEARCH_HOST', 'opensearch-node'))
     RAG_INDEX_NAME = "psychology_analysis"
     
     # 작업 디렉토리 복구
@@ -124,39 +126,29 @@ def search_rag_documents(query_elements):
     return None
 
 PROMPT = '''
-        당신은 HTP(House-Tree-Person) 심리검사 분석 전문가입니다. 주어진 그림을 분석해 주세요.
-        분석 방법
-        1단계: 관찰된 특징들
-        그림에서 보이는 구체적인 특징들을 나열해 주세요:
-
-        집: 크기, 창문, 문, 지붕, 굴뚝 등의 특징
-        나무: 크기, 줄기, 가지, 잎, 뿌리 등의 특징
-        사람: 크기, 자세, 얼굴, 옷차림 등의 특징
-        전체: 배치, 선의 굵기, 그림 스타일 등
-
-        2단계: 심리적 해석
-        각 요소가 나타내는 심리적 의미를 설명해 주세요:
-
-        집 → 가족관계, 안정감, 소속감
-        나무 → 성장욕구, 생명력, 적응력
-        사람 → 자아상, 대인관계, 정서상태
-
-        3단계: 핵심 감정 키워드
-        분석 결과를 바탕으로 주요 감정 키워드를 3-5개 제시해 주세요.
-        형식: 키워드만 한 줄씩 나열 (예: 불안, 안정감, 소외감)
+        당신은 HTP(House-Tree-Person) 심리검사 분석 전문가입니다. 주어진 그림을 분석하여 다음 JSON 형식으로 출력해 주세요.
         
-<<<<<<< HEAD
-        **작성 규칙**
-=======
-        작성 규칙:
->>>>>>> origin/docker
+        {
+            "features": {
+                "house": ["집의 특징1", "집의 특징2"],
+                "tree": ["나무의 특징1", "나무의 특징2"],
+                "person": ["사람의 특징1", "사람의 특징2"],
+                "overall": ["전체적인 특징1", "전체적인 특징2"]
+            },
+            "psychological_analysis": {
+                "house": "집에 대한 심리적 해석",
+                "tree": "나무에 대한 심리적 해석",
+                "person": "사람에 대한 심리적 해석"
+            },
+            "keywords": ["키워드1", "키워드2", "키워드3", "키워드4", "키워드5"],
+            "summary": "전체적인 심리 상태 요약 (3-4문장)"
+        }
 
-        - 모든 답변은 한글로 '~입니다' 체로 작성
+        작성 규칙:
+        - 모든 값은 한글로 작성
         - 단정적 표현보다는 '~로 보입니다', '~한 경향을 나타냅니다' 등 완화된 표현 사용
         - 부정적 해석과 긍정적 해석을 균형있게 제시
-        - 마크다운 문법(볼드, 이탤릭 등)을 사용하지 말고 일반 텍스트로만 작성
-        - 강조가 필요한 경우 따옴표나 괄호를 사용
-        - 이제 주어진 HTP 그림을 분석해 주세요.
+        - JSON 형식을 엄격히 준수할 것
         '''
 
 openai.api_key = OPENAI_API_KEY
@@ -332,13 +324,14 @@ def analyze_image_with_gpt(image_path, prompt, rag_context=None, max_retries=5):
             response = openai.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "당신은 HTP(House-Tree-Person) 심리검사 전문 분석가입니다. 제공된 그림은 심리검사 목적으로 그려진 그림이며, 실제 인물의 신원 식별이 아닌 심리적 특성 분석을 위한 것입니다. 그림의 시각적 요소들을 통해 심리 상태를 분석해 주세요. 개인의 정체성이나 신원을 파악하려는 것이 아니라, 그림 표현 방식을 통한 심리 분석임을 명심하세요. 이미지가 제대로 보이지 않으면 '이미지를 인식할 수 없습니다'라고 응답하지 말고, 다시 시도해보거나 이미지 파일 문제일 수 있다고 안내해주세요."},
+                    {"role": "system", "content": "당신은 HTP(House-Tree-Person) 심리검사 전문 분석가입니다. JSON 형식으로 응답해 주세요."},
                     {
                         "role": "user",
                         "content": content
                     }
                 ],
                 max_tokens=2000,
+                response_format={"type": "json_object"}
             )
             
             gpt_end_time = time.time()
@@ -389,132 +382,117 @@ def analyze_image_gpt(image_base):
     """
     if not OPENAI_API_KEY:
         print("OPENAI_API_KEY가 설정되어 있지 않습니다. .env 파일을 확인하세요.")
-        print(f"현재 OPENAI_API_KEY 값: {OPENAI_API_KEY[:10] if OPENAI_API_KEY else 'None'}...")
         return None
 
-    print(f"IMAGE_DIR 경로: {IMAGE_DIR}")
     if not os.path.exists(IMAGE_DIR):
         print(f"폴더를 찾을 수 없습니다: {IMAGE_DIR}")
-        print(f"현재 작업 디렉토리: {os.getcwd()}")
         return None
 
     target_filename = f"detection_result_{image_base}.jpg"
     image_path = os.path.join(IMAGE_DIR, target_filename)
-    print(f"찾는 이미지 파일: {image_path}")
+    
     if not os.path.exists(image_path):
         print(f"{IMAGE_DIR} 폴더에 {target_filename} 파일이 없습니다.")
-        # 폴더 내 파일 목록 출력
-        try:
-            files = os.listdir(IMAGE_DIR)
-            print(f"폴더 내 파일 목록: {files}")
-        except Exception as e:
-            print(f"폴더 목록 조회 실패: {e}")
         return None
 
     print(f"\n===== {target_filename} 심리 분석 결과 =====")
     
-    # 분석 시작 시간 기록
     import time
     analysis_start_time = time.time()
-    analysis_start_datetime = datetime.now()
-    print(f"🚀 [TIMING] 심리 분석 전체 시작: {analysis_start_datetime.strftime('%H:%M:%S.%f')[:-3]}")
     
     try:
-        # 1차 GPT 해석 (초기 분석)
+        # 1차 GPT 해석 (초기 분석 - JSON)
         print("1단계: 초기 심리 분석 수행 중...")
-        initial_analysis = analyze_image_with_gpt(image_path, PROMPT)
-        print("\n[초기 분석 결과]")
-        print(initial_analysis)
+        initial_analysis_text = analyze_image_with_gpt(image_path, PROMPT)
         
-        # 심리 분석 요소 추출
+        try:
+            initial_analysis = json.loads(initial_analysis_text)
+            print("초기 분석 JSON 파싱 성공")
+        except json.JSONDecodeError:
+            print("초기 분석 JSON 파싱 실패, 텍스트로 처리 시도")
+            # 실패 시 기본 구조 생성
+            initial_analysis = {
+                "features": {"overall": ["분석 실패"]}, 
+                "keywords": [], 
+                "summary": initial_analysis_text
+            }
+
+        # 심리 분석 요소 추출 (JSON에서 키워드 및 특징 추출)
         print("\n2단계: 심리 분석 요소 추출 중...")
-        psychological_elements = extract_psychological_elements(initial_analysis)
-        print(f"추출된 요소들: {psychological_elements}")
+        psychological_elements = []
+        if "keywords" in initial_analysis:
+            psychological_elements.extend(initial_analysis["keywords"])
+        
+        if "features" in initial_analysis:
+            for category, features in initial_analysis["features"].items():
+                psychological_elements.extend(features)
+                
+        print(f"추출된 요소들 (상위 10개): {psychological_elements[:10]}")
         
         # OpenSearch RAG 검색
         print("\n3단계: RAG 시스템을 통한 관련 자료 검색 중...")
-        rag_result = search_rag_documents(psychological_elements)
+        rag_result = search_rag_documents(psychological_elements[:5]) # 상위 5개만 사용
+        
+        final_analysis = initial_analysis
         
         if rag_result:
             print(f"검색된 관련 자료: {rag_result['document']} - {rag_result['element']}")
-            print(f"관련도 점수: {rag_result['score']:.4f}")
             
-            # RAG 컨텍스트를 포함한 최종 분석
+            # RAG 컨텍스트를 포함한 최종 분석 (JSON 형식 유지)
             print("\n4단계: RAG 컨텍스트를 활용한 최종 분석 수행 중...")
             final_prompt = f"""
-                            아래는 심리 그림 검사의 초기 분석 결과입니다:
+            아래는 심리 그림 검사의 초기 분석 결과입니다:
+            {json.dumps(initial_analysis, ensure_ascii=False, indent=2)}
 
-                            {initial_analysis}
+            참고 자료:
+            문서: {rag_result['document']} - {rag_result['element']}
+            내용: {rag_result['text']}
 
-                            위 분석 결과를 바탕으로, 제공된 참고 자료를 활용하여 더욱 정확하고 전문적인 최종 심리 분석을 제공해 주세요.
-                            특히 참고 자료의 전문적 해석을 반영하여 분석의 깊이를 더해주세요.
-                            반드시 ~입니다 체로 작성해 주세요.
-                            """
-            result_text_gpt = analyze_image_with_gpt(image_path, final_prompt, rag_result)
-        else:
-            print("관련 RAG 자료를 찾을 수 없어 초기 분석 결과를 사용합니다.")
-            result_text_gpt = initial_analysis
+            위 분석 결과와 참고 자료를 바탕으로, 더욱 정확하고 전문적인 최종 심리 분석을 JSON 형식으로 다시 작성해 주세요.
+            초기 분석의 구조를 유지하되, 내용을 보강해 주세요.
+            """
+            
+            final_analysis_text = analyze_image_with_gpt(image_path, final_prompt)
+            try:
+                final_analysis = json.loads(final_analysis_text)
+                print("최종 분석 JSON 파싱 성공")
+            except json.JSONDecodeError:
+                print("최종 분석 JSON 파싱 실패, 초기 분석 결과 사용")
+
+        # 결과 구성
+        result_text = final_analysis.get("summary", "")
+        if not result_text and "psychological_analysis" in final_analysis:
+             # summary가 없으면 해석을 합쳐서 생성
+             analysis = final_analysis["psychological_analysis"]
+             result_text = f"집: {analysis.get('house', '')}\n나무: {analysis.get('tree', '')}\n사람: {analysis.get('person', '')}"
+
+        # 감정 키워드 추출
+        enriched = []
+        if rag_result:
+            enriched.append({
+                'element': rag_result['element'],
+                'condition': rag_result['text'][:100] + '...' if len(rag_result['text']) > 100 else rag_result['text'],
+                'keywords': rag_result['metadata'].get('keywords', [])
+            })
+
+        result = {
+            "raw_text": json.dumps(final_analysis, ensure_ascii=False), # 호환성을 위해 JSON 문자열 저장
+            "result_text": result_text,
+            "items": enriched,
+            "rag_context": rag_result,
+            "parsed_result": final_analysis # 파싱된 결과도 저장
+        }
         
-        print("\n[최종 분석 결과]")
-        print(result_text_gpt)
+        analysis_end_time = time.time()
+        print(f"✅ [TIMING] 심리 분석 전체 완료: {analysis_end_time - analysis_start_time:.2f}초")
         
+        return result
+
     except Exception as e:
-        # 오류 시간 기록
-        error_time = time.time()
-        error_duration = error_time - analysis_start_time if 'analysis_start_time' in locals() else 0
-        error_datetime = datetime.now()
-        print(f"❌ [TIMING] 심리 분석 오류 발생: {error_datetime.strftime('%H:%M:%S.%f')[:-3]}")
-        if error_duration > 0:
-            print(f"⏱️  [TIMING] 오류까지 소요시간: {error_duration:.2f}초 ({error_duration/60:.1f}분)")
-        
         print(f"분석 실패 - 상세 오류: {str(e)}")
-        print(f"오류 타입: {type(e)}")
         import traceback
-        print("전체 오류 추적:")
         traceback.print_exc()
         return None
-
-    # 요약 해석문 생성
-    print("\n5단계: 요약 해석문 생성 중...")
-    SUMMARY_PROMPT = f"""
-        아래의 그림 심리 분석 결과를 참고하여,
-        사용자가 이해하기 쉽도록 전체적인 심리 상태와 특징을 자연스럽게 요약·정리해주는 해석문을 작성해 주세요.
-        반드시 ~입니다 체로 작성해 주세요.
-
-        분석 결과:
-        {result_text_gpt}
-        """
-    try:
-        result_text = analyze_image_with_gpt(image_path, SUMMARY_PROMPT)
-    except Exception as e:
-        print(f"요약 해석문 생성 실패: {e}")
-        result_text = "(요약 해석문 생성 실패)"
-
-    # 감정 키워드 추출 (기존 방식 유지)
-    enriched = []
-    if rag_result:
-        enriched.append({
-            'element': rag_result['element'],
-            'condition': rag_result['text'][:100] + '...' if len(rag_result['text']) > 100 else rag_result['text'],
-            'keywords': rag_result['metadata'].get('keywords', [])
-        })
-
-    # 결과 딕셔너리 생성 (파일 저장 없이)
-    result = {
-        "raw_text": result_text_gpt,
-        "result_text": result_text,
-        "items": enriched,
-        "rag_context": rag_result
-    }
-    
-    # 분석 완료 시간 기록
-    analysis_end_time = time.time()
-    analysis_duration = analysis_end_time - analysis_start_time
-    analysis_end_datetime = datetime.now()
-    print(f"✅ [TIMING] 심리 분석 전체 완료: {analysis_end_datetime.strftime('%H:%M:%S.%f')[:-3]}")
-    print(f"⏱️  [TIMING] 심리 분석 총 소요시간: {analysis_duration:.2f}초 ({analysis_duration/60:.1f}분)")
-    
-    return result
 
 def main():
     """메인 함수 - 커맨드 라인 인자 처리"""

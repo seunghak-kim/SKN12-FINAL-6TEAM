@@ -9,6 +9,20 @@ sys.path.append(os.path.dirname(__file__))
 MODEL_DIR = os.path.dirname(__file__)
 RESULT_DIR = os.path.join(os.path.dirname(__file__), '../detection_results/images')
 
+# 전역 모델 캐시
+_YOLO_MODEL = None
+
+def get_yolo_model(model_path):
+    global _YOLO_MODEL
+    if _YOLO_MODEL is None:
+        try:
+            _YOLO_MODEL = YOLO(model_path)
+            print(f"모델 로드 성공: {model_path}")
+        except Exception as e:
+            print(f"모델 로드 실패: {e}")
+            return None
+    return _YOLO_MODEL
+
 def crop_objects_by_labels(image_path, model_path=None, output_dir="cropped_objects", result_dir="detection_results"):
     """
     YOLO 모델을 사용하여 이미지에서 객체를 감지하고 라벨별로 크롭하여 저장하는 함수
@@ -23,12 +37,9 @@ def crop_objects_by_labels(image_path, model_path=None, output_dir="cropped_obje
         model_path = os.path.join(os.path.dirname(__file__), "best.pt")
 
     
-    # YOLO 모델 로드
-    try:
-        model = YOLO(model_path)
-        print(f"모델 로드 성공: {model_path}")
-    except Exception as e:
-        print(f"모델 로드 실패: {e}")
+    # YOLO 모델 로드 (캐시 사용)
+    model = get_yolo_model(model_path)
+    if model is None:
         return
     
     # 원본 이미지 로드

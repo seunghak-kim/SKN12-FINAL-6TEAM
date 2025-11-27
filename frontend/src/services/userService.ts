@@ -63,16 +63,16 @@ class UserService {
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
       return cached.data;
     }
-    const response = await apiClient.get<UserProfileResponse>(`/api/users/${userId}/profile`);
-    
+    const response = await apiClient.get<UserProfileResponse>(`/users/${userId}/profile`);
+
     // 백엔드 응답을 프론트엔드 타입으로 변환
     const profile: UserProfile = {
       id: response.user_id.toString(),
       name: response.name,
       email: response.email || '',
-      profileImageUrl: response.profile_image_url ? 
-        (response.profile_image_url.startsWith('http') ? 
-          response.profile_image_url : 
+      profileImageUrl: response.profile_image_url ?
+        (response.profile_image_url.startsWith('http') ?
+          response.profile_image_url :
           `${process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`}${response.profile_image_url}`
         ) : undefined,
       joinDate: response.join_date,
@@ -82,17 +82,17 @@ class UserService {
 
     // 캐시에 저장
     this.profileCache.set(userId, { data: profile, timestamp: Date.now() });
-    
+
     return profile;
   }
 
   // 채팅 히스토리 조회
   async getChatHistory(userId: number, skip: number = 0, limit: number = 10): Promise<ChatHistory[]> {
-    const response = await apiClient.get<ChatHistoryResponse>(`/api/users/${userId}/chat-history`, {
+    const response = await apiClient.get<ChatHistoryResponse>(`/users/${userId}/chat-history`, {
       skip,
       limit
     });
-    
+
     // 백엔드 응답을 프론트엔드 타입으로 변환
     return response.chat_history.map(chat => ({
       id: chat.id,
@@ -112,11 +112,11 @@ class UserService {
 
   // 테스트 결과 조회
   async getTestResults(userId: number, skip: number = 0, limit: number = 10): Promise<TestResult[]> {
-    const response = await apiClient.get<DrawingTest[]>(`/api/v1/test/drawing-test-results/my-results`, {
+    const response = await apiClient.get<DrawingTest[]>(`/v1/test/drawing-test-results/my-results`, {
       skip,
       limit
     });
-    
+
     // 백엔드 응답을 프론트엔드 타입으로 변환
     return response.map(test => ({
       id: test.test_id.toString(),
@@ -131,16 +131,16 @@ class UserService {
 
   // 닉네임 중복 확인
   async checkNickname(userId: number, nickname: string): Promise<NicknameCheckResponse> {
-    return await apiClient.post<NicknameCheckResponse>(`/api/users/${userId}/check-nickname`, { nickname });
+    return await apiClient.post<NicknameCheckResponse>(`/users/${userId}/check-nickname`, { nickname });
   }
 
   // 사용자 정보 업데이트
   async updateUser(userId: number, data: { nickname?: string }): Promise<UserProfileResponse> {
-    const result = await apiClient.put<UserProfileResponse>(`/api/users/${userId}`, data);
-    
+    const result = await apiClient.put<UserProfileResponse>(`/users/${userId}`, data);
+
     // 업데이트 후 캐시 무효화
     this.profileCache.delete(userId);
-    
+
     return result;
   }
 
@@ -149,47 +149,47 @@ class UserService {
     try {
       console.log('🖼️ 프로필 이미지 업로드 시작 - 사용자 ID:', userId);
       console.log('📁 파일 정보:', { name: file.name, size: file.size, type: file.type });
-      
+
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
         throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
       }
       console.log('🔑 토큰 확인 완료:', token.substring(0, 20) + '...');
-      
+
       const formData = new FormData();
       formData.append('file', file);
-      
+
       console.log('📤 업로드 요청 전송...');
       const result = await apiClient.postFormData<{ message: string; profile_image_url: string }>(
-        `/api/users/${userId}/upload-profile-image`,
+        `/users/${userId}/upload-profile-image`,
         formData
       );
-      
+
       console.log('✅ 업로드 성공:', result);
-      
+
       // 업로드 후 캐시 무효화
       this.profileCache.delete(userId);
-      
+
       // URL을 절대 경로로 변환하여 반환
-      const absoluteUrl = result.profile_image_url.startsWith('http') ? 
-        result.profile_image_url : 
+      const absoluteUrl = result.profile_image_url.startsWith('http') ?
+        result.profile_image_url :
         `${process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`}${result.profile_image_url}`;
-      
+
       return {
         ...result,
         profile_image_url: absoluteUrl
       };
     } catch (error: any) {
       console.error('❌ 프로필 이미지 업로드 실패:', error);
-      
+
       // 401 에러 처리
       if (error.response?.status === 401) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user_info');
         throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
       }
-      
+
       // 기타 에러
       throw new Error(error.response?.data?.detail || error.message || '이미지 업로드 중 오류가 발생했습니다.');
     }
@@ -209,7 +209,7 @@ class UserService {
    */
   async deleteAccount(userId: number): Promise<{ message: string; deleted_user_id: number }> {
     try {
-      const result = await apiClient.delete<{ message: string; deleted_user_id: number }>(`/api/users/${userId}/account`);
+      const result = await apiClient.delete<{ message: string; deleted_user_id: number }>(`/users/${userId}/account`);
       // 캐시 클리어
       this.clearCache();
       return result;
