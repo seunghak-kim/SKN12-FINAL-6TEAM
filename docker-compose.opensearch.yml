@@ -1,0 +1,62 @@
+services: # version은 2.0에서 자동으로 버전 관리 됨 
+  opensearch: # 서비스 명 
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=MyStrongPassword123!" # Set explicit password
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes: # 볼륨 공유 
+      - opensearch-data:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+    networks:
+      - opensearch-net
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch-node:9200"]'
+    networks:
+      - opensearch-net
+    depends_on:
+      - opensearch
+
+  opensearch-init:
+    build:
+      context: ./backend/llm/opensearch_modules
+      dockerfile: Dockerfile
+    container_name: opensearch-init
+    depends_on:
+      - opensearch
+    environment:
+      - OPENSEARCH_HOST=opensearch
+      - OPENSEARCH_PORT=9200
+      - OPENSEARCH_USERNAME=admin
+      - "OPENSEARCH_PASSWORD=MyStrongPassword123!"
+      - OPENSEARCH_USE_SSL=true
+      - OPENSEARCH_VERIFY_CERTS=false
+      - OPENSEARCH_SSL_SHOW_WARN=false
+    networks:
+      - opensearch-net
+networks:
+  opensearch-net:
+    name: skn12-shared-net
+    driver: bridge
+
+volumes:
+  opensearch-data:

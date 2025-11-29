@@ -5,17 +5,19 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - FRONTEND_URL=http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com
-      - GOOGLE_REDIRECT_URI=http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/auth/google/callback
+      - FRONTEND_URL=http://mymoody.duckdns.org
+      - GOOGLE_REDIRECT_URI=http://mymoody.duckdns.org/auth/google/callback
+      - HF_HOME=/app/model_cache
+      - TRANSFORMERS_CACHE=/app/model_cache
     env_file:
       - ./backend/.env
     volumes:
       - ./uploads:/app/uploads
       - ./result:/app/result
+      - ./backend/model_cache:/app/model_cache
     networks:
       - frontback-network
-    depends_on:
-      - frontend
+      - skn12-shared-net
     restart: unless-stopped
 
   frontend:
@@ -24,14 +26,19 @@ services:
     ports:
       - "80:80"
     environment:
-      - REACT_APP_API_URL=http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com
-      - REACT_APP_GOOGLE_REDIRECT_URI=http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/auth/google/callback
+      - REACT_APP_API_URL=http://mymoody.duckdns.org
+      - REACT_APP_GOOGLE_REDIRECT_URI=http://mymoody.duckdns.org/auth/google/callback
     env_file:
       - ./frontend/.env
     networks:
       - frontback-network
+    depends_on:
+      - backend
     restart: unless-stopped
 
 networks:
   frontback-network:
     driver: bridge
+  skn12-shared-net:
+    external: true
+
