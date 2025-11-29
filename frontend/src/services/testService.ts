@@ -2,8 +2,8 @@ import { apiClient } from './apiClient';
 import { DrawingTest, PipelineAnalysisResponse, PipelineStatusResponse } from '../types';
 
 class TestService {
-  private readonly BASE_PATH = '/v1/test';
-  private readonly PIPELINE_PATH = '/v1/pipeline';
+  private readonly BASE_PATH = '/api/v1/test';
+  private readonly PIPELINE_PATH = '/api/v1/pipeline';
 
   /**
    * 현재 사용자의 그림 테스트 결과 조회
@@ -140,17 +140,29 @@ class TestService {
   /**
    * 이미지 URL을 절대 경로로 변환
    */
-  getImageUrl(imageUrl: string): string {
+    getImageUrl(imageUrl: string): string {
     // 로컬 경로를 절대 URL로 변환
-    // 'result/images/filename.jpg' -> 'http://backend:8000/images/filename.jpg'
+    // 'result/images/filename.jpg' -> 'http://backend:8000/images/filename.jpg' (Local)
+    // 'result/images/filename.jpg' -> '/images/filename.jpg' (Production)
     if (!imageUrl) return '';
     if (imageUrl.startsWith('http')) return imageUrl;
 
-    let apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+    let baseUrl = '';
+
+    if (process.env.REACT_APP_API_URL) {
+      baseUrl = process.env.REACT_APP_API_URL;
+    } else if (window.location.hostname === 'localhost') {
+      // 로컬 개발 환경 가정
+      baseUrl = 'http://localhost:8000';
+    } else {
+      // 프로덕션 환경 (상대 경로 사용)
+      baseUrl = '';
+    }
+
+    // Remove /api suffix if present
+    if (baseUrl.endsWith('/api')) baseUrl = baseUrl.slice(0, -4);
     // Remove trailing slash
-    if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1);
-    // Remove /api suffix
-    const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+    if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
     // Remove 'result/' prefix if present to match the mounted static path
     // Backend mounts 'result/images' to '/images'
@@ -158,8 +170,7 @@ class TestService {
     const cleanPath = imageUrl.replace(/^result\//, '').replace(/^\/result\//, '');
     const relativePath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
 
-    const fullUrl = `${baseUrl}/${relativePath}`;
-    console.log(`🖼️ getImageUrl: ${imageUrl} -> ${fullUrl}`);
+    const fullUrl = baseUrl ? `${baseUrl}/${relativePath}` : `/${relativePath}`;
     return fullUrl;
   }
 

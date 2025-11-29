@@ -22,7 +22,7 @@ const AuthCallbackPage: React.FC = () => {
           }
           // 현재 도메인이 EC2라면 EC2 주소 사용
           if (window.location.hostname.includes('ec2') || window.location.hostname.includes('amazonaws.com')) {
-            return 'http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com/api';
+            return 'http://mymoody.duckdns.org/api';
           }
           return `${window.location.protocol}//${window.location.hostname}`;
         };
