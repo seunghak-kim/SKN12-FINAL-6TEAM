@@ -139,10 +139,4 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"error": "Internal server error", "detail": str(exc)}
     )
     
-if __name__ == "__main__":
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True
-    )
+

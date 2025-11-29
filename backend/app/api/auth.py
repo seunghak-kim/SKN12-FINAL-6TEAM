@@ -266,7 +266,7 @@ async def google_callback(
         # 임시로 Redis나 메모리에 저장하는 대신 간단히 쿠키 사용
         from fastapi.responses import RedirectResponse
         
-        frontend_url = os.getenv("FRONTEND_URL", "http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com")
+        frontend_url = os.getenv("FRONTEND_URL", "http://mymoody.duckdns.org")
         response = RedirectResponse(
             url=f"{frontend_url}/auth-callback?session={session_id}&is_new={str(result.is_new_user).lower()}"
         )

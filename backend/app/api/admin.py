@@ -48,8 +48,9 @@ class DashboardTestResult(BaseModel):
     persona_name: Optional[str]
     summary: Optional[str]
     
-    class Config:
-        orm_mode = True
+    model_config = {
+	 "from_attributes": True
+	}
 
 @router.get("/admin/dashboard", response_model=List[DashboardTestResult])
 async def get_dashboard_data(

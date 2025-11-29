@@ -89,3 +89,4 @@ backend/.venv
 # 
 _.env.example
 .env.docker
+backend/model_cache
