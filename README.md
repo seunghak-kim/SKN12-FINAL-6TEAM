@@ -192,17 +192,10 @@
 
   ## AWS EC2 배포
   ### **🌐 배포된 서비스**
-  - **웹 애플리케이션**: http://ec2-3-34-245-132.ap-northeast-2.compute.amazonaws.com
+  - **웹 애플리케이션**: [http://mymoody.duckdns.org/](http://mymoody.duckdns.org/)
   <p align="center">
     <img src="./assets/img/baepo.png">
   </p>
-
-- QR 접속
-
-  <p align="center">
-    <img src="./assets/img/QR.jpeg" width="30%">
-  </p>
-
 
 ### 🔄 배포 프로세스
 
@@ -251,7 +244,7 @@
 
   ## 📞 문의 및 지원
 
-  - **프로젝트 관리자**: 이정민 (jeongmin0507@naver.com)
+  - **프로젝트 관리자**: 이정민 (leejm2157@gmail.com)
   - **배포 문의**: 김승학 (seunghak.dev@gmail.com)
   - **기술 문의**: 남의헌 (listener0219@gmail.com)
   - **모델 문의**: 이지복 (jibok815@gmail.com)
@@ -273,7 +266,7 @@
 
   ## 🙏 감사의 말
 
-  이 프로젝트는 **SKT AI Family AI Camp 12기** 과정에서 개발되었습니다.
+  이 프로젝트는 **SK Networks Family AI Camp 12기** 과정에서 개발되었습니다.
 
 
   <div align="center">
