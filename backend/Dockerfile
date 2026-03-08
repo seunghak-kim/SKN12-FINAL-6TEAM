@@ -26,11 +26,13 @@ COPY requirements.txt .
 
 # 5. [핵심] CPU 전용 torch 먼저 설치 (용량 90% 절감)
 # sentence-transformers가 무거운 CUDA 버전을 가져오지 못하게 미리 차단합니다.
-RUN uv pip install --system --no-cache torch --index-url https://download.pytorch.org/whl/cpu
+RUN uv pip install --system --no-cache \
+    torch \
+    torchvision \
+    --index-url https://download.pytorch.org/whl/cpu
 
 # 6. 나머지 Python 패키지 설치 (uv 사용으로 속도 향상)
 RUN uv pip install --system --no-cache -r requirements.txt
-
 # 7. AI 모델 미리 다운로드 (이미지에 포함)
 # KURE-v1 모델을 빌드 타임에 미리 구워 넣습니다.
 ENV HF_HOME=/app/model_cache
