@@ -240,7 +240,7 @@ const MainPage: React.FC<MainPageProps> = ({ onNavigate }) => {
               </span>
             </div>
             <div className="text-white/40 text-xs mb-2">
-              대표: 이정민 | leejm2157@gmail.com
+              대표: 조성지 | joseongji@naver.com
             </div>
             <div className="text-white/40 text-xs">
               © 2025 MY MOODY. All rights reserved.
