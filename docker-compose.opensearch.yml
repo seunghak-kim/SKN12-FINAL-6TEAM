@@ -1,24 +1,24 @@
-services: # version은 2.0에서 자동으로 버전 관리 됨 
-  opensearch: # 서비스 명 
+services:
+  opensearch:
     image: opensearchproject/opensearch:latest
     container_name: opensearch-node
     environment:
       - discovery.type=single-node
-      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
-      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=MyStrongPassword123!" # Set explicit password
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=MyStrongPassword123!"
     ulimits:
       memlock:
         soft: -1
         hard: -1
       nofile:
-        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        soft: 65536
         hard: 65536
-    volumes: # 볼륨 공유 
+    volumes:
       - opensearch-data:/usr/share/opensearch/data
     ports:
       - 9200:9200
-      - 9600:9600 # required for Performance Analyzer
+      - 9600:9600
     networks:
       - opensearch-net
 
@@ -27,10 +27,9 @@ services: # version은 2.0에서 자동으로 버전 관리 됨
     container_name: opensearch-dashboards
     ports:
       - 5601:5601
-    expose:
-      - "5601"
     environment:
-      OPENSEARCH_HOSTS: '["https://opensearch-node:9200"]'
+      # [수정] 호스트 이름을 container_name이 아닌 서비스 명(opensearch)으로 통일하는 것이 안전합니다.
+      OPENSEARCH_HOSTS: '["https://opensearch:9200"]'
     networks:
       - opensearch-net
     depends_on:
@@ -44,6 +43,7 @@ services: # version은 2.0에서 자동으로 버전 관리 됨
     depends_on:
       - opensearch
     environment:
+      # [확인] 서비스 명 'opensearch'를 사용하여 내부 네트워크 통신
       - OPENSEARCH_HOST=opensearch
       - OPENSEARCH_PORT=9200
       - OPENSEARCH_USERNAME=admin
@@ -53,6 +53,7 @@ services: # version은 2.0에서 자동으로 버전 관리 됨
       - OPENSEARCH_SSL_SHOW_WARN=false
     networks:
       - opensearch-net
+
 networks:
   opensearch-net:
     name: skn12-shared-net
