@@ -217,16 +217,12 @@ class AuthService:
         # 사용자 조회/생성
         user_info, is_new_user = self.get_or_create_user(db, google_user_info)
         
-        # JWT 토큰 생성
-        access_token = self.create_access_token(
-            data={"sub": str(user_info.user_id), "email": google_user_info.get('email')}
-        )
-        
         # 응답 생성
         return SocialLoginResponse(
             user_id=user_info.user_id,
             nickname=user_info.nickname,
-            is_new_user=is_new_user
+            is_new_user=is_new_user,
+            email=google_user_info.get('email')
         )
 
     def check_nickname_availability(self, db: Session, nickname: str) -> bool:
@@ -280,16 +276,12 @@ class AuthService:
             
             user_info, is_new_user = self.get_or_create_user(db, google_user_info)
             
-            # JWT 토큰 생성
-            jwt_token = self.create_access_token(
-                data={"sub": str(user_info.user_id), "email": google_user_info.get('email')}
-            )
-            
             # 응답 생성
             return SocialLoginResponse(
                 user_id=user_info.user_id,
                 nickname=user_info.nickname,
-                is_new_user=is_new_user
+                is_new_user=is_new_user,
+                email=google_user_info.get('email')
             )
             
         except Exception as e:

@@ -256,7 +256,7 @@ async def google_callback(
         
         # JWT 토큰 생성
         access_token = auth_service.create_access_token(
-            data={"sub": str(result.user_id), "email": "unknown"}
+            data={"sub": str(result.user_id), "email": getattr(result, "email", "unknown") or "unknown"}
         )
         
         # 임시 세션 ID 생성하여 안전하게 토큰 전달

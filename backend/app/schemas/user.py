@@ -123,6 +123,7 @@ class SocialLoginResponse(BaseModel):
     user_id: int = Field(..., description="사용자 ID")
     nickname: str = Field(..., description="사용자 닉네임")
     is_new_user: bool = Field(..., description="신규 사용자 여부")    
+    email: Optional[str] = Field(None, description="사용자 이메일")
 
 # 로그인 용 스키마 
 class UserLogin(BaseModel):
